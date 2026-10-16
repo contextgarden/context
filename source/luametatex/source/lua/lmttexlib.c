@@ -1545,7 +1545,7 @@ static int texlib_setdimen(lua_State *L)
     int slot = lmt_check_for_flags(L, 1, &flags, 1, 0);
     int state = texlib_aux_check_for_index(L, slot++, "dimen", &index, internal_dimension_cmd, register_dimension_cmd, internal_dimension_base, register_dimension_base, max_dimension_register_index, dimension_cmd);
     if (state >= 0) {
-        halfword value = 0;
+        scaled value = 0;
         switch (lua_type(L, slot)) {
             case LUA_TNUMBER:
                 value = lmt_toroundnumber(L, slot++);
@@ -2742,7 +2742,7 @@ static int texlib_getdelcodes(lua_State* L)
     return 4;
 }
 
-static halfword texlib_aux_getdimension(lua_State* L, int index)
+static scaled texlib_aux_getdimension(lua_State* L, int index)
 {
     switch (lua_type(L, index)) {
         case LUA_TNUMBER:
@@ -2778,8 +2778,8 @@ static halfword texlib_toparshape(lua_State *L, int i)
             }
             lua_pop(L, 1);
             for (int j = 1; j <= n; j++) {
-                halfword indent = 0;
-                halfword width = 0;
+                scaled indent = 0;
+                scaled width = 0;
                 if (lua_rawgeti(L, i, j) == LUA_TTABLE) {
                     if (lua_rawgeti(L, -1, 1) == LUA_TNUMBER) {
                         indent = lmt_toroundnumber(L, -1);
@@ -2990,7 +2990,7 @@ static int texlib_set_item(lua_State* L, int index, int prefixes)
                 case internal_dimension_cmd:
                 case register_dimension_cmd:
                     {
-                        halfword n = texlib_aux_getdimension(L, slot);
+                        scaled n = texlib_aux_getdimension(L, slot);
                         if (cmd == register_dimension_cmd) {
                             tex_word_define(flags, eq_value(cs), n);
                         } else {
@@ -3087,6 +3087,7 @@ static int texlib_set_item(lua_State* L, int index, int prefixes)
                         default:
                             return 0;
                     }
+                    break;
                 case auxiliary_cmd:
                     /*tex This could be |set_aux_value| instead. */
                     switch (eq_value(cs)) {
@@ -5206,7 +5207,7 @@ static int texlib_expandasvalue(lua_State *L) /* mostly like the mp one */
             case lua_value_none_code:
             case lua_value_dimension_code:
                 {
-                    halfword value = 0;
+                    scaled value = 0;
                     halfword space = tex_get_available_token(space_token);
                     halfword relax = tex_get_available_token(deep_frozen_relax_token);
                     token_link(tail) = space;
@@ -7414,7 +7415,7 @@ static const double texlib_sp_epsilon = 0.5;
 
 static inline bool texlib_aux_equal(double a, double b, double eps)
 {
-    return fabs(a - b) <= texlib_sp_epsilon;
+    return fabs(a - b) <= eps;
 }
 
 static int texlib_equal(lua_State *L)

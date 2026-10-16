@@ -25,7 +25,6 @@ if not modules then modules = { } end modules ['mlib-msh'] = {
 local type, next, tonumber = type, next, tonumber
 
 local concat, sortedkeys, sortedhash, sort = table.concat, table.sortedkeys, table.sortedhash, table.sort
-local format = string.format
 local round = math.round
 
 local starttiming           = statistics.starttiming
@@ -34,7 +33,8 @@ local elapsedtime           = statistics.elapsedtime
 
 local report                = logs.reporter("metapost","mesh")
 
-local formatters            = string.formatters
+local formatting            = string.formatting
+local formatted             = string.formatted
 
 local injectpath            = mp.inject.path
 ----- injectvectors         = mp.inject.vectors
@@ -112,7 +112,7 @@ end
 
 statistics.register("metapost meshing", function()
     if nofruns > 0 then
-        return format("%i runs, %s seconds",nofruns,elapsedtime(meshes))
+        return formatted("%i runs, %s seconds",nofruns,elapsedtime(meshes))
     end
 end)
 
@@ -145,9 +145,7 @@ local averages = {
 
 
 local function vectormeshname(name,method,average)
-    return formatters
-        ["mesh-%s-%i-%i.lua"]
-        (name or "unknown",method or 1, average or 1)
+    return formatted("mesh-%s-%i-%i.lua",name or "unknown",method or 1, average or 1)
 end
 
 vector.meshname = vectormeshname
@@ -269,25 +267,27 @@ local function mesh_convert(current,kind)
     -- todo: we need to use the same pattern for %Z
     -- todo: more efficient just one path
 
-    local f_shape_3 = formatters["%N %N m %N %N l %N %N l %N %N l h " .. operator]
-    ----- f_shape_3 = formatters["%N %N m %N %N l %N %N l %1Z %2Z l h " .. operator]
-    local f_shape_4 = formatters["%N %N m %N %N l %N %N l %N %N l %N %N l h " .. operator]
-    ----- f_shape_4 = formatters["%N %N m %N %N l %N %N l %N %N l %1Z %2Z l h " .. operator]
-    local f_shape_2 = formatters["%N %N m %N %N l " .. operator]
-    local f_shape_1 = formatters["%N %N m %N %N l " .. operator]
-    ----- f_shape_1 = formatters["%N %N m %1Z %2Z l " .. operator]
-    local f_draw    = formatters["%.3N G"]
-    local f_fill    = formatters["%.3N %.3N %.3N rg"]
-    local f_tdraw   = formatters["%.3N %.3N %.3N RG"]
-    local f_tfill   = formatters["%.3N g"]
-    local f_line    = formatters["10 M 1 J 1 j %N w"]
-    local f_width   = formatters["%N w"]
-    local f_cm      = formatters["%N %N %N %N %N %N cm"]
+    -- todo: move operator to the call
+
+    local f_shape_3 = formatting("%N %N m %N %N l %N %N l %N %N l h " .. operator)
+    ----- f_shape_3 = formatting("%N %N m %N %N l %N %N l %1Z %2Z l h " .. operator)
+    local f_shape_4 = formatting("%N %N m %N %N l %N %N l %N %N l %N %N l h " .. operator)
+    ----- f_shape_4 = formatting("%N %N m %N %N l %N %N l %N %N l %1Z %2Z l h " .. operator)
+    local f_shape_2 = formatting("%N %N m %N %N l " .. operator)
+    local f_shape_1 = formatting("%N %N m %N %N l " .. operator)
+    ----- f_shape_1 = formatting("%N %N m %1Z %2Z l " .. operator)
+    local f_draw    = formatting("%.3N G")
+    local f_fill    = formatting("%.3N %.3N %.3N rg")
+    local f_tdraw   = formatting("%.3N %.3N %.3N RG")
+    local f_tfill   = formatting("%.3N g")
+    local f_line    = formatting("10 M 1 J 1 j %N w")
+    local f_width   = formatting("%N w")
+    local f_cm      = formatting("%N %N %N %N %N %N cm")
 
     n = n + 1 ; t[n] = "q"
-    n = n + 1 ; t[n] = f_draw(0) -- outlines
-    n = n + 1 ; t[n] = f_line(line)
-    n = n + 1 ; t[n] = f_cm(rx,0,0,ry,tx,ty)
+    n = n + 1 ; t[n] = formatted(f_draw,0) -- outlines
+    n = n + 1 ; t[n] = formatted(f_line,line)
+    n = n + 1 ; t[n] = formatted(f_cm,rx,0,0,ry,tx,ty)
 
     if granularity == 0 then
 
@@ -297,9 +297,9 @@ local function mesh_convert(current,kind)
                 if vdelta ~= 0 then
                     c = (c - vmin) / vdelta -- TODO
                 end
-                n = n + 1 ; t[n] = f_tdraw(color(c,i))
-                n = n + 1 ; t[n] = f_shape_1(x,y,x,y)
-             -- n = n + 1 ; t[n] = f_shape_1(x,y)
+                n = n + 1 ; t[n] = formatted(f_tdraw,color(c,i))
+                n = n + 1 ; t[n] = formatted(f_shape_1,x,y,x,y)
+             -- n = n + 1 ; t[n] = formatted(f_shape_1,x,y)
          -- end
         end
 
@@ -312,13 +312,13 @@ local function mesh_convert(current,kind)
                 if vdelta ~= 0 then
                     c = (c - vmin) / vdelta -- TODO
                 end
-                n = n + 1 ; t[n] = f_tdraw(color(c,i))
+                n = n + 1 ; t[n] = formatted(f_tdraw,color(c,i))
                 if w ~= lastw then
-                    n = n + 1 ; t[n] = f_width(w)
+                    n = n + 1 ; t[n] = formatted(f_width,w)
                     lastw = w
                 end
-                n = n + 1 ; t[n] = f_shape_1(x,y,x,y)
-             -- n = n + 1 ; t[n] = f_shape_1(x,y)
+                n = n + 1 ; t[n] = formatted(f_shape_1,x,y,x,y)
+             -- n = n + 1 ; t[n] = formatted(f_shape_1,x,y)
          -- end
         end
 
@@ -331,8 +331,8 @@ local function mesh_convert(current,kind)
                     if vdelta ~= 0 then
                         c = (c - vmin) / vdelta -- TODO
                     end
-                    n = n + 1 ; t[n] = f_tdraw(color(c,i))
-                    n = n + 1 ; t[n] = f_shape_2(m[1],m[2],m[3],m[4])
+                    n = n + 1 ; t[n] = formatted(f_tdraw,color(c,i))
+                    n = n + 1 ; t[n] = formatted(f_shape_2,m[1],m[2],m[3],m[4])
                 elseif m ~= false then
                     report("invalid mesh index %i, case %i",i,3)
                 end
@@ -349,10 +349,10 @@ local function mesh_convert(current,kind)
                         c = (c - vmin) / vdelta -- TODO
                     end
                     if fill then
-                        n = n + 1 ; t[n] = f_fill(color(c,i))
+                        n = n + 1 ; t[n] = formatted(f_fill,color(c,i))
                     end
-                    n = n + 1 ; t[n] = f_shape_3(m[1],m[2],m[3],m[4],m[5],m[6],m[1],m[2])
-                 -- n = n + 1 ; t[n] = f_shape_3(m[1],m[2],m[3],m[4],m[5],m[6])
+                    n = n + 1 ; t[n] = formatted(f_shape_3,m[1],m[2],m[3],m[4],m[5],m[6],m[1],m[2])
+                 -- n = n + 1 ; t[n] = formatted(f_shape_3,m[1],m[2],m[3],m[4],m[5],m[6])
                 elseif m ~= false then
                     report("invalid mesh index %i, case %i",i,3)
                 end
@@ -369,10 +369,10 @@ local function mesh_convert(current,kind)
                         c = (c - vmin) / vdelta -- TODO
                     end
                     if fill then
-                        n = n + 1 ; t[n] = f_fill(color(c,i))
+                        n = n + 1 ; t[n] = formatted(f_fill,color(c,i))
                     end
-                    n = n + 1 ; t[n] = f_shape_4(m[1],m[2],m[3],m[4],m[5],m[6],m[7],m[8],m[1],m[2])
-                 -- n = n + 1 ; t[n] = f_shape_4(m[1],m[2],m[3],m[4],m[5],m[6],m[7],m[8])
+                    n = n + 1 ; t[n] = formatted(f_shape_4,m[1],m[2],m[3],m[4],m[5],m[6],m[7],m[8],m[1],m[2])
+                 -- n = n + 1 ; t[n] = formatted(f_shape_4,m[1],m[2],m[3],m[4],m[5],m[6],m[7],m[8])
                 elseif m ~= false then
                     report("invalid mesh index %i, case %i",i,3)
                 end
@@ -383,41 +383,41 @@ local function mesh_convert(current,kind)
 
     if trace and overlap then
         -- we fetch these meshes a few times but it's tracing so seldom used
-        f_shape_3 = formatters["%N %N m %N %N l %N %N l %N %N l h S"]
-     -- f_shape_3 = formatters["%N %N m %N %N l %N %N l %1Z %2Z l h S"]
+        f_shape_3 = formatting("%N %N m %N %N l %N %N l %N %N l h S")
+     -- f_shape_3 = formatting("%N %N m %N %N l %N %N l %1Z %2Z l h S")
         local factor = tonumber(current.factor) or 5
         -- first the ones with a single overlap
-        n = n + 1 ; t[n] = f_line(2*factor*line)
-        n = n + 1 ; t[n] = f_tdraw(0,.6,0)
+        n = n + 1 ; t[n] = formatted(f_line,2*factor*line)
+        n = n + 1 ; t[n] = formatted(f_tdraw,0,.6,0)
         for k, v in sortedhash(hash) do
             if v == 1 then
                 local m, c = contourgetmesh(points,list,k)
                 if m then
-                    n = n + 1 ; t[n] = f_shape_3(m[1],m[2],m[3],m[4],m[5],m[6],m[1],m[2])
-                 -- n = n + 1 ; t[n] = f_shape_3(m[1],m[2],m[3],m[4],m[5],m[6])
+                    n = n + 1 ; t[n] = formatted(f_shape_3,m[1],m[2],m[3],m[4],m[5],m[6],m[1],m[2])
+                 -- n = n + 1 ; t[n] = formatted(f_shape_3,m[1],m[2],m[3],m[4],m[5],m[6])
                 end
             end
         end
         -- then the ones with multiple overlaps
-        n = n + 1 ; t[n] = f_line(factor*line)
-        n = n + 1 ; t[n] = f_tdraw(.6,0,0)
+        n = n + 1 ; t[n] = formatted(f_line,factor*line)
+        n = n + 1 ; t[n] = formatted(f_tdraw,.6,0,0)
         for k, v in sortedhash(hash) do
             if v > 1 then
                 local m, c = contourgetmesh(points,list,k)
                 if m then
-                    n = n + 1 ; t[n] = f_shape_3(m[1],m[2],m[3],m[4],m[5],m[6],m[1],m[2])
-                 -- n = n + 1 ; t[n] = f_shape_3(m[1],m[2],m[3],m[4],m[5],m[6])
+                    n = n + 1 ; t[n] = formatted(f_shape_3,m[1],m[2],m[3],m[4],m[5],m[6],m[1],m[2])
+                 -- n = n + 1 ; t[n] = formatted(f_shape_3,m[1],m[2],m[3],m[4],m[5],m[6])
                 end
             end
         end
         -- finally we make sure lines are shown
-        n = n + 1 ; t[n] = f_line(line)
-        n = n + 1 ; t[n] = f_tdraw(1,1,1)
+        n = n + 1 ; t[n] = formatted(f_line,line)
+        n = n + 1 ; t[n] = formatted(f_tdraw,1,1,1)
         for k, v in sortedhash(hash) do
             local m, c = contourgetmesh(points,list,k)
             if m then
-                n = n + 1 ; t[n] = f_shape_3(m[1],m[2],m[3],m[4],m[5],m[6],m[1],m[2])
-             -- n = n + 1 ; t[n] = f_shape_3(m[1],m[2],m[3],m[4],m[5],m[6])
+                n = n + 1 ; t[n] = formatted(f_shape_3,m[1],m[2],m[3],m[4],m[5],m[6],m[1],m[2])
+             -- n = n + 1 ; t[n] = formatted(f_shape_3,m[1],m[2],m[3],m[4],m[5],m[6])
             end
         end
 

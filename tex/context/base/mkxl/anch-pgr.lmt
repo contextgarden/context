@@ -22,9 +22,10 @@ local splitter = lpeg.splitat(":")
 local lpegmatch = lpeg.match
 
 local jobpositions      = job.positions
-local formatters        = string.formatters
 local setmetatableindex = table.setmetatableindex
 local settings_to_array = utilities.parsers.settings_to_array
+
+local formatted         = string.formatted
 
 local enableaction      = nodes.tasks.enableaction
 
@@ -51,30 +52,22 @@ local trace_shapes      = false  trackers.register("backgrounds.shapes",       f
 local trace_ranges      = false  trackers.register("backgrounds.shapes.ranges",function(v) trace_ranges = v end)
 local trace_free        = false  trackers.register("backgrounds.shapes.free",  function(v) trace_free   = v end)
 
-local f_b_tag           = formatters["b:%s"]
-local f_e_tag           = formatters["e:%s"]
-local f_p_tag           = formatters["p:%s"]
+local f_b_tag           = "b:%s"
+local f_e_tag           = "e:%s"
+local f_p_tag           = "p:%s"
 
-local f_tag_two         = formatters["%s:%s"]
+local f_tag_two         = "%s:%s"
 
-local f_point           = formatters["%p"]
-local f_pair            = formatters["(%p,%p)"]
-local f_path            = formatters["%--t--cycle"]
-local f_pair_i          = formatters["(%r,%r)"] -- rounded
+local f_point           = "%p"
+local f_pair            = "(%p,%p)"
+local f_path            = "%--t--cycle"
+local f_pair_i          = "(%r,%r)" -- rounded
 
 local c_realpageno      <const> = tex.iscount("realpageno")
 
 graphics                = graphics or { }
 local backgrounds       = { }
 graphics.backgrounds    = backgrounds
-
--- -- -- these can go -- -- --
-
-backgrounds.point = f_point
-backgrounds.pair  = f_pair
-backgrounds.path  = f_path
-
--- -- --
 
 local texsetattribute   = tex.setattribute
 
@@ -273,7 +266,7 @@ local function topairs(t,n)
     local r = { }
     for i=1,n do
         local ti = t[i]
-        r[i] = f_pair_i(ti[1]/65556,ti[2]/65536)
+        r[i] = formatted(f_pair_i,ti[1]/65556,ti[2]/65536)
     end
     return concat(r," ")
 end
@@ -763,8 +756,8 @@ end
 
 local function calculatemultipar(tag)
     local collected = jobpositions.collected
-    local b = collected[f_b_tag(tag)]
-    local e = collected[f_e_tag(tag)]
+    local b = collected[formatted(f_b_tag,tag)]
+    local e = collected[formatted(f_e_tag,tag)]
     if not b or not e then
         report_shapes("invalid tag %a",tag)
         return { }
@@ -802,7 +795,7 @@ local function calculatemultipar(tag)
     -- Obeying intermediate changes of left/rightskip makes no sense as it will
     -- look bad, so we only look at the begin situation.
     local bn = b.n
-    local p  = bn and collected[f_p_tag(bn)] -- par
+    local p  = bn and collected[formatted(f_p_tag,bn)] -- par
     if p then
         left  = left  + (p.ls or 0)
         right = right + (p.rs or 0)
@@ -825,7 +818,7 @@ local function calculatemultipar(tag)
             [bp] = { firstpart(b,e,p,bp,collected[br],left,right) },
         }
         for i=bindex+1,eindex-1 do
-            br = f_tag_two(btag,i)
+            br = formatted(f_tag_two,btag,i)
             local r = collected[br]
             if r then
                 local rp = r.p -- page
@@ -867,7 +860,7 @@ local multilocs = {
 
 -- if unknown context_abck : input mp-abck.mpiv ; fi ;
 
-local f_template_a = formatters[ [[
+local f_template_a = [[
 path multiregs[], multipars[], multibox ;
 string multikind[] ;
 numeric multilocs[], nofmultipars ;
@@ -877,19 +870,19 @@ numeric par_strut_height, par_strut_depth, par_line_height ;
 par_strut_height := %p ;
 par_strut_depth := %p ;
 par_line_height := %p ;
-]] ]
+]]
 
-local f_template_b = formatters[ [[
+local f_template_b = [[
 multilocs[%s] := %s ;
 multikind[%s] := "%s" ;
 multipars[%s] := (%--t--cycle) shifted - (%p,%p) ;
-]] ]
+]]
 
 -- unspiked(simplified(%--t--cycle)) shifted - (%p,%p) ;
 
-local f_template_c = formatters[ [[
+local s_template_c = [[
 setbounds currentpicture to multibox ;
-]] ]
+]]
 
 local function freemultipar(pagedata,frees) -- ,k
  -- if k == 3 then
@@ -1207,20 +1200,20 @@ local function fetchmultipar(n,anchor,page)
                         local area = areas[i]
                         for i=1,#area do
                             local a = area[i]
-                            area[i] = f_pair(a[1],a[2])
+                            area[i] = formatted(f_pair,a[1],a[2])
                         end
                         n = n + 1
-                        result[n+1] = f_template_b(n,multilocs[location],n,location,n,area,x,y)
+                        result[n+1] = formatted(f_template_b,n,multilocs[location],n,location,n,area,x,y)
                     end
                 end
                 data[page]  = nil
-                result[1]   = f_template_a(n,w,h+d,bh,bd,bh+bd) -- was delayed
-                result[n+2] = f_template_c()
+                result[1]   = formatted(f_template_a,n,w,h+d,bh,bd,bh+bd) -- was delayed
+                result[n+2] = s_template_c
                 return concat(result,"\n")
             end
         end
     end
-    return f_template_a(0,0,0,0,0,0);
+    return formatted(f_template_a,0,0,0,0,0,0);
 end
 
 backgrounds.fetchmultipar = fetchmultipar
@@ -1263,19 +1256,19 @@ implement {
 
 do
 
-    local f_template_a = formatters[ [[
+    local f_template_a = [[
     path posboxes[], posregions[] ;
     numeric pospages[] ;
     numeric nofposboxes ;
     nofposboxes := %s ;
     %t
-    ]] ]
+    ]]
 
-    local f_template_b = formatters[ [[
+    local f_template_b = [[
     pospages[%s] := %s ;
     posboxes[%s] := (%p,%p)--(%p,%p)--(%p,%p)--(%p,%p)--cycle ;
     posregions[%s] := (%p,%p)--(%p,%p)--(%p,%p)--(%p,%p)--cycle ;
-    ]] ]
+    ]]
 
     local function getposboxes(tags,anchor,page)  -- no caching (yet) / page
         local collected = jobpositions.collected
@@ -1306,7 +1299,7 @@ do
                         local ch = cy + c.h
                         local cd = cy - c.d
                         nofboxes = nofboxes + 1
-                        list[nofboxes] = f_template_b(
+                        list[nofboxes] = formatted(f_template_b,
                             nofboxes,c.p,
                             nofboxes,cx,ch,cw,ch,cw,cd,cx,cd,
                             nofboxes,0,rh,rw,rh,rw,rd,0,rd
@@ -1317,7 +1310,7 @@ do
              -- print("\n missing",tag)
             end
         end
-        return f_template_a(nofboxes,list)
+        return formatted(f_template_a,nofboxes,list)
     end
 
     metapost.registerscript("getposboxes", function()

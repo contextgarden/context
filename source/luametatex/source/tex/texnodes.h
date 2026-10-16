@@ -2030,7 +2030,7 @@ static inline int tex_same_mathspec(halfword a, halfword b)
 # define style_node_size               3
 # define style_style                   node_subtype
 # define style_scale(a)                memone(a,2)
-# define style_reserved(a)             memtwo(a,2)
+# define style_glyph_scale(a)          memtwo(a,2)
 
 # define choice_node_size              5
 //define choice_style                  node_subtype

@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['font-mpf'] = {
     license   = "see context related readme files"
 }
 
-local formatters     = string.formatters
+local formatted      = string.formatted
 local sortedhash     = table.sortedhash
 
 local addcharacters  = fonts.constructors.addcharacters
@@ -37,7 +37,7 @@ local new_kern       = nuts.pool.kern
 -- hm, seems to gobble the first \char
 -- the tounicode is a bit messy here
 
-local makesetups = formatters["box:%s:%S"]
+local f_boxsetup = "box:%s:%S"
 
 local a_exportstatus <const> = attributes.private('exportstatus')
 
@@ -104,7 +104,7 @@ local function setboxdirectly(font,unicode,box,expose) -- hash based on wd/ht/dp
         local tfmdata      = fontdata[font]
         local glyphboxes   = (tfmdata.glyphboxes or 0) + 1
         tfmdata.glyphboxes = glyphboxes
-        local private      = newprivateslot(formatters["BG:%05X"](glyphboxes))
+        local private      = newprivateslot(formatted("BG:%05X",glyphboxes))
         local width, height, depth = getwhd(box)
 -- box[a_exportstatus] = 0
         local newdata      = {
@@ -144,7 +144,7 @@ local function initializebox(tfmdata,kind,value)
         local font = tfmdata.properties.id
         -- just preregister the list
         for char, spec in sortedhash(boxes) do
-            spec.setups = makesetups(value,char)
+            spec.setups = formatted(f_boxsetup,value,char)
             local char = type(char) == "string" and newprivateslot(name) or char
             -- check if spec.code
             register(font,char,function(font,char)

@@ -42,7 +42,7 @@ local texsetdimen         = tex.setdimen
 local texisdimen          = tex.isdimen
 local texget              = tex.get
 
-local format              = string.format
+local formatted           = string.formatted
 local concat              = table.concat
 local points              = number.points
 
@@ -563,7 +563,7 @@ end
 local function showwidths(where,widths,autowidths)
     local result = { }
     for i=1,#widths do
-        result[i] = format("%12s%s",points(widths[i]),autowidths[i] and "*" or " ")
+        result[i] = formatted("%12s%s",points(widths[i]),autowidths[i] and "*" or " ")
     end
     return report_xtable("%s widths: %s",where,concat(result," "))
 end

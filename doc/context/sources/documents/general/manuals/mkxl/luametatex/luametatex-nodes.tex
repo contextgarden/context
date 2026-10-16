@@ -4183,18 +4183,18 @@ reference.
 \stopluacode
 \stoptworows
 
-We have quite some helpers and some accept different node types. Here is the
-repertoire:
+% We have quite some helpers and some accept different node types. Here is the
+% repertoire:
 
-\startluacode
-    context.starttabulate { "|lT|plT|" }
-    for name, usage in table.sortedhash(moduledata.repertoire) do
-        context.NC() context(name)
-        context.NC() context("% t",table.sortedkeys(usage))
-        context.NC() context.NR()
-    end
-    context.stoptabulate()
-\stopluacode
+% \startluacode
+%     context.starttabulate { "|lT|plT|" }
+%     for name, usage in table.sortedhash(moduledata.repertoire) do
+%         context.NC() context(name)
+%         context.NC() context("% t",table.sortedkeys(usage))
+%         context.NC() context.NR()
+%     end
+%     context.stoptabulate()
+% \stopluacode
 
 Here are some more helpers, they live in the \type {direct} name space but are
 user data aware too.

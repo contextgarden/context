@@ -56,7 +56,8 @@ local enableaction    = nodes.tasks.enableaction
 local setaction       = nodes.tasks.setaction
 
 local registerstorage = storage.register
-local formatters      = string.formatters
+
+local formatted       = string.formatted
 
 local interfaces      = interfaces
 local implement       = interfaces.implement
@@ -126,10 +127,10 @@ registerstorage("attributes/colors/registered", registered, "attributes.colors.r
 directives.register("colors.cmykrgbmode", function(v) cmykrgbmode = tonumber(v) or 0 end)
 
 local f_colors = {
-    rgb  = formatters["r:%s:%s:%s"],
-    cmyk = formatters["c:%s:%s:%s:%s"],
-    gray = formatters["s:%s"],
-    spot = formatters["p:%s:%s:%s:%s"],
+    rgb  = "r:%s:%s:%s",
+    cmyk = "c:%s:%s:%s:%s",
+    gray = "s:%s",
+    spot = "p:%s:%s:%s:%s",
 }
 
 local models = {
@@ -458,7 +459,7 @@ function colors.setmodel(name,weightgray)
 end
 
 function colors.register(name, colorspace, ...) -- passing 9 vars is faster (but not called that often)
-    local stamp = f_colors[colorspace](...)
+    local stamp = formatted(f_colors[colorspace],...)
     local color = registered[stamp]
     if not color then
         color = #values + 1
@@ -517,7 +518,7 @@ transparencies.supported  = true
 local registered          = transparencies.registered -- we could use a 2 dimensional table instead
 local data                = transparencies.data
 local values              = transparencies.values
-local f_transparency      = formatters["%s:%s"]
+local f_transparency      = "%s:%s"
 
 registerstorage("attributes/transparencies/registered", registered, "attributes.transparencies.registered")
 registerstorage("attributes/transparencies/values",     values,     "attributes.transparencies.values")
@@ -535,7 +536,7 @@ function transparencies.register(name,a,t,force) -- name is irrelevant here (can
     -- but then we'd end up with transparencies resources even if we
     -- would not use transparencies (but define them only). This is
     -- somewhat messy.
-    local stamp = f_transparency(a,t)
+    local stamp = formatted(f_transparency,a,t)
     local n = registered[stamp]
     if not n then
         n = #values + 1

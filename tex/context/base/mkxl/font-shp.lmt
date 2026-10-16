@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['font-shp'] = {
 
 local tonumber, next = tonumber, next
 local concat = table.concat
-local formatters, lower = string.formatters, string.lower
+local lower = string.lower
 
 local otf          = fonts.handlers.otf
 local afm          = fonts.handlers.afm
@@ -17,9 +17,12 @@ local pfb          = fonts.handlers.pfb
 local hashes       = fonts.hashes
 local identifiers  = hashes.identifiers
 
-local version      = otf.version or 3.156
+local version      = otf.version or 3.158
 local shapescache  = containers.define("fonts", "shapes",  version, true)
 local streamscache = containers.define("fonts", "streams", version, true)
+
+local formatted    = string.formatted
+local basename     = file.basename
 
 -- shapes (can be come a separate file at some point)
 
@@ -28,6 +31,30 @@ local pack_outlines   = true
 
 directives.register("fonts.streams.compact", function(v) compact_streams = v end)
 directives.register("fonts.streams.pack",    function(v) pack_outlines   = v end)
+
+-- When embedding a TrueType font, keep its hinting: the glyph instructions and the cvt, fpgm and
+-- prep tables (composites are flattened and lose theirs). Off by default.
+
+local keep_hints = false
+
+directives.register("fonts.truetype.keephints", function(v) keep_hints = v end)
+
+-- When embedding a Type 1 font, keep its hinting: the stems (hint replacement becomes a hintmask)
+-- and the hinting part of the private dictionary. Off by default.
+
+local keep_type1_hints = false
+
+directives.register("fonts.type1.keephints", function(v) keep_type1_hints = v end)
+
+local function todeltas(t) -- the cff private dictionary has delta arrays
+    if t and #t > 0 then
+        local d = { }
+        for i=1,#t do
+            d[i] = t[i] - (t[i-1] or 0)
+        end
+        return d
+    end
+end
 
 local function packoutlines(data,makesequence)
     if not pack_outlines then
@@ -160,15 +187,15 @@ local cleanname = otf.readers.helpers.cleanname
 -- local function makehash(filename,sub,instance)
 --     local name = cleanname(file.basename(filename))
 --     if instance then
---         return formatters["%s-%s-%s"](name,sub or 0,cleanname(instance))
+--         return formatted("%s-%s-%s",name,sub or 0,cleanname(instance))
 --     else
---         return formatters["%s-%s"]   (name,sub or 0)
+--         return formatted("%s-%s",name,sub or 0)
 --     end
 -- end
 
 local function makehash(filename,sub,instance,extrahash)
-    return formatters["%s-%s-%s-%s"](
-        cleanname(file.basename(filename)),
+    return formatted("%s-%s-%s-%s",
+        cleanname(basename(filename)),
         sub or 0,
         instance and instance ~= "" and cleanname(instance) or "0",
         extrahash and extrahash ~= "" and cleanname(extrahash) or "0"
@@ -243,10 +270,11 @@ local function loadstreams(cache,filename,sub,instance,extrahash)
     local sub  = tonumber(sub)
     local data = nil
     if size > 0 and (kind == "otf" or kind == "ttf" or kind == "ttc") then
-        local hash = makehash(filename,sub,instance,extrahash)
+        local hints = keep_hints and kind ~= "otf"
+        local hash  = makehash(filename,sub,instance,hints and ((extrahash or "") .. "hinted") or extrahash)
         data = containers.read(cache,hash)
         if not data or data.time ~= time or data.size ~= size then
-            data = otf.readers.loadshapes(filename,sub,instance,true) -- how about extrahash
+            data = otf.readers.loadshapes(filename,sub,instance,true,hints) -- how about extrahash
             if data then
                 local glyphs  = data.glyphs
                 local streams = { }
@@ -273,12 +301,13 @@ local function loadstreams(cache,filename,sub,instance,extrahash)
             end
         end
     elseif size > 0 and (kind == "pfb") then
-        local hash = makehash(filename,sub,instance)
+        local hash = makehash(filename,sub,instance,keep_type1_hints and "hinted" or nil)
         data = containers.read(cache,hash)
         if not data or data.time ~= time or data.size  ~= size then
-            local names, encoding, streams, metadata = pfb.loadvector(filename,false,true)
+            local names, encoding, streams, metadata, private = pfb.loadvector(filename,false,true,keep_type1_hints)
             if streams then
                 local fontbbox = metadata.fontbbox or { 0, 0, 0, 0 }
+                local private  = private or { }
              -- local widths   = { }
                 for i=0,#streams do
                     local s = streams[i]
@@ -325,6 +354,17 @@ local function loadstreams(cache,filename,sub,instance,extrahash)
                         underlineposition  = metadata.underlineposition,
                         underlinethickness = metadata.underlinethickness,
                         weight             = metadata.weight,
+                        bluevalues         = todeltas(private.bluevalues),
+                        otherblues         = todeltas(private.otherblues),
+                        familyblues        = todeltas(private.familyblues),
+                        familyotherblues   = todeltas(private.familyotherblues),
+                        bluescale          = private.bluescale,
+                        blueshift          = private.blueshift,
+                        bluefuzz           = private.bluefuzz,
+                        stdhw              = private.stdhw and private.stdhw[1],
+                        stdvw              = private.stdvw and private.stdvw[1],
+                        stemsnaph          = todeltas(private.stemsnaph),
+                        stemsnapv          = todeltas(private.stemsnapv),
                     },
                 }
                 data = cachethem(cache,hash,data)

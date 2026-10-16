@@ -13,8 +13,9 @@
 
 \writestatus{loading}{ConTeXt Lua Macros / Libraries}
 
-\registerctxluafile{util-str}{}
-\registerctxluafile{util-tab}{}
+\registerctxluafile{util-for}{autosuffix}
+\registerctxluafile{util-str}{autosuffix} % old, will be stripped
+\registerctxluafile{util-tab}{autosuffix}
 \registerctxluafile{util-fil}{autosuffix}
 \registerctxluafile{util-sac}{autosuffix}
 \registerctxluafile{util-sto}{} % could also be done in trac-deb.mkiv
@@ -29,7 +30,7 @@
 \registerctxluafile{luat-log}{autosuffix}
 \registerctxluafile{trac-tmr}{}
 \registerctxluafile{trac-inf}{autosuffix}
-\registerctxluafile{util-lua}{}
+\registerctxluafile{util-lua}{autosuffix}
 \registerctxluafile{util-deb}{autosuffix}
 
 \registerctxluafile{util-tpl}{} % needs tracker
@@ -39,14 +40,14 @@
 
 \registerctxluafile{util-sbx}{autosuffix} % needs tracker and templates
 
-\registerctxluafile{util-soc-imp-reset}  {}
-\registerctxluafile{util-soc-imp-socket} {}
-\registerctxluafile{util-soc-imp-ltn12}  {}
-\registerctxluafile{util-soc-imp-mime}   {}
-\registerctxluafile{util-soc-imp-url}    {}
-\registerctxluafile{util-soc-imp-headers}{}
-\registerctxluafile{util-soc-imp-http}   {}
-\registerctxluafile{util-soc-imp-tp}     {}
+% \registerctxluafile{util-soc-imp-reset}  {}
+% \registerctxluafile{util-soc-imp-socket} {}
+% \registerctxluafile{util-soc-imp-ltn12}  {}
+% \registerctxluafile{util-soc-imp-mime}   {}
+% \registerctxluafile{util-soc-imp-url}    {}
+% \registerctxluafile{util-soc-imp-headers}{}
+% \registerctxluafile{util-soc-imp-http}   {}
+% \registerctxluafile{util-soc-imp-tp}     {}
 
 \registerctxluafile{util-zip}{}
 \registerctxluafile{util-tar}{}

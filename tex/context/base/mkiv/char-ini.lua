@@ -1603,10 +1603,6 @@ if not characters.superscripts then
         end
     end
 
- -- print(table.serialize(superscripts, "superscripts", { hexify = true }))
- -- print(table.serialize(subscripts,   "subscripts",   { hexify = true }))
- -- print(table.serialize(fractions,    "fractions",    { hexify = true }))
-
     if storage then
         storage.register("characters/superscripts", superscripts, "characters.superscripts")
         storage.register("characters/subscripts",   subscripts,   "characters.subscripts")

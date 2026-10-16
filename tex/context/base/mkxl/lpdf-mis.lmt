@@ -16,9 +16,10 @@ if not modules then modules = { } end modules ['lpdf-mis'] = {
 -- course there are a couple of more changes.
 
 local next, tostring, type = next, tostring, type
-local format, gsub, formatters = string.format, string.gsub, string.formatters
 local concat, flattened = table.concat, table.flattened
 local settings_to_array = utilities.parsers.settings_to_array
+
+local formatted            = string.formatted
 
 local pdfbackend           = backends and backends.registered.pdf or { }
 local nodeinjections       = pdfbackend.nodeinjections
@@ -414,7 +415,7 @@ local function documentspecification()
         })
  -- end
  -- addtoinfo   ("Trapped", pdfconstant("False")) -- '/Trapped' in /Info, 'Trapped' in XMP
-    addtocatalog("Version", pdfconstant(format("%s.%s",pdfmajorversion(),pdfminorversion())))
+    addtocatalog("Version", pdfconstant(formatted("%s.%s",pdfmajorversion(),pdfminorversion())))
  -- local language = languages.names[texgetcount("mainlanguagenumber")]
     addtocatalog("Lang",    pdfstring(tokens.getters.macro("currentmainlanguage")))
 end

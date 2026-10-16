@@ -65,15 +65,18 @@ if not modules then modules = { } end modules ['cldf-ini'] = {
 -- \luafunctions was \luacall and we used our own implementation of a function table (more
 -- indirectness).
 
-local format, stripstring = string.format, string.strip
+local stripstring = string.strip
 local next, type, tostring, tonumber, unpack, select, rawset = next, type, tostring, tonumber, unpack, select, rawset
 local insert, remove, concat = table.insert, table.remove, table.concat
 local lpegmatch, lpegC, lpegS, lpegP, lpegV, lpegCc, lpegCs, patterns = lpeg.match, lpeg.C, lpeg.S, lpeg.P, lpeg.V, lpeg.Cc, lpeg.Cs, lpeg.patterns
 
-local formatters           = string.formatters -- using formatters is slower in this case
 local setmetatableindex    = table.setmetatableindex
 local setmetatablecall     = table.setmetatablecall
 local setmetatablenewindex = table.setmetatablenewindex
+
+----- formatters = string.formatters
+local formatting = string.formatting
+local formatted  = string.formatted
 
 context                 = context    or { }
 commands                = commands   or { }
@@ -422,10 +425,10 @@ end
 
 callbacks.register("show_lua_call", function(what, slot)
     if what == "local luacall" then
-        return formatters["%s @ %i"](what,slot)
+        return formatted("%s @ %i",what,slot)
     else
         local name = namesofscanners[slot]
-        return name and formatters["%s \\%s"](what,name) or ""
+        return name and formatted("%s \\%s",what,name) or ""
     end
 end, "provide lua call details")
 
@@ -947,62 +950,6 @@ end
 
 context.core = core
 
--- only for internal usage:
-
--- local prtindexer = nil
---
--- do
---
---     -- the only variant is not much faster than the full but it's more
---     -- memory efficient
---
---     local protected     = { }
---     local protectedcs   = { }
---     context.protected   = protected
---     context.protectedcs = protectedcs
---
---     local function fullindexer(t,k)
---         local c = "\\" .. k -- tostring(k)
---         local v = function(first,...)
---             if first == nil then
---                 flush(prtcatcodes,c)
---             else
---                 return prtwriter(c,first,...)
---             end
---         end
---         rawset(t,k,v) -- protected namespace
---         return v
---     end
---
---     local function onlyindexer(t,k)
---         local c = "\\" .. k -- tostring(k)
---         local v = function()
---             flush(prtcatcodes,c)
---         end
---         rawset(protected,k,v)
---         rawset(t,k,v)
---         return v
---     end
---
---     protected.cs = setmetatableindex(function(parent,k)
---         local c = "\\" .. k -- tostring(k)
---         local v = function()
---             flush(prtcatcodes,c)
---         end
---         parent[k] = v
---         return v
---     end
---
---     setmetatableindex(protected,fullindexer)
---     setmetatablecall (protected,prtwriter)
---
---     setmetatableindex(protectedcs,onlyindexer)
---     setmetatablecall (protectedcs,prtwriter)
---
--- end
-
--- local splitformatters = utilities.strings.formatters.new(true) -- not faster (yet)
-
 local caller = function(parent,f,a,...)
     if not parent then
         -- so we don't need to test in the calling (slower but often no issue)
@@ -1015,8 +962,8 @@ local caller = function(parent,f,a,...)
              --     report_context("empty argument to context()")
              -- end
             elseif a then
-                flush(contentcatcodes,formatters[f](a,...)) -- was currentcatcodes
-             -- flush(contentcatcodes,splitformatters[f](a,...)) -- was currentcatcodes
+             -- flush(contentcatcodes,formatters[f](a,...)) -- was currentcatcodes
+                flush(contentcatcodes,formatted(f,a,...)) -- was currentcatcodes
             elseif processlines and lpegmatch(containseol,f) then
                 flushlines(f)
             else
@@ -1098,13 +1045,15 @@ end
 function context.fprint(first,second,third,...)
     if type(first) == "number" then
         if third then
-            flush(first,formatters[second](third,...))
+         -- flush(first,formatters[second](third,...))
+            flush(first,formatted(second,third,...))
         else
             flush(first,second)
         end
     else
         if second then
-            flush(formatters[first](second,third,...))
+         -- flush(formatters[first](second,third,...))
+            flush(formatted(first,second,third,...))
         else
             flush(first)
         end
@@ -1136,9 +1085,9 @@ statistics.register("traced context lua functions", function()
     local used, freed = usedstack()
     local unreachable = used - freed
     if nofwriters > 0 or nofflushes > 0 then
-        return format("writers: %s, flushes: %s, maxstack: %s",nofwriters,nofflushes,used,freed,unreachable)
+        return formatted("writers: %s, flushes: %s, maxstack: %s",nofwriters,nofflushes,used,freed,unreachable)
     elseif showstackusage or unreachable > 0 then
-        return format("maxstack: %s, freed: %s, unreachable: %s",used,freed,unreachable)
+        return formatted("maxstack: %s, freed: %s, unreachable: %s",used,freed,unreachable)
     end
 end)
 
@@ -1154,12 +1103,14 @@ local luacalls = {
 
 local function userdata(argument)
     if isnode(argument) then
-        return formatters["<< %s node %i>>"](nodes.nodecodes[argument.id],tonut(argument))
+     -- return formatters["<< %s node %i>>"](nodes.nodecodes[argument.id],tonut(argument))
+        return formatted("<< %s node %i>>",nodes.nodecodes[argument.id],tonut(argument))
     elseif istoken(argument) then
         local csname = argument.csname
         if csname then
          -- return formatters["<<\\%s>>"](csname)
-            return formatters["\\%s"](csname)
+         -- return formatters["\\%s"](csname)
+            return formatted("\\%s",csname) --or just "\\" .. csname
         end
         if luacalls[argument.cmdname] then
             return "<<function>>" -- argument.mode
@@ -1189,7 +1140,8 @@ local tracedwriter = function(parent,...) -- also catcodes ?
             elseif argtype == "userdata" then
                 s[i] = userdata(argument)
             else
-                s[i] = formatters["<<%S>>"](argument)
+             -- s[i] = formatters["<<%S>>"](argument)
+                s[i] = formatted("<<%S>>",argument)
             end
         end
         s = concat(s)
@@ -1222,7 +1174,8 @@ local traced = function(one,two,...)
         -- only catcodes if 'one' is number
         local catcodes  = type(one) == "number" and one
         local arguments = catcodes and { two, ... } or { one, two, ... }
-        local collapsed = { formatters["f : %s : "](catcodes or '-') }
+     -- local collapsed = { formatters["f : %s : "](catcodes or '-') }
+        local collapsed = { formatted("f : %s : ",catcodes or '-') }
         local c         = 1
         for i=1,#arguments do
             local argument = arguments[i]
@@ -1235,7 +1188,8 @@ local traced = function(one,two,...)
             elseif argtype == "userdata" then
                 collapsed[c] = userdata(argument)
             else
-                collapsed[c] = formatters["<<%S>>"](argument)
+             -- collapsed[c] = formatters["<<%S>>"](argument)
+                collapsed[c] = formatted("<<%S>>",argument)
             end
         end
         currenttrace(concat(collapsed))
@@ -1243,13 +1197,17 @@ local traced = function(one,two,...)
         -- no catcodes
         local argtype = type(one)
         if argtype == "string" then
-            currenttrace(formatters["f : - : %s"](lpegmatch(visualizer,one)))
+         -- currenttrace(formatters["f : - : %s"](lpegmatch(visualizer,one)))
+            currenttrace(formatted("f : - : %s",lpegmatch(visualizer,one)))
         elseif argtype == "number" then
-            currenttrace(formatters["f : - : %s"](one))
+         -- currenttrace(formatters["f : - : %s"](one))
+            currenttrace(formatted("f : - : %s",one))
         elseif argtype == "userdata" then
-            currenttrace(formatters["F : - : %s"](userdata(one)))
+         -- currenttrace(formatters["F : - : %s"](userdata(one)))
+            currenttrace(formatted("F : - : %s",userdata(one)))
         else
-            currenttrace(formatters["f : - : <<%S>>"](one))
+         -- currenttrace(formatters["f : - : <<%S>>"](one))
+            currenttrace(formatted("f : - : <<%S>>",one))
         end
     end
 end
@@ -1545,8 +1503,6 @@ context.protected = context.newindexer(prtcatcodes,prtcatcodes)
 
 do
 
-    local formatted = { }
-
     -- formatted.command([catcodes,]format[,...])
 
     local function formattedflush(parent,c,catcodes,fmt,...)
@@ -1557,11 +1513,13 @@ do
         elseif type(catcodes) == "number" then
             local result
             pushcatcodes(catcodes)
-            result = writer(parent,c,formatters[fmt](...))
+         -- result = writer(parent,c,formatters[fmt](...))
+            result = writer(parent,c,formatted(fmt,...))
             popcatcodes()
             return result
         else
-            return writer(parent,c,formatters[catcodes](fmt,...))
+         -- return writer(parent,c,formatters[catcodes](fmt,...))
+            return writer(parent,c,formatted(catcodes,fmt,...))
         end
     end
 
@@ -1595,16 +1553,19 @@ do
         elseif not fmt then
             flush(catcodes)
         elseif type(catcodes) == "number" then
-            flush(catcodes,formatters[fmt](...))
+         -- flush(catcodes,formatters[fmt](...))
+            flush(catcodes,formatted(fmt,...))
         else
-            flush(formatters[catcodes](fmt,...))
+         -- flush(formatters[catcodes](fmt,...))
+            flush(formatted(catcodes,fmt,...))
         end
     end
 
-    setmetatableindex(formatted,indexer)
-    setmetatablecall (formatted,caller)
+    local ctxformatted = { }
+    context.formatted  = ctxformatted
 
-    context.formatted = formatted
+    setmetatableindex(ctxformatted,indexer)
+    setmetatablecall (ctxformatted,caller)
 
 end
 

@@ -38,8 +38,10 @@ local xoffset    <const> =  4 * 65536
 local yoffset    <const> =  1 * 65536
 local usedfont   = false
 
-local f_status_y = string.formatters["%i : badness=%i costs=%i height=%p depth=%p stretch=%p shrink=%p hasfil=%l"]
-local f_status_n = string.formatters["%i"]
+local formatted  = string.formatted
+
+local f_status_y = "%i : badness=%i costs=%i height=%p depth=%p stretch=%p shrink=%p hasfil=%l"
+local f_status_n = "%i"
 
 local variables  = interfaces.variables
 local v_after    <const> = variables.after
@@ -223,9 +225,9 @@ interfaces.implement {
                     if not ignored[count] then
                         local badness = data.badness
                         if detail and badness then
-                            data = f_status_y(count,badness,data.costs,data.height,data.depth,data.stretch,data.shrink,data.hasfil)
+                            data = formatted(f_status_y,count,badness,data.costs,data.height,data.depth,data.stretch,data.shrink,data.hasfil)
                         else
-                            data = f_status_n(count)
+                            data = formatted(f_status_n,count)
                         end
                         local text   = hpack_string(data,usedfont)
                         local height = getheight(text)

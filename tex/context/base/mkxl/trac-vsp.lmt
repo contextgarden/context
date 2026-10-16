@@ -15,6 +15,8 @@ local insertafter = nuts.insertafter
 
 local nodecodes   = nodes.nodecodes
 
+local formatted   = string.formatted
+
 local splitcodes  = tex.splitcodes
 
 local splitpoints   = { }
@@ -88,7 +90,6 @@ local splitshow = {
 }
 
 local visualizevsplit = false
-local f_detail        = string.formatters["%i:%s"]
 
 function splitpoints.start(options)
     collected = { }
@@ -105,7 +106,7 @@ function splitpoints.stop()
         local current = c.current or last
         last = current
         if current then
-            local n = visualizevsplit(f_detail(i,nodecodes[getid(current)]))
+            local n = visualizevsplit(formatted("%i:%s",i,nodecodes[getid(current)]))
             insertafter(current,current,n)
         end
     end

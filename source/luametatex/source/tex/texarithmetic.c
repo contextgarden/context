@@ -222,17 +222,45 @@ static inline scaled tex_aux_checked_scaledround(double value, scaled lo, scaled
     }
 }
 
-scaled tex_round_xn_over_d(scaled x, int n, unsigned int d)
-{
-    if (d == 0) {
-        lmt_scanner_state.arithmetic_error = 1;
-        return 0;
-    } else if (x == 0 || (n >= 0 && (unsigned int) n == d && x >= min_dimension && x <= max_dimension)) {
-        return x;
-    } else {
-        return tex_aux_checked_scaledround((1.0 / d) * n * x, min_dimension, max_dimension);
+# if lmt_float_math
+
+    scaled tex_round_xn_over_d(scaled x, int n, unsigned int d)
+    {
+        if (d == 0) {
+            lmt_scanner_state.arithmetic_error = 1;
+            return 0;
+        } else if (x == 0 || (n >= 0 && (unsigned int) n == d && x >= min_dimension && x <= max_dimension)) {
+            return x;
+        } else {
+            return tex_aux_checked_scaledround((1.0 / d) * n * x, min_dimension, max_dimension);
+        }
     }
-}
+
+# else
+
+    scaled tex_round_xn_over_d(scaled x, int n, unsigned int d)
+    {
+        if (d == 0) {
+            lmt_scanner_state.arithmetic_error = 1;
+            return 0;
+        }
+        if (x == 0 || (n >= 0 && (unsigned int) n == d && x >= min_dimension && x <= max_dimension)) {
+            return x;
+        }
+        /* 64-bit widening allows exact integer multiplication without overflow */
+        long long prod = (long long) x * (long long) n;
+        long long half = (long long) d / 2;
+        /* Symmetric rounding matching TeX's exact rounding convention */
+        long long q = (prod >= 0) ? (prod + half) / (long long) d
+                                  : (prod - half) / (long long) d;
+        if (q < (long long) min_dimension || q > (long long) max_dimension) {
+            lmt_scanner_state.arithmetic_error = 1;
+            return 0;
+        }
+        return (scaled) q;
+    }
+
+# endif
 
 /*tex
 
@@ -279,4 +307,26 @@ scaled tex_nx_plus_y_posit(halfword p, scaled x, scaled y)
             return (halfword) r;
             }
     }
+}
+
+scaled tex_divide_scaled_factor(scaled sd, scaled md)
+{
+    if (md == 0) {
+        lmt_scanner_state.arithmetic_error = 1;
+        return 0;
+    }
+    if (sd == 0) {
+        return 0;
+    }
+    /* Multiply by 1000 in 64-bit space to prevent overflow */
+    long long num  = (long long) sd * 1000LL;
+    long long half = (long long) md / 2LL;
+    /* Symmetric round-to-nearest integer division */
+    long long res = (num >= 0) ? (num + half) / (long long) md
+                               : (num - half) / (long long) md;
+    if (res < (long long) min_integer || res > (long long) max_integer) {
+        lmt_scanner_state.arithmetic_error = 1;
+        return 0;
+    }
+    return (scaled) res;
 }

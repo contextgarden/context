@@ -33,11 +33,14 @@ if not modules then modules = { } end modules ['lpdf-ini'] = {
 
 local next, type, unpack, rawget = next, type, unpack, rawget
 local char, byte, gsub, sub, match, rep, gmatch, find = string.char, string.byte, string.gsub, string.sub, string.match, string.rep, string.gmatch, string.find
-local formatters, format = string.formatters, string.format
 local concat, sortedhash, sortedkeys, sort, count = table.concat, table.sortedhash, table.sortedkeys, table.sort, table.count
 local utfchar, utfsplit = utf.char, utf.split
 local random, round, max, abs, ceiling = math.random, math.round, math.max, math.abs, math.ceiling
 local setmetatableindex = table.setmetatableindex
+
+----- formatters = string.formatters
+local formatting = string.formatting
+local formatted  = string.formatted
 
 local pdfnull              = lpdf.null
 local pdfdictionary        = lpdf.dictionary
@@ -131,8 +134,8 @@ do
     -- backend). In fact, we can now no longer pass the tounicodes to the frontend but
     -- pick them up from the descriptions.
 
-    local f_mapping_2 = formatters["<%02X> <%s>"]
-    local f_mapping_4 = formatters["<%04X> <%s>"]
+    local f_mapping_2 = formatting("<%02X> <%s>")
+    local f_mapping_4 = formatting("<%04X> <%s>")
 
 local tounicode_template <const> = [[
 %%!PS-Adobe-3.0 Resource-CMap
@@ -212,14 +215,14 @@ end
                     local data = indices[index]
                     if data then
                         length = length + 1
-                        mapping[length] = f_mapping(index,tounicodestring(data.unicode))
+                        mapping[length] = formatted(f_mapping,index,tounicodestring(data.unicode))
                     end
                 end
             end
             local name  = gsub(name,"%+","-") -- like luatex does
             local first = wide and "0000" or "00"
             local last  = wide and "FFFF" or "FF"
-            local blob  = format(tounicode_template,name,name,name,name,name,first,last,length,concat(mapping,"\n"))
+            local blob  = formatted(tounicode_template,name,name,name,name,name,first,last,length,concat(mapping,"\n"))
             return blob
         end
 
@@ -605,15 +608,14 @@ do
         makemetadata = function(fontfile)
             local names  = fontfile.streams.names
             local list   = { }
-            local f_name = formatters["<pdfx:%s>%s</pdfx:%s>"]
             for i=1,#metakeys do
                 local m = metakeys[i]
                 local n = names[m]
                 if n then
-                    list[#list+1] = f_name(m,n,m)
+                    list[#list+1] = formatted("<pdfx:%s>%s</pdfx:%s>",m,n,m)
                 end
             end
-            return format(template,concat(list,"\n"))
+            return formatted(template,concat(list,"\n"))
         end
 
         makefontfile = function(fontfile)
@@ -680,7 +682,7 @@ do
                 end
             end
             list[1] = concat(index)
-            local off = #list[1] + headof + 1 + 8
+            local off = headof + 1 + 8 -- headof is already a file offset (it includes the table directory)
             list = concat(list)
             local csum = (0xB1B0AFBA - checksum(list)) % 0x100000000
             list = sub(list,1,off-1) .. tocardinal4(csum) .. sub(list,off+4,#list)
@@ -791,6 +793,11 @@ do
                 tocardinal2(t.metricdataformat),
                 tocardinal2(n) -- t.nofmetrics
             }
+        end
+
+        tablewriters.raw = function(fontfile,tag,data) -- copied verbatim (keephints)
+            register(fontfile,tag)
+            fontfile[tag] = data
         end
 
         tablewriters.maxp = function(fontfile)
@@ -984,6 +991,18 @@ do
             tablewriters.vmtx(fontfile)
         end
         --
+        local hinttables = streams.hinttables -- only when fonts.truetype.keephints is enabled
+        if hinttables then
+            local tags = { "cvt", "fpgm", "prep" }
+            for i=1,#tags do
+                local tag  = tags[i]
+                local data = hinttables[tag]
+                if data then
+                    tablewriters.raw(fontfile,tag,data)
+                end
+            end
+        end
+        --
         local fontdata = makefontfile(fontfile)
         local fontmeta = makemetadata(fontfile)
         --
@@ -1149,10 +1168,8 @@ do
             local mn = 14
             local es = 15
 
-            local fg = formatters["%g"]
-
             todictreal = function(v)
-                local s = fg(v)
+                local s = formatted("%g",v)
                 local t = { [0] = realtag }
                 local n = 0
                 local e = false
@@ -1197,73 +1214,6 @@ do
                 t = concat(t,"",0,j)
                 return t
             end
-
-         -- -- An alternative
-         --
-         -- local fg = formatters["%0.14gE%i"]
-         --
-         -- todictreal = function(v)
-         --     local E = 0
-         --     if v >= 10.0 then
-         --         while v >= 10.0 do
-         --             v = v / 10.0
-         --             E = E + 1
-         --         end
-         --     elseif v < 1.0 then
-         --         while v < 1.0 do
-         --             v = v * 10.0
-         --             E = E - 1
-         --         end
-         --     end
-         --     local s = fg(v,E)
-         --     local t = { [0] = realtag }
-         --     local n = 0
-         --     local e = false
-         --     for s in gmatch(s,".") do
-         --         if s == "e" or s == "E" then
-         --             e = true
-         --         elseif s == "+" then
-         --             -- skip
-         --         elseif s == "-" then
-         --             n = n + 1
-         --             if e then
-         --                 t[n] = em
-         --                 e = false
-         --             else
-         --                 t[n] = mn
-         --             end
-         --         else
-         --             if e then
-         --                 n = n + 1
-         --                 t[n] = ep
-         --                 e = false
-         --             end
-         --             n = n + 1
-         --             if s == "." then
-         --                 t[n] = dp
-         --             else
-         --                 t[n] = byte(s) - z
-         --             end
-         --         end
-         --     end
-         --     n = n + 1
-         --     t[n] = es
-         --     if (n % 2) ~= 0 then
-         --         n = n + 1
-         --         t[n] = es
-         --     end
-         --     local j = 0
-         --     for i=1,n,2 do
-         --         j = j + 1
-         --         t[j] = char(t[i]*0x10+t[i+1])
-         --     end
-         --     -- print(v,s)
-         --     -- for i=0,j do
-         --     --     print(string.format("%02X",utf.byte(t[i])))
-         --     -- end
-         --     t = concat(t,"",0,j)
-         --     return t
-         -- end
 
             todictnumber = function(n)
                 if not n or n == 0 then
@@ -1396,7 +1346,7 @@ do
             local stemsnapv          = cffinfo.stemsnapv
             --
             if defaultwidth == 0 then defaultwidth     = nil end
-            if nomimalwidth == 0 then nominalwidth     = nil end
+            if nominalwidth == 0 then nominalwidth     = nil end
             if bluevalues        then bluevalues       = todictarray(bluevalues) end
             if otherblues        then otherblues       = todictarray(otherblues) end
             if familyblues       then familyblues      = todictarray(familyblues) end
@@ -1959,24 +1909,24 @@ do
 
         local embedimage = images.embed
 
-        local f_glyph      = formatters["G%d"]
-        local f_char       = formatters["BT /V%d 1 Tf [<%04X>] TJ ET"]
-        local f_width      = formatters["%N 0 d0"]
-        local f_index      = formatters["I%d"]
-        local f_image_xy   = formatters["%N 0 d0 1 0 0 1 %N %N cm /%s Do"]
-        local f_image_c    = formatters["/%s Do"]
-        ----- f_image_c_xy = formatters["%N 0 0 %N %N %N cm /%s Do"]
-        local f_image_w    = formatters["%N 0 d0 %s"]
-        ----- f_image_d    = formatters["%N 0 d0 1 0 0 1 0 %N cm /%s Do"]
-        local f_stream     = formatters["%N 0 d0 %s"]
-        local f_stream_c   = formatters["%N 0 0 0 0 0 d1 %s"] -- last four bbox
-        local f_stream_cc  = formatters["%N 0 %N %N %N %N d1 %s"] -- last four bbox
-        local f_stream_d   = formatters["%N 0 d0 1 0 0 1 0 %N cm %s"]
-     -- local f_stream_s   = formatters["%N 0 0 %N 0 0 cm /%s Do"]
+        local f_glyph      = "G%d"
+        local f_char       = "BT /V%d 1 Tf [<%04X>] TJ ET"
+        local f_width      = "%N 0 d0"
+        local f_index      = "I%d"
+        local f_image_xy   = "%N 0 d0 1 0 0 1 %N %N cm /%s Do"
+        local f_image_c    = "/%s Do"
+        ----- f_image_c_xy = "%N 0 0 %N %N %N cm /%s Do"
+        local f_image_w    = "%N 0 d0 %s"
+        ----- f_image_d    = "%N 0 d0 1 0 0 1 0 %N cm /%s Do"
+        local f_stream     = "%N 0 d0 %s"
+        local f_stream_c   = "%N 0 0 0 0 0 d1 %s" -- last four bbox
+        local f_stream_cc  = "%N 0 %N %N %N %N d1 %s" -- last four bbox
+        local f_stream_d   = "%N 0 d0 1 0 0 1 0 %N cm %s"
+     -- local f_stream_s   = "%N 0 0 %N 0 0 cm /%s Do"
 
-        local f_image_xy   = formatters["%N 0 d0 1 0 0 1 %N %N cm /Artifact BMC /%s Do EMC"]
-        local f_image_c    = formatters["/Artifact BMC /%s Do EMC"]
-        local f_image_c_xy = formatters["%N 0 0 %N %N %N cm /Artifact BMC /%s Do EMC"]
+        local f_image_xy   = "%N 0 d0 1 0 0 1 %N %N cm /Artifact BMC /%s Do EMC"
+        local f_image_c    = "/Artifact BMC /%s Do EMC"
+        local f_image_c_xy = "%N 0 0 %N %N %N cm /Artifact BMC /%s Do EMC"
 
         -- A type 3 font has at most 256 characters and Acrobat also wants a zero slot
         -- to be filled. We can share a mandate zero slot character. We also need to
@@ -2107,7 +2057,7 @@ do
                             return
                         end
                         nofglyphs    = nofglyphs + 1
-                        local name   = f_glyph(nofglyphs)
+                        local name   = formatted(f_glyph,nofglyphs)
                         local stream = nil
                         if fixdepth then
                             local depth = data.depth  or 0
@@ -2123,14 +2073,14 @@ do
                                  -- local y     = - b[4] - b[2] - (d.depth or 0)
                                     local y     = - (d.depth or 0)
                                     local scale = w / (image.width * bpfactor)
-                                    stream = f_image_c_xy(scale,scale,x,y,name)
+                                    stream = formatted(f_image_c_xy,scale,scale,x,y,name)
                                 else
                                  -- report_fonts("no image in file %a, case %i",filename,1)
                                 end
                             end
                         end
                         if not stream then
-                            stream = f_image_c(name)
+                            stream = formatted(f_image_c,name)
                         end
                         useddoc[glyph]           = image
                         image.embedded_name      = name
@@ -2138,7 +2088,7 @@ do
                         image.embedded_reference = pdfreference(image.objnum)
                     end
                     xforms[image.embedded_name] = image.embedded_reference
-                    return f_image_w(width,image.embedded_stream), width
+                    return formatted(f_image_w,width,image.embedded_stream), width
                 end
                 local function closepdf()
                  -- closepdf(pdfdoc)
@@ -2167,17 +2117,17 @@ do
                 local width  = (data.width  or 0) * bpfactor * scale
                 local height = (data.height or 0) * bpfactor * scale
                 local depth  = (data.depth  or 0) * bpfactor * scale
-                local name   = f_glyph(nofglyphs)
-                local stream = f_image_c_xy(scale,scale,0,-depth,name)
+                local name   = formatted(f_glyph,nofglyphs)
+                local stream = formatted(f_image_c_xy,scale,scale,0,-depth,name)
                 image.embedded_name      = name
                 image.embedded_stream    = stream
                 image.embedded_reference = pdfreference(image.objnum)
                 xforms[name] = image.embedded_reference
                 -- We need a matching width for validation!
                 if image.expose then
-                    return f_stream_cc(width,-10,-depth-10,width+10,height+10,stream), width
+                    return formatted(f_stream_cc,width,-10,-depth-10,width+10,height+10,stream), width
                 else
-                    return f_image_w(width,stream), width
+                    return formatted(f_image_w,width,stream), width
                 end
             end
             local function wrapup()
@@ -2234,20 +2184,20 @@ do
                         local pdf   = simplemprun(instance,mp,true)
                         local width = width * factor
                         if usecolor then
-                         -- return f_stream_c(width,pdf), width
+                         -- return formatted(f_stream_c,width,pdf), width
                             -- Zeros are fine but not for okular 2025, which does colors wrong anyway.
                             local height = (data.height or 0) * factor
                             local depth  = (data.depth  or 0) * factor
-                            return f_stream_cc(width,-10,-depth-10,width+10,height+10,pdf), width
+                            return formatted(f_stream_cc,width,-10,-depth-10,width+10,height+10,pdf), width
                         elseif fixdepth then
                             -- The standard suggests that the offset is ignored but ...
                             local depth  = data.depth  or 0
                             local height = data.height or 0
                             if depth ~= 0 or height ~= 0 then
-                                return f_stream_d(width,(-height-depth)*factor,pdf), width
+                                return formatted(f_stream_d,width,(-height-depth)*factor,pdf), width
                             end
                         end
-                        return f_stream(width,pdf), width
+                        return formatted(f_stream,width,pdf), width
                  -- elseif kind == "table" and mp.objnum then
                  --     -- likely a box has been added (foo||bar) ... what to do
                  -- else
@@ -2320,12 +2270,12 @@ do
                             nofglyphs     = nofglyphs + 1
                             local xoffset = (glyph.x or 0) / units
                             local yoffset = (glyph.y or 0) / units
-                            local name    = f_glyph(nofglyphs)
+                            local name    = formatted(f_glyph,nofglyphs)
                             xforms[name]  = pdfreference(image.objnum)
-                            pdfdata       = f_image_xy(width,xoffset,yoffset,name)
+                            pdfdata       = formatted(f_image_xy,width,xoffset,yoffset,name)
                         end
                     end
-                    return pdfdata or f_stream(width), width
+                    return pdfdata or formatted(f_stream,width), width
                 end
                 local function closepng()
                     if filehandle then
@@ -2399,7 +2349,7 @@ do
                     local w = description.width or 0
                     local s = #colorlist
                     local l = false
-                    local t = { f_width(w) }
+                    local t = { formatted(f_width,w) }
                     local n = 1
                     local d = #colrvalues
                     for i=1,s do
@@ -2417,7 +2367,7 @@ do
                         if e then
                             local f = fontslots[e.index]
                             if f then
-                                n = n + 1 ; t[n] = f_char(dropid,f)
+                                n = n + 1 ; t[n] = formatted(f_char,dropid,f)
                             else
                              -- report_fonts("no image in file %a, case %i",filename,2)
                             end
@@ -2489,7 +2439,7 @@ do
             local ht = 0
             local dp = 0
             for index, data in sortedhash(indices) do
-                local name  = f_index(index)
+                local name  = formatted(f_index,index)
                 local glyph = glyphs[include[index]]
              -- if type(glyph) == "string" then
                     local stream, width = glyphtopdf(glyph,data)
@@ -2825,7 +2775,7 @@ end
 
 statistics.register("font embedding time",function()
     if noffonts > 0 then
-        return format("%s seconds, %s fonts", statistics.elapsedtime(objects),noffonts)
+        return formatted("%s seconds, %s fonts", statistics.elapsedtime(objects),noffonts)
     end
 end)
 

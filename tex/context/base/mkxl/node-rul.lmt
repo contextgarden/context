@@ -859,9 +859,11 @@ do
     local s_close     <const> = "h"
     local s_stroke    <const> = "S"
 
-    local f_linewidth = string.formatters["%N w"]
-    local f_moveto    = string.formatters["%N %N m"]
-    local f_lineto    = string.formatters["%N %N l"]
+    local f_linewidth = "%N w"
+    local f_moveto    = "%N %N m"
+    local f_lineto    = "%N %N l"
+
+    local formatted   = string.formatted
 
     local segments    = { }
 
@@ -907,13 +909,13 @@ do
                     local x  = si[3] * bpfactor
                     local y  = si[4] * bpfactor
                     local w  = s.d * bpfactor
-                    r[#r+1] = f_linewidth(w)
-                    r[#r+1] = f_moveto(x,y)
+                    r[#r+1] = formatted(f_linewidth,w)
+                    r[#r+1] = formatted(f_moveto,x,y)
                     for i=2,l do
                         local s = s[i]
                         local x = s[3] * bpfactor
                         local y = s[4] * bpfactor
-                        r[#r+1] = f_lineto(x,y)
+                        r[#r+1] = formatted(f_lineto,x,y)
                     end
                     if a == 2 then
                         r[#r+1] = s_close

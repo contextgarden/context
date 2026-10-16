@@ -7,11 +7,14 @@ if not modules then modules = { } end modules ['lpdf-col'] = {
 }
 
 local type, next, tostring, tonumber = type, next, tostring, tonumber
-local char, byte, format, gsub, rep, gmatch = string.char, string.byte, string.format, string.gsub, string.rep, string.gmatch
+local char, byte, gsub, rep, gmatch = string.char, string.byte, string.gsub, string.rep, string.gmatch
 local settings_to_array, settings_to_numbers = utilities.parsers.settings_to_array, utilities.parsers.settings_to_numbers
 local concat = table.concat
 local round = math.round
+
 local formatters = string.formatters
+local formatting = string.formatting
+local formatted  = string.formatted
 
 local allocate                = utilities.storage.allocate
 
@@ -61,19 +64,19 @@ local c_transparency          = pdfconstant("Transparency")
 
 -- colors are already cached so no need for speed
 
-local f_gray   = formatters["%.3N g %.3N G"]
-local f_rgb    = formatters["%.3N %.3N %.3N rg %.3N %.3N %.3N RG"]
-local f_cmyk   = formatters["%.3N %.3N %.3N %.3N k %.3N %.3N %.3N %.3N K"]
+local f_gray   = formatting("%.3N g %.3N G")
+local f_rgb    = formatting("%.3N %.3N %.3N rg %.3N %.3N %.3N RG")
+local f_cmyk   = formatting("%.3N %.3N %.3N %.3N k %.3N %.3N %.3N %.3N K")
 
-local f_spot   = formatters["/%s cs /%s CS %s SCN %s scn"]
-local f_tr     = formatters["Tr%s"]
-local f_cm     = formatters["q %.6N %.6N %.6N %.6N %.6N %.6N cm"]
-local f_effect = formatters["%s Tc %s w %s Tr"] -- %.6N ?
-local f_tr_gs  = formatters["/Tr%s gs"]
-local f_num_1  = formatters["%.3N %.3N"]
-local f_num_2  = formatters["%.3N %.3N"]
-local f_num_3  = formatters["%.3N %.3N %.3N"]
-local f_num_4  = formatters["%.3N %.3N %.3N %.3N"]
+local f_spot   = formatting("/%s cs /%s CS %s SCN %s scn")
+local f_tr     = formatting("Tr%s")
+local f_cm     = formatting("q %.6N %.6N %.6N %.6N %.6N %.6N cm")
+local f_effect = formatting("%s Tc %s w %s Tr") -- %.6N ?
+local f_tr_gs  = formatting("/Tr%s gs")
+local f_num_1  = formatting("%.3N %.3N")
+local f_num_2  = formatting("%.3N %.3N")
+local f_num_3  = formatting("%.3N %.3N %.3N")
+local f_num_4  = formatting("%.3N %.3N %.3N %.3N")
 
 local report_color = logs.reporter("colors","backend")
 
@@ -126,26 +129,26 @@ lpdf.registerpagefinalizer(addpagegroup,3,"pagegroup")
 -- color injection
 
 function nodeinjections.rgbcolor(r,g,b)
-    return register(setstate(f_rgb(r,g,b,r,g,b)))
+    return register(setstate(formatted(f_rgb,r,g,b,r,g,b)))
 end
 
 function nodeinjections.cmykcolor(c,m,y,k)
-    return register(setstate(f_cmyk(c,m,y,k,c,m,y,k)))
+    return register(setstate(formatted(f_cmyk,c,m,y,k,c,m,y,k)))
 end
 
 function nodeinjections.graycolor(s) -- caching 0/1 does not pay off
-    return register(setstate(f_gray(s,s)))
+    return register(setstate(formatted(f_gray,s,s)))
 end
 
 function nodeinjections.spotcolor(n,f,d,p)
     if type(p) == "string" then
         p = gsub(p,","," ") -- brr misuse of spot
     end
-    return register(setstate(f_spot(n,n,p,p)))
+    return register(setstate(formatted(f_spot,n,n,p,p)))
 end
 
 function nodeinjections.transparency(n)
-    return register(setstate(f_tr_gs(n)))
+    return register(setstate(formatted(f_tr_gs,n)))
 end
 
 -- a bit weird but let's keep it here for a while
@@ -165,7 +168,7 @@ function nodeinjections.effect(effect,stretch,rulethickness)
     -- always, no zero test (removed)
     rulethickness = rulethickness * bpfactor
     effect = effects[effect] or effects['normal']
-    return register(setstate(f_effect(stretch,rulethickness,effect))) -- watch order
+    return register(setstate(formatted(f_effect,stretch,rulethickness,effect))) -- watch order
 end
 
 -- spot- and indexcolors
@@ -182,9 +185,9 @@ local pdf_rgb_range   = pdfarray { 0, 1, 0, 1, 0, 1 }
 local pdf_cmyk_range  = pdfarray { 0, 1, 0, 1, 0, 1, 0, 1 }
 local pdf_gray_range  = pdfarray { 0, 1 }
 
-local f_rgb_function  = formatters["dup %s mul exch dup %s mul exch %s mul"]
-local f_cmyk_function = formatters["dup %s mul exch dup %s mul exch dup %s mul exch %s mul"]
-local f_gray_function = formatters["%s mul"]
+local f_rgb_function  = formatting("dup %s mul exch dup %s mul exch %s mul")
+local f_cmyk_function = formatting("dup %s mul exch dup %s mul exch dup %s mul exch %s mul")
+local f_gray_function = formatting("%s mul")
 
 local documentcolorspaces = pdfdictionary()
 
@@ -220,11 +223,11 @@ local function registersomespotcolor(name,noffractions,names,p,colorspace,range,
             Domain       = { 0, 1 },
             Range        = range,
         }
-        local calculations = pdfflushstreamobject(format("{ %s }",funct),dictionary)
+        local calculations = pdfflushstreamobject(formatted("{ %s }",funct),dictionary)
      -- local calculations = pdfobject {
      --     type      = "stream",
      --     immediate = true,
-     --     string    = format("{ %s }",funct),
+     --     string    = formatted("{ %s }",funct),
      --     attr      = dictionary(),
      -- }
         local array = pdfarray {
@@ -289,7 +292,7 @@ local function registersomespotcolor(name,noffractions,names,p,colorspace,range,
             Domain       = domain,
             Range        = range,
         }
-        local calculation = pdfflushstreamobject(format("{ %s %s }",rep("pop ",noffractions),funct),dictionary)
+        local calculation = pdfflushstreamobject(formatted("{ %s %s }",rep("pop ",noffractions),funct),dictionary)
         local channels = pdfdictionary {
             Subtype   = pdfconstant("NChannel"),
             Colorants = colorants,
@@ -335,7 +338,7 @@ local function registersomeindexcolor(name,noffractions,names,p,colorspace,range
         Domain       = domain,
         Range        = range,
     }
-    local n = pdfflushstreamobject(format("{ %s %s }",rep("exch pop ",noffractions),funct),dictionary) -- exch pop
+    local n = pdfflushstreamobject(formatted("{ %s %s }",rep("exch pop ",noffractions),funct),dictionary) -- exch pop
     local a = pdfarray {
         pdf_device_n,
         cnames,
@@ -347,14 +350,14 @@ local function registersomeindexcolor(name,noffractions,names,p,colorspace,range
     local n      = #values
     for i=255,0,-1 do
         for j=1,n do
-         -- set[j] = format("%02X",round(values[j]*i))
+         -- set[j] = formatted("%02X",round(values[j]*i))
             set[j] = X02[round(values[j]*i)]
         end
         vector[#vector+1] = concat(set)
     end
     vector = pdfverbose { "<", concat(vector, " "), ">" }
     local n = pdfflushobject(pdfarray{ pdf_indexed, a, 255, vector })
-    adddocumentcolorspace(format("%s_indexed",name),pdfreference(n))
+    adddocumentcolorspace(formatted("%s_indexed",name),pdfreference(n))
     return n
 end
 
@@ -381,47 +384,47 @@ end
 
 function registrations.rgbspotcolor(name,noffractions,names,p,r,g,b)
     if noffractions == 1 then
-        registersomespotcolor(name,noffractions,names,p,pdf_device_rgb,pdf_rgb_range,f_rgb_function(r,g,b))
+        registersomespotcolor(name,noffractions,names,p,pdf_device_rgb,pdf_rgb_range,formatted(f_rgb_function,r,g,b))
     else
-        registersomespotcolor(name,noffractions,names,p,pdf_device_rgb,pdf_rgb_range,f_num_3(r,g,b))
+        registersomespotcolor(name,noffractions,names,p,pdf_device_rgb,pdf_rgb_range,formatted(f_num_3,r,g,b))
     end
     delayindexcolor(name,names,function()
-        return registersomeindexcolor(name,noffractions,names,p,pdf_device_rgb,pdf_rgb_range,f_rgb_function(r,g,b))
+        return registersomeindexcolor(name,noffractions,names,p,pdf_device_rgb,pdf_rgb_range,formatted(f_rgb_function,r,g,b))
     end)
 end
 
 function registrations.cmykspotcolor(name,noffractions,names,p,c,m,y,k)
     if noffractions == 1 then
-        registersomespotcolor(name,noffractions,names,p,pdf_device_cmyk,pdf_cmyk_range,f_cmyk_function(c,m,y,k))
+        registersomespotcolor(name,noffractions,names,p,pdf_device_cmyk,pdf_cmyk_range,formatted(f_cmyk_function,c,m,y,k))
     else
-        registersomespotcolor(name,noffractions,names,p,pdf_device_cmyk,pdf_cmyk_range,f_num_4(c,m,y,k))
+        registersomespotcolor(name,noffractions,names,p,pdf_device_cmyk,pdf_cmyk_range,formatted(f_num_4,c,m,y,k))
     end
     delayindexcolor(name,names,function()
-        return registersomeindexcolor(name,noffractions,names,p,pdf_device_cmyk,pdf_cmyk_range,f_cmyk_function(c,m,y,k))
+        return registersomeindexcolor(name,noffractions,names,p,pdf_device_cmyk,pdf_cmyk_range,formatted(f_cmyk_function,c,m,y,k))
     end)
 end
 
 function registrations.grayspotcolor(name,noffractions,names,p,s)
     if noffractions == 1 then
-        registersomespotcolor(name,noffractions,names,p,pdf_device_gray,pdf_gray_range,f_gray_function(s))
+        registersomespotcolor(name,noffractions,names,p,pdf_device_gray,pdf_gray_range,formatted(f_gray_function,s))
     else
-        registersomespotcolor(name,noffractions,names,p,pdf_device_gray,pdf_gray_range,f_num_1(s))
+        registersomespotcolor(name,noffractions,names,p,pdf_device_gray,pdf_gray_range,formatted(f_num_1,s))
     end
     delayindexcolor(name,names,function()
-        return registersomeindexcolor(name,noffractions,names,p,pdf_device_gray,pdf_gray_range,f_gray_function(s))
+        return registersomeindexcolor(name,noffractions,names,p,pdf_device_gray,pdf_gray_range,formatted(f_gray_function,s))
     end)
 end
 
 function registrations.rgbindexcolor(name,noffractions,names,p,r,g,b)
-    registersomeindexcolor(name,noffractions,names,p,pdf_device_rgb,pdf_rgb_range,f_rgb_function(r,g,b))
+    registersomeindexcolor(name,noffractions,names,p,pdf_device_rgb,pdf_rgb_range,formatted(f_rgb_function,r,g,b))
 end
 
 function registrations.cmykindexcolor(name,noffractions,names,p,c,m,y,k)
-    registersomeindexcolor(name,noffractions,names,p,pdf_device_cmyk,pdf_cmyk_range,f_cmyk_function(c,m,y,k))
+    registersomeindexcolor(name,noffractions,names,p,pdf_device_cmyk,pdf_cmyk_range,formatted(f_cmyk_function,c,m,y,k))
 end
 
 function registrations.grayindexcolor(name,noffractions,names,p,s)
-    registersomeindexcolor(name,noffractions,names,p,pdf_device_gray,pdf_gray_range,f_gray_function(s))
+    registersomeindexcolor(name,noffractions,names,p,pdf_device_gray,pdf_gray_range,formatted(f_gray_function,s))
 end
 
 function codeinjections.setfigurecolorspace(data,figure)
@@ -492,7 +495,7 @@ function registrations.transparency(n,a,t)
         local mr = pdfreference(m)
         transparencyhash[n] = m
         documenttransparencies[n] = mr
-        adddocumentextgstate(f_tr(n),mr)
+        adddocumentextgstate(formatted(f_tr,n),mr)
     end
 end
 
@@ -521,18 +524,18 @@ local function lpdfcolor(model,ca,default) -- todo: use gray when no color
             model = forcedmodel(model)
             if model == 2 then
                 local s = cv[2]
-                return f_gray(s,s)
+                return formatted(f_gray,s,s)
             elseif model == 3 then
                 local r = cv[3]
                 local g = cv[4]
                 local b = cv[5]
-                return f_rgb(r,g,b,r,g,b)
+                return formatted(f_rgb,r,g,b,r,g,b)
             elseif model == 4 then
                 local c = cv[6]
                 local m = cv[7]
                 local y = cv[8]
                 local k = cv[9]
-                return f_cmyk(c,m,y,k,c,m,y,k)
+                return formatted(f_cmyk,c,m,y,k,c,m,y,k)
             else
                 local n = cv[10]
                 local f = cv[11]
@@ -541,10 +544,10 @@ local function lpdfcolor(model,ca,default) -- todo: use gray when no color
                 if type(p) == "string" then
                     p = gsub(p,","," ") -- brr misuse of spot
                 end
-                return f_spot(n,n,p,p)
+                return formatted(f_spot,n,n,p,p)
             end
         else
-            return f_gray(default or 0,default or 0)
+            return formatted(f_gray,default or 0,default or 0)
         end
     else
         return ""
@@ -595,9 +598,9 @@ local function lpdftransparency(ct,default) -- kind of overlaps with transparenc
     if transparencies.supported then
         local ct = transparenciesvalue(ct)
         if ct then
-            return f_tr_gs(registertransparancy(nil,ct[1],ct[2],true))
+            return formatted(f_tr_gs,registertransparancy(nil,ct[1],ct[2],true))
         else
-            return f_tr_gs(0)
+            return formatted(f_tr_gs,0)
         end
     else
         return ""
@@ -614,16 +617,16 @@ function lpdf.colorvalue(model,ca,default)
         end
         model = forcedmodel(model)
         if model == 2 then
-            return f_num_1(cv[2])
+            return formatted(f_num_1,cv[2])
         elseif model == 3 then
-            return f_num_3(cv[3],cv[4],cv[5])
+            return formatted(f_num_3,cv[3],cv[4],cv[5])
         elseif model == 4 then
-            return f_num_4(cv[6],cv[7],cv[8],cv[9])
+            return formatted(f_num_4,cv[6],cv[7],cv[8],cv[9])
         else
-            return f_num_1(cv[13])
+            return formatted(f_num_1,cv[13])
         end
     else
-        return f_num_1(default or 0)
+        return formatted(f_num_1,default or 0)
     end
 end
 
@@ -714,7 +717,7 @@ end
 function lpdf.transparencycode(a,t)
     if transparencies.supported then
         intransparency = true
-        return f_tr_gs(registertransparancy(nil,a,t,true)) -- true forces resource
+        return formatted(f_tr_gs,registertransparancy(nil,a,t,true)) -- true forces resource
     else
         return ""
     end
@@ -723,7 +726,7 @@ end
 function lpdf.finishtransparencycode()
     if transparencies.supported and intransparency then
         intransparency = false
-        return f_tr_gs(0) -- we happen to know this -)
+        return formatted(f_tr_gs,0) -- we happen to know this -)
     else
         return ""
     end
@@ -807,18 +810,18 @@ do
     local colors    = attributes.colors
     local rgbtocmyk = colors.rgbtocmyk
 
-    local f_cmyk = formatters["%.3N %.3N %.3N %.3N k"]
-    local f_rgb  = formatters["%.3N %.3N %.3N rg"]
-    local f_gray = formatters["%.3N g"]
+    local f_cmyk = formatting("%.3N %.3N %.3N %.3N k")
+    local f_rgb  = formatting("%.3N %.3N %.3N rg")
+    local f_gray = formatting("%.3N g")
 
     fonts.color_direct = function(r,g,b)
         local m = colors.model
         if r == g and g == b then
-            return f_gray(r)
+            return formatted(f_gray,r)
         elseif m == "cmyk" then
-            return f_cmyk(rgbtocmyk(r,g,b))
+            return formatted(f_cmyk,rgbtocmyk(r,g,b))
         else
-            return f_rgb(r,g,b)
+            return formatted(f_rgb,r,g,b)
         end
     end
 

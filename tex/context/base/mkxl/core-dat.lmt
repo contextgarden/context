@@ -46,7 +46,7 @@ local function initializer()
     tobesaved = datasets.tobesaved
 end
 
-job.register('job.datasets.collected', tobesaved, initializer, nil)
+job.register('job.datasets.collected', tobesaved, initializer)
 
 local sets = { }
 

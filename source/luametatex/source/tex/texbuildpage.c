@@ -425,7 +425,7 @@ static inline halfword tex_aux_page_costs(halfword badness, halfword penalty)
     }
 }
 
-static halfword tex_aux_insert_topskip(halfword height, int contribution)
+static halfword tex_aux_insert_topskip(scaled height, int contribution)
 {
     if (lmt_page_builder_state.contents != contribute_nothing) {
         lmt_page_builder_state.contents = contribution;
@@ -566,7 +566,8 @@ static void tex_aux_append_insert(halfword current)
             /*tex This much room is needed. */
          /* needed = needed * multiplier / scaling_factor; */ /* can overflow */
          /* needed = scaledround(needed * multiplier / scaling_factor_double); */
-            needed = tex_x_over_n_factor(needed) * multiplier;
+         /* needed = tex_x_over_n_factor(needed) * multiplier; */
+            needed = tex_xn_over_1000(needed, multiplier);
         }
         /*tex Somehow with multiple notes we overflow. */
         if ((needed <= 0 || needed <= delta) && (insert_total_height(current) + box_height(location) <= limit)) {
@@ -658,7 +659,8 @@ static void tex_aux_append_insert(halfword current)
             if (multiplier != scaling_factor) {
              // best_height_plus_depth = tex_x_over_n_factor(best_height_plus_depth) * multiplier;
              // best_height_plus_depth = scaledround(best_height_plus_depth * multiplier / scaling_factor_double)
-                best_height_plus_depth = best_height_plus_depth * multiplier / scaling_factor;
+             // best_height_plus_depth = best_height_plus_depth * multiplier / scaling_factor; */
+                best_height_plus_depth = tex_xn_over_1000(best_height_plus_depth, multiplier);
             }
             /*tex No need to update when no room or ignore. */
             update_page_goal("split", index, best_height_plus_depth, best_height_plus_depth);
@@ -1703,7 +1705,7 @@ static halfword tex_aux_assemble_output_box(void)
 static void tex_aux_pack_output_box(void)
 {
     halfword save_vbadness = vbadness_par;
-    halfword save_vfuzz = vfuzz_par;
+    scaled save_vfuzz = vfuzz_par;
     vbadness_par = infinite_bad;
     vfuzz_par = max_dimension;
     tex_show_marks();

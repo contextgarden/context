@@ -367,19 +367,34 @@ function caches.is_writable(filepath,filename)
     return is_writable(tmaname)
 end
 
-local saveoptions = { compact = true, accurate = not JITSUPPORTED }
+if sequencer then
 
-function caches.savedata(filepath,filename,data,fast)
-    local tmaname, tmcname = setluanames(filepath,filename)
-    data.cache_uuid = osuuid()
-    if fast or fast_cache then
-        savedata(tmaname,fastserialize(data,true))
-    elseif direct_cache then
-        savedata(tmaname,serialize(data,true,saveoptions))
-    else
-        serializetofile(tmaname,data,true,saveoptions)
+    serialize = sequencer.serialize
+
+    function caches.savedata(filepath,filename,data,fast)
+        local tmaname, tmcname = setluanames(filepath,filename)
+        data.cache_uuid = osuuid()
+        savedata(tmaname,serialize(data,true))
+        compilelua(tmaname,tmcname)
     end
-    compilelua(tmaname,tmcname)
+
+else
+
+    local saveoptions = { compact = true, accurate = not JITSUPPORTED }
+
+    function caches.savedata(filepath,filename,data,fast)
+        local tmaname, tmcname = setluanames(filepath,filename)
+        data.cache_uuid = osuuid()
+        if fast or fast_cache then
+            savedata(tmaname,fastserialize(data,true))
+        elseif direct_cache then
+            savedata(tmaname,serialize(data,true,saveoptions))
+        else
+            serializetofile(tmaname,data,true,saveoptions)
+        end
+        compilelua(tmaname,tmcname)
+    end
+
 end
 
 -- moved from data-res:

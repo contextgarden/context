@@ -41,7 +41,8 @@ return {
                 },
                 {
                     tweak    = "version",
-                    expected = "Version 7.040",
+                 -- expected = "Version 7.040",
+                    expected = "Version 7.051",
                 },
                 {
                     tweak = "addmirrors",

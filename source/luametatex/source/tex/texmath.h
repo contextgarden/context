@@ -270,8 +270,8 @@ math_parameter_set_defaults,
 # define math_first_user_class (last_noad_subtype + 1)
 # define math_last_user_class  (math_all_class    - 1)
 
-# define valid_math_class_code(n)  (n >= 0 && n < max_n_of_math_classes)
-# define real_math_class_code(n)   (n >= 0 && n < math_all_class)
+static inline int valid_math_class_code(halfword n) { return n >= 0 && n < max_n_of_math_classes; }
+static inline int real_math_class_code (halfword n) { return n >= 0 && n < math_all_class; }
 
 # define last_math_parameter               math_parameter_stack_variant
 # define math_parameter_first_variant      math_parameter_over_line_variant
@@ -728,7 +728,7 @@ extern void     tex_finish_math_choice         (void);
 extern void     tex_finish_math_fraction       (void);
 extern void     tex_finish_math_radical        (void);
 extern void     tex_finish_math_operator       (void);
-extern void     tex_finish_display_alignment   (halfword head, halfword tail, halfword prevdepth);
+extern void     tex_finish_display_alignment   (halfword head, halfword tail, scaled prevdepth);
 
 extern void     tex_show_math_fraction_group   (void);
 extern void     tex_show_math_radical_group    (void);

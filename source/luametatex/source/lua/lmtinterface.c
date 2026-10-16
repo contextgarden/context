@@ -35,6 +35,7 @@ lua_state_info lmt_lua_state = {
     .last_node_error         = lua_no_node_error,
     .ignore_node_error       = 0,
     .security_checkers       = { LUA_NOREF },
+    .security_states         = { 0 },
 };
 
 /*tex

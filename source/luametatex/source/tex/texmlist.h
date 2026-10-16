@@ -36,8 +36,8 @@ extern halfword tex_make_extensible         (halfword fnt, halfword chr, scaled 
 extern halfword tex_new_math_glyph          (halfword fnt, halfword chr);
 extern halfword tex_math_spacing_glue       (halfword ltype, halfword rtype, halfword style);
                                             
-extern halfword tex_math_font_char_ht       (halfword fnt, halfword chr, halfword style);
-extern halfword tex_math_font_char_dp       (halfword fnt, halfword chr, halfword style);                                         
+extern scaled   tex_math_font_char_ht       (halfword fnt, halfword chr, halfword style);
+extern scaled   tex_math_font_char_dp       (halfword fnt, halfword chr, halfword style);
 extern void     tex_set_math_text_font      (halfword style, int usefamfont);
                                             
 extern scaled   tex_math_parameter_x_scaled (int style, int param);

@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['cldf-ver'] = {
 -- into. We can also directly store in buffers although this variant works
 -- better when used mixed with other code (synchronization issue).
 
-local concat, tohandle = table.concat, table.tohandle
+local concat = table.concat
 local splitlines, strip = string.splitlines, string.strip
 local tostring, type = tostring, type
 local assignbuffer = buffers.assign
@@ -29,34 +29,6 @@ function context.tolines(str,strip)
         end
     end
 end
-
--- local function flush(...)
---     context(concat { ..., "\r" }) -- was \n
--- end
---
--- somehow this doesn't work any longer .. i need to figure out why
---
--- local function t_tocontext(t)
---     context.starttyping { "typing" } -- else [1] is intercepted
---     context.pushcatcodes("verbatim")
---  -- tohandle(flush,...)
---     context(table.serialize(t))
---     context.stoptyping()
---     context.popcatcodes()
--- end
---
--- local function s_tocontext(first,second,...) -- we need to catch {\}
---     context.type()
---     context("{")
---     context.pushcatcodes("verbatim")
---     if second then
---         context(concat({ first, second, ... }, " "))
---     else
---         context(first) -- no need to waste a { }
---     end
---     context.popcatcodes()
---     context("}")
--- end
 
 local t_buffer = { "t_o_c_o_n_t_e_x_t" }
 local t_typing = { "typing" }

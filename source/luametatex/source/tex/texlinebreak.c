@@ -230,7 +230,7 @@ linebreak_state_info lmt_linebreak_state = {
     .global_threshold             = 0,
     .line_break_dir               = 0,
     .checked_expansion            = -1,
-    .passes                       = { { 0, 0, 0, 0, 0, 0, 0, 0 } },
+    .passes                       = { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } },
     .n_of_left_twins              = 0,
     .n_of_right_twins             = 0,
     .n_of_double_twins            = 0,
@@ -1883,7 +1883,7 @@ halfword tex_default_fitness_classes(void) {
     return n;
 }
 
-static void tex_check_protrusion_shortfall(halfword breakpoint, halfword first, halfword current, halfword *shortfall)
+static void tex_check_protrusion_shortfall(halfword breakpoint, halfword first, halfword current, scaled *shortfall)
 {
     // if (line_break_dir == dir_righttoleft) {
     //     /*tex Not now, we need to keep more track. */
@@ -1931,7 +1931,7 @@ static void tex_check_protrusion_shortfall(halfword breakpoint, halfword first, 
 static void tex_aux_set_quality(halfword active, halfword passive, scaled shrt, scaled glue, scaled width, halfword badness)
 {
     halfword quality = 0;
-    halfword deficiency = 0;
+    scaled deficiency = 0;
     active_short(active) = shrt;
     active_glue(active) = glue;
     active_line_width(active) = width;
@@ -2928,7 +2928,7 @@ static scaled tex_aux_try_break(
             results.
         */
         if (shortfall > 0) {
-            halfword total_stretch = current_active_width[font_stretch_amount];
+            scaled total_stretch = current_active_width[font_stretch_amount];
             if (total_stretch > 0) {
                 if (total_stretch > shortfall) {
                     shortfall  = total_stretch / 2;
@@ -2937,7 +2937,7 @@ static scaled tex_aux_try_break(
                 }
             }
         } else if (shortfall < 0) {
-            halfword total_shrink = current_active_width[font_shrink_amount];
+            scaled total_shrink = current_active_width[font_shrink_amount];
             if (total_shrink > 0) {
                 if (total_shrink > -shortfall) {
                     shortfall  = - total_shrink / 2;
@@ -3493,7 +3493,7 @@ static scaled tex_check_linebreak_quality(scaled shortfall, scaled *overfull, sc
 static void tex_aux_quality_callback(
     int callback_id, halfword par,
     int id, int pass, int subpass, int subpasses, int state,
-    halfword overfull, halfword underfull, halfword verdict, halfword classified
+    scaled overfull, scaled underfull, halfword verdict, halfword classified
 )
 {
     lmt_run_callback(
@@ -4174,11 +4174,11 @@ static int tex_aux_set_sub_pass_parameters(
     halfword               first,
     int                    details,
     halfword               features,
-    halfword               overfull,
-    halfword               underfull,
+    scaled                 overfull,
+    scaled                 underfull,
     halfword               verdict,
     halfword               classified,
-    halfword               threshold,
+    scaled                 threshold,
     halfword               demerits,
     halfword               classes
 ) {
@@ -4228,7 +4228,7 @@ static int tex_aux_set_sub_pass_parameters(
     if (okay & passes_emergencyunit_okay) {
         halfword u = tex_get_passes_emergencyunit(passes, subpass);
         if (u) { 
-            halfword v = 0;
+            scaled v = 0;
             if (tex_get_userunit(u, &v)) {
                 properties->emergency_stretch = v;
                 properties->emergency_original = v; /* ! */
@@ -4237,7 +4237,7 @@ static int tex_aux_set_sub_pass_parameters(
             properties->emergency_stretch = properties->emergency_original;
         }
     } else if (okay & passes_emergencystretch_okay) {
-        halfword v = tex_get_passes_emergencystretch(passes, subpass);
+        scaled v = tex_get_passes_emergencystretch(passes, subpass);
         if (v) {
             properties->emergency_stretch = v;
             properties->emergency_original = v; /* ! */
@@ -5381,7 +5381,7 @@ static void tex_aux_set_indentation(const line_break_properties *properties)
         lmt_linebreak_state.second_width = properties->hsize;
         lmt_linebreak_state.second_indent = 0;
     } else {
-        halfword used_hang_indent = swap_hang_indent(properties->paragraph_direction, properties->hang_indent);
+        scaled used_hang_indent = swap_hang_indent(properties->paragraph_direction, properties->hang_indent);
         scaled used_hang_hsize = properties->hsize - abs(used_hang_indent);
         /*tex
 
@@ -6037,8 +6037,8 @@ void tex_do_line_break(line_break_properties *properties)
     {
         int callback_id = lmt_callback_defined(linebreak_quality_callback);
         if (callback_id > 0) {
-            halfword overfull = 0;
-            halfword underfull = 0;
+            scaled overfull = 0;
+            scaled underfull = 0;
             halfword verdict = 0;
             halfword classified = 0;
             tex_check_linebreak_quality(0, &overfull, &underfull, &verdict, &classified);
@@ -6610,7 +6610,7 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
         if (properties->protrude_chars) {
             if (line_break_dir == dir_righttoleft && properties->protrude_chars == protrude_chars_advanced) {
                 halfword p = tex_aux_find_protchar_left(q, 0);
-                halfword w = tex_char_protrusion(p, left_margin_kern_subtype);
+                scaled w = tex_char_protrusion(p, left_margin_kern_subtype);
                 if (w && lmt_packaging_state.last_leftmost_char) {
                     halfword k = tex_new_kern_node(-w, left_margin_kern_subtype);
                     tex_attach_attribute_list_copy(k, p);
@@ -6619,7 +6619,7 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
                 }
             } else {
                 halfword p = tex_aux_find_protchar_left(q, 0);
-                halfword w = tex_char_protrusion(p, left_margin_kern_subtype);
+                scaled w = tex_char_protrusion(p, left_margin_kern_subtype);
                 if (w && lmt_packaging_state.last_leftmost_char) {
                     halfword k = tex_new_kern_node(-w, left_margin_kern_subtype);
                     tex_attach_attribute_list_copy(k, p);
@@ -6795,8 +6795,8 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
         if (normalize_line_mode_option(normalize_line_mode)) {
             halfword head = q;
             halfword tail = rs ? rs : head;
-            halfword lefthang = 0;
-            halfword righthang = 0;
+            scaled lefthang = 0;
+            scaled righthang = 0;
             // we already have the tail somewhere
             while (node_next(tail)) {
                 tail = node_next(tail);
@@ -6995,7 +6995,7 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
             /*tex So only set when we normalize. */
             if (last_line) {
                 halfword linebox = lmt_linebreak_state.just_box;
-                halfword width = 0;
+                scaled width = 0;
                 if (linebox) {
                     width = box_width(linebox);
                     width -= tex_effective_glue(linebox, properties->left_skip);

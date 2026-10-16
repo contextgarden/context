@@ -180,7 +180,7 @@ halfword tex_get_insert_penalty(halfword i)
     }
 }
 
-halfword tex_get_insert_maxdepth(halfword i)
+scaled tex_get_insert_maxdepth(halfword i)
 {
     if (tex_valid_insert_id(i)) {
         return lmt_insert_state.mode == index_insert_mode ? split_max_depth_par : lmt_insert_state.inserts[i].maxdepth;
@@ -190,7 +190,7 @@ halfword tex_get_insert_maxdepth(halfword i)
 }
 
 
-halfword tex_get_insert_distance(halfword i)
+scaled tex_get_insert_distance(halfword i)
 {
     if (tex_valid_insert_id(i)) {
         return lmt_insert_state.mode == index_insert_mode ? insert_distance(i) : lmt_insert_state.inserts[i].distance;
@@ -309,7 +309,7 @@ void tex_set_insert_penalty(halfword i, halfword v)
     }
 }
 
-void tex_set_insert_maxdepth(halfword i, halfword v) 
+void tex_set_insert_maxdepth(halfword i, scaled v)
 {
     if (tex_valid_insert_id(i) && lmt_insert_state.mode == class_insert_mode) {
         lmt_insert_state.inserts[i].options = set_insert_option(lmt_insert_state.inserts[i].options, insert_option_maxdepth);
@@ -317,7 +317,7 @@ void tex_set_insert_maxdepth(halfword i, halfword v)
     }
 }
 
-void tex_set_insert_distance(halfword i, halfword v) 
+void tex_set_insert_distance(halfword i, scaled v)
 {
     if (tex_valid_insert_id(i)) {
         int d = null;
@@ -477,7 +477,7 @@ halfword lmt_set_insert_distance(halfword i, halfword head)
     }
 }
 
-halfword tex_get_insert_progress(halfword i)
+scaled tex_get_insert_progress(halfword i)
 {
     if (tex_valid_insert_id(i)) {
         halfword p = page_insert_head;
@@ -695,7 +695,7 @@ void tex_finish_insert_group(void)
             halfword data = saved_insert_data;
             halfword callback = saved_insert_callback;
             halfword insert = tex_new_node(insert_node, 0);
-            halfword maxdepth = tex_get_insert_maxdepth(index);
+            scaled maxdepth = tex_get_insert_maxdepth(index);
             halfword floating = tex_get_insert_penalty(index);
             if (tex_get_insert_storage(index)) {
                 tex_insert_store(index, insert);
@@ -832,11 +832,12 @@ scaled tex_insert_height(halfword node)
     /*tex A redundant check but we do it anyway. */
     if (node && node_type(node) == insert_node) {
         halfword multiplier = tex_get_insert_multiplier(insert_index(node));
-        halfword needed = insert_total_height(node);
+        scaled needed = insert_total_height(node);
         if (multiplier > 0 && needed > 0) {
          // return tex_x_over_n_factor(needed) * multiplier;
          // return scaledround(needed * multiplier / scaling_factor_double)
-            return needed * multiplier / scaling_factor;
+         // return needed * multiplier / scaling_factor;
+            return tex_xn_over_1000(needed, multiplier);
         }
     }
     return 0;

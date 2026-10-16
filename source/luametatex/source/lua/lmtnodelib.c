@@ -1343,9 +1343,8 @@ static int nodelib_direct_getpenalty(lua_State *L)
                 if (tex_has_glue_option(n, glue_option_has_penalty)) {
                     lua_pushinteger(L, glue_penalty(n));
                     break;
-                } else {
-                    /* fall through */
                 }
+                FALLTHROUGH
             default:
                 lua_pushnil(L);
                 break;
@@ -1847,6 +1846,7 @@ static int nodelib_direct_setanchors(lua_State *L)
                         if (lua_toboolean(L, 2)) {
                             break;
                         }
+                        FALLTHROUGH
                     default:
                         box_anchor(n) = 0;
                         break;
@@ -2079,49 +2079,117 @@ static int nodelib_direct_addmargins(lua_State *L)
     return 0;
 }
 
-static int nodelib_direct_addxymargins(lua_State *L)
-{
-    halfword n = nodelib_valid_direct_from_index(L, 1);
-    if (n && node_type(n) == glyph_node) {
-        scaled s = glyph_scale(n);
-        scaled x = glyph_x_scale(n);
-        scaled y = glyph_y_scale(n);
-        double sx, sy;
-        if (s == 0 || s == 1000) {
-            if (x == 0 || x == 1000) {
-                sx = 1;
-            } else {
-                sx = 0.001 * x;
+// static int nodelib_direct_addxymargins(lua_State *L)
+// {
+//     halfword n = nodelib_valid_direct_from_index(L, 1);
+//     if (n && node_type(n) == glyph_node) {
+//         scaled s = glyph_scale(n);
+//         scaled x = glyph_x_scale(n);
+//         scaled y = glyph_y_scale(n);
+//         double sx, sy;
+//         if (s == 0 || s == 1000) {
+//             if (x == 0 || x == 1000) {
+//                 sx = 1;
+//             } else {
+//                 sx = 0.001 * x;
+//             }
+//             if (y == 0 || y == 1000) {
+//                 sy = 1;
+//             } else {
+//                 sy = 0.001 * y;
+//             }
+//         } else {
+//             if (x == 0 || x == 1000) {
+//                 sx = 0.001 * s;
+//             } else {
+//                 sx = 0.000001 * s * x;
+//             }
+//             if (y == 0 || y == 1000) {
+//                 sy = 0.001 * s;
+//             } else {
+//                 sy = 0.000001 * s * y;
+//             }
+//         }
+//         if (lua_type(L, 2) == LUA_TNUMBER) {
+//             glyph_left(n) += scaledround(sx * lua_tonumber(L, 2));
+//         }
+//         if (lua_type(L, 3) == LUA_TNUMBER) {
+//             glyph_right(n) += scaledround(sx * lua_tonumber(L, 3));
+//         }
+//         if (lua_type(L, 4) == LUA_TNUMBER) {
+//             glyph_raise(n) += scaledround(sy * lua_tonumber(L, 4));
+//         }
+//     }
+//     return 0;
+// }
+
+# if lmt_float_math
+
+    static int nodelib_direct_addxymargins(lua_State *L)
+    {
+        halfword n = nodelib_valid_direct_from_index(L, 1);
+        if (n && node_type(n) == glyph_node) {
+            double s = glyph_scale(n);
+            double x = glyph_x_scale(n);
+            double y = glyph_y_scale(n);
+            // 0.000001 = 1 / (1000 * 1000)
+            double sx = 0.000001 * (s ? s : 1000.0) * (x ? x : 1000.0);
+            double sy = 0.000001 * (s ? s : 1000.0) * (y ? y : 1000.0);
+            if (lua_type(L, 2) == LUA_TNUMBER) {
+                double left = lua_tonumber(L, 2);
+                if (left) {
+                    glyph_left(n) += scaledround(sx * left);
+                }
             }
-            if (y == 0 || y == 1000) {
-                sy = 1;
-            } else {
-                sy = 0.001 * y;
+            if (lua_type(L, 3) == LUA_TNUMBER) {
+                double right = lua_tonumber(L, 3);
+                if (right) {
+                    glyph_right(n) += scaledround(sx * right);
+                }
             }
-        } else {
-            if (x == 0 || x == 1000) {
-                sx = 0.001 * s;
-            } else {
-                sx = 0.000001 * s * x;
-            }
-            if (y == 0 || y == 1000) {
-                sy = 0.001 * s;
-            } else {
-                sy = 0.000001 * s * y;
+            if (lua_type(L, 4) == LUA_TNUMBER) {
+                double raise = lua_tonumber(L, 4);
+                if (raise) {
+                    glyph_raise(n) += scaledround(sy * raise);
+                }
             }
         }
-        if (lua_type(L, 2) == LUA_TNUMBER) {
-            glyph_left(n) += scaledround(sx * lua_tonumber(L, 2));
-        }
-        if (lua_type(L, 3) == LUA_TNUMBER) {
-            glyph_right(n) += scaledround(sx * lua_tonumber(L, 3));
-        }
-        if (lua_type(L, 4) == LUA_TNUMBER) {
-            glyph_raise(n) += scaledround(sy * lua_tonumber(L, 4));
-        }
+        return 0;
     }
-    return 0;
-}
+
+# else
+
+    static int nodelib_direct_addxymargins(lua_State *L)
+    {
+        halfword n = nodelib_valid_direct_from_index(L, 1);
+        if (n && node_type(n) == glyph_node) {
+            long long s = glyph_scale(n);
+            long long x = glyph_x_scale(n);
+            long long y = glyph_y_scale(n);
+
+            if (lua_type(L, 2) == LUA_TNUMBER) {
+                lua_Number left = lua_tonumber(L, 2);
+                if (left) {
+                    glyph_left(n) += tex_aux_scale_1e6((scaled) left, s, x);
+                }
+            }
+            if (lua_type(L, 3) == LUA_TNUMBER) {
+                lua_Number right = lua_tonumber(L, 3);
+                if (right) {
+                    glyph_right(n) += tex_aux_scale_1e6((scaled) right, s, x);
+                }
+            }
+            if (lua_type(L, 4) == LUA_TNUMBER) {
+                lua_Number raise = lua_tonumber(L, 4);
+                if (raise) {
+                    glyph_raise(n) += tex_aux_scale_1e6((scaled) raise, s, y);
+                }
+            }
+        }
+        return 0;
+    }
+
+# endif
 
 /* node.direct.getscale   */
 
@@ -2139,6 +2207,9 @@ static int nodelib_direct_getscale(lua_State *L)
             case style_node:
                 lua_pushinteger(L, style_scale(n));
                 return 1;
+                /*tex When we need it: */
+             // lua_pushinteger(L, style_glyph_scale(n));
+             // return 2;
         }
     }
     return 0;
@@ -2165,6 +2236,10 @@ static int nodelib_direct_setscale(lua_State *L)
                  //     style_scale(n) = scaling_factor;
                  // }
                 }
+                /*tex When we need it: */
+             // if (lua_type(L, 3) == LUA_TNUMBER) {
+             //     style_glyph_scale(n) = (halfword) lmt_roundnumber(L, 3);
+             // }
                 break;
         }
     }
@@ -2317,24 +2392,98 @@ static int nodelib_direct_getyscale(lua_State *L)
 # define xscaled_usage glyph_usage
 # define yscaled_usage xscaled_usage
 
+// static int nodelib_direct_xscaled(lua_State *L)
+// {
+//     halfword n = nodelib_valid_direct_from_index(L, 1);
+//     lua_Number v = lua_tonumber(L, 2);
+//     if (n && node_type(n) == glyph_node) {
+//         scaled s = glyph_scale(n);
+//         scaled x = glyph_x_scale(n);
+//         if (s == 0 || s == 1000) {
+//             if (x == 0 || x == 1000) {
+//                 /* okay */
+//             } else {
+//                 v = 0.001 * x * v;
+//             }
+//         } else if (x == 0 || x == 1000) {
+//             v = 0.001 * s * v;
+//         } else {
+//             v = 0.000001 * s * x * v;
+//         }
+//     }
+//     lua_pushnumber(L, v);
+//     return 1;
+// }
+//
+// static int nodelib_direct_yscaled(lua_State *L)
+// {
+//     halfword n = nodelib_valid_direct_from_index(L, 1);
+//     lua_Number v = lua_tonumber(L, 2);
+//     if (n && node_type(n) == glyph_node) {
+//         scaled s = glyph_scale(n);
+//         scaled y = glyph_y_scale(n);
+//         if (s == 0 || s == 1000) {
+//             if (y == 0 || y == 1000) {
+//                 /* okay */
+//             } else {
+//                 v = 0.001 * y * v;
+//             }
+//         } else if (y == 0 || y == 1000) {
+//             v = 0.001 * s * v;
+//         } else {
+//             v = 0.000001 * s * y * v;
+//         }
+//     }
+//     lua_pushnumber(L, v);
+//     return 1;
+// }
+//
+// static void nodelib_aux_pushxyscales(lua_State *L, halfword n)
+// {
+//     scaled s = glyph_scale(n);
+//     scaled x = glyph_x_scale(n);
+//     scaled y = glyph_y_scale(n);
+//     double dx;
+//     double dy;
+//     if (s && s != 1000) {
+//         dx = (x && x != 1000) ? 0.000001 * s * x : 0.001 * s;
+//     } else if (x && x != 1000) {
+//         dx = 0.001 * x;
+//     } else {
+//         lua_pushinteger(L, 1);
+//         goto DONEX;
+//     }
+//     lua_pushnumber(L, dx);
+//   DONEX:
+//     if (s && s != 1000) {
+//         dy = (y && y != 1000) ? 0.000001 * s * y : 0.001 * s;
+//     } else if (y && y != 1000) {
+//         dy = 0.001 * y;
+//     } else {
+//         lua_pushinteger(L, 1);
+//         goto DONEY;
+//     }
+//     lua_pushnumber(L, dy);
+//   DONEY: ;
+// }
+
+static inline double nodelib_aux_calculate_scale_factor(scaled s, scaled axis_scale)
+{
+    s = (s == 0) ? 1000 : s;
+    axis_scale = (axis_scale == 0) ? 1000 : axis_scale;
+    if (s == 1000 && axis_scale == 1000) {
+        return 1.0;
+    }
+    return 0.000001 * (double)s * (double)axis_scale;
+}
+
 static int nodelib_direct_xscaled(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
     lua_Number v = lua_tonumber(L, 2);
     if (n && node_type(n) == glyph_node) {
-        scaled s = glyph_scale(n);
-        scaled x = glyph_x_scale(n);
-        if (s == 0 || s == 1000) {
-            if (x == 0 || x == 1000) {
-                /* okay */
-            } else {
-                v = 0.001 * x * v;
-            }
-        } else if (x == 0 || x == 1000) {
-            v = 0.001 * s * v;
-        } else {
-            v = 0.000001 * s * x * v;
-        }
+        double factor = nodelib_aux_calculate_scale_factor(glyph_scale(n), glyph_x_scale(n));
+        v *= factor;
     }
     lua_pushnumber(L, v);
     return 1;
@@ -2345,19 +2494,8 @@ static int nodelib_direct_yscaled(lua_State *L)
     halfword n = nodelib_valid_direct_from_index(L, 1);
     lua_Number v = lua_tonumber(L, 2);
     if (n && node_type(n) == glyph_node) {
-        scaled s = glyph_scale(n);
-        scaled y = glyph_y_scale(n);
-        if (s == 0 || s == 1000) {
-            if (y == 0 || y == 1000) {
-                /* okay */
-            } else {
-                v = 0.001 * y * v;
-            }
-        } else if (y == 0 || y == 1000) {
-            v = 0.001 * s * v;
-        } else {
-            v = 0.000001 * s * y * v;
-        }
+        double factor = nodelib_aux_calculate_scale_factor(glyph_scale(n), glyph_y_scale(n));
+        v *= factor;
     }
     lua_pushnumber(L, v);
     return 1;
@@ -2368,28 +2506,18 @@ static void nodelib_aux_pushxyscales(lua_State *L, halfword n)
     scaled s = glyph_scale(n);
     scaled x = glyph_x_scale(n);
     scaled y = glyph_y_scale(n);
-    double dx;
-    double dy;
-    if (s && s != 1000) {
-        dx = (x && x != 1000) ? 0.000001 * s * x : 0.001 * s;
-    } else if (x && x != 1000) {
-        dx = 0.001 * x;
-    } else {
+    double fx = nodelib_aux_calculate_scale_factor(s, x);
+    double fy = nodelib_aux_calculate_scale_factor(s, y);
+    if (fx == 1.0) {
         lua_pushinteger(L, 1);
-        goto DONEX;
-    }
-    lua_pushnumber(L, dx);
-  DONEX:
-    if (s && s != 1000) {
-        dy = (y && y != 1000) ? 0.000001 * s * y : 0.001 * s;
-    } else if (y && y != 1000) {
-        dy = 0.001 * y;
     } else {
-        lua_pushinteger(L, 1);
-        goto DONEY;
+        lua_pushnumber(L, fx);
     }
-    lua_pushnumber(L, dy);
-  DONEY: ;
+    if (fy == 1.0) {
+        lua_pushinteger(L, 1);
+    } else {
+        lua_pushnumber(L, fy);
+    }
 }
 
 /* node.direct.getxyscales */
@@ -2881,7 +3009,7 @@ static int nodelib_direct_setheight(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n) {
-        halfword h = 0;
+        scaled h = 0;
         if (lua_type(L, 2) == LUA_TNUMBER) {
             h = lmt_roundnumber(L, 2);
         }
@@ -2948,7 +3076,7 @@ static int nodelib_direct_setdepth(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n) {
-        halfword d = 0;
+        scaled d = 0;
         if (lua_type(L, 2) == LUA_TNUMBER) {
             d = lmt_roundnumber(L, 2);
         }
@@ -3256,6 +3384,7 @@ static int nodelib_direct_setorientation(lua_State *L)
                         if (lua_toboolean(L, 2)) {
                             break;
                         }
+                        FALLTHROUGH
                     default:
                         box_orientation(n) = 0;
                         break;
@@ -3268,6 +3397,7 @@ static int nodelib_direct_setorientation(lua_State *L)
                         if (lua_toboolean(L, 3)) {
                             break;
                         }
+                        FALLTHROUGH
                     default:
                         box_x_offset(n) = 0;
                         break;
@@ -3280,6 +3410,7 @@ static int nodelib_direct_setorientation(lua_State *L)
                         if (lua_toboolean(L, 4)) {
                             break;
                         }
+                        FALLTHROUGH
                     default:
                         box_y_offset(n) = 0;
                         break;
@@ -3292,6 +3423,7 @@ static int nodelib_direct_setorientation(lua_State *L)
                         if (lua_toboolean(L, 5)) {
                             break;
                         }
+                        FALLTHROUGH
                     default:
                         box_w_offset(n) = 0;
                         break;
@@ -3304,6 +3436,7 @@ static int nodelib_direct_setorientation(lua_State *L)
                         if (lua_toboolean(L, 6)) {
                             break;
                         }
+                        FALLTHROUGH
                     default:
                         box_h_offset(n) = 0;
                         break;
@@ -3316,6 +3449,7 @@ static int nodelib_direct_setorientation(lua_State *L)
                         if (lua_toboolean(L, 7)) {
                             break;
                         }
+                        FALLTHROUGH
                     default:
                         box_d_offset(n) = 0;
                         break;
@@ -3725,7 +3859,9 @@ static int nodelib_direct_hasdimensions(lua_State *L)
 
 # define getglyphdimensions_usage glyph_usage
 
-const double INV_1000 = 1.0 / 1000.0;
+// const double INV_1000 = 1.0 / 1000.0;
+
+# define INV_1000 (1.0 / 1000.0)
 
 static int nodelib_direct_getglyphdimensions(lua_State *L)
 {
@@ -4718,9 +4854,8 @@ static int nodelib_direct_setlink(lua_State *L)
                 if (lua_toboolean(L, i)) {
                     /*tex Just skip this one. */
                     break;
-                } else {
-                    /* fall through */
                 }
+                FALLTHROUGH
             default:
                 if (t) {
                     /* safeguard: a nil in the list can be meant as end so we nil the next of tail */
@@ -8821,6 +8956,8 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                                 lmt_push_math_style_name(L, style_style(n));
                             } else if (lua_key_eq(s, scale)) {
                                 lua_pushinteger(L, style_scale(n));
+                            } else if (lua_key_eq(s, glyphscale)) {
+                                lua_pushinteger(L, style_glyph_scale(n));
                             } else {
                                 goto CANTGET;
                             }
@@ -9619,6 +9756,8 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                                 style_style(n) = (quarterword) lmt_get_math_style(L, 2, text_style);
                             } else if (lua_key_eq(s, scale)) {
                                 style_scale(n) = (halfword) lmt_roundnumber(L, 3);
+                            } else if (lua_key_eq(s, glyphscale)) {
+                                style_glyph_scale(n) = (halfword) lmt_roundnumber(L, 3);
                             } else {
                                 /* return nodelib_cantset(L, n, s); */
                             }
@@ -11639,7 +11778,7 @@ static int nodelib_userdata_getpropertiestable(lua_State *L)
 
 /* todo: use effective helper that returns double */
 
-static void nodelib_direct_effect_done(lua_State *L, halfword amount, halfword stretch, halfword shrink, halfword stretch_order, halfword shrink_order)
+static void nodelib_direct_effect_done(lua_State *L, scaled amount, scaled stretch, scaled shrink, halfword stretch_order, halfword shrink_order)
 {
     halfword parent = nodelib_valid_direct_from_index(L, 2);
     if (parent) {
@@ -11833,9 +11972,9 @@ static int nodelib_direct_makeextensible(lua_State *L)
     if (top >= 3) {
         halfword fnt = lmt_tohalfword(L, 1);
         halfword chr = lmt_tohalfword(L, 2);
-        halfword target = lmt_tohalfword(L, 3);
+        scaled target = lmt_tohalfword(L, 3);
         halfword size = 0;
-        halfword overlap = 65536;
+        scaled overlap = 65536;
         halfword attlist = null;
         halfword b = null;
         int horizontal = 0;
@@ -14243,7 +14382,7 @@ void lmt_local_box_callback(
 int lmt_append_to_vlist_callback(
     halfword  box,
     int       location,
-    halfword  prevdepth,
+    scaled    prevdepth,
     halfword *result,
     int      *nextdepth,
     int      *prevset,

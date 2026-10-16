@@ -21,13 +21,15 @@ if not modules then modules = { } end modules ['lang-ini'] = {
 
 local type, tonumber, next = type, tonumber, next
 local utfbyte, utflength = utf.byte, utf.length
-local format, gsub, gmatch, find = string.format, string.gsub, string.gmatch, string.find
+local gsub, gmatch, find = string.gsub, string.gmatch, string.find
 local concat, sortedkeys, sortedhash, keys, insert, tohash = table.concat, table.sortedkeys, table.sortedhash, table.keys, table.insert, table.tohash
 local setmetatableindex = table.setmetatableindex
 local utfvalues, strip, utfcharacters = string.utfvalues, string.strip, utf.characters
 
 local context   = context
 local implement = interfaces.implement
+
+local formatted = string.formatted
 
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_set   = utilities.parsers.settings_to_set
@@ -1564,7 +1566,7 @@ function languages.logger.report()
     for tag, l in sortedhash(registered) do
         if l.loaded then
             r = r + 1
-            result[r] = format("%s:%s:%s",tag,l.parent,l.number)
+            result[r] = formatted("%s:%s:%s",tag,l.parent,l.number)
         end
     end
     return r > 0 and concat(result," ") or "none"
@@ -1582,13 +1584,13 @@ statistics.register("loaded patterns", function()
     local result = languages.logger.report()
     if result ~= "none" then
      -- return result
-        return format("%s, load time: %s",result,statistics.elapsedtime(languages))
+        return formatted("%s, load time: %s",result,statistics.elapsedtime(languages))
     end
 end)
 
 -- statistics.register("language load time", function()
 --     -- often zero so we can merge that in the above
---     return statistics.elapsedseconds(languages, format(", nofpatterns: %s",nofloaded))
+--     return statistics.elapsedseconds(languages, formatted(", nofpatterns: %s",nofloaded))
 -- end)
 
 -- interface

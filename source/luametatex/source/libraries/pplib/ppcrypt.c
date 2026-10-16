@@ -609,7 +609,8 @@ ppcrypt_status ppdoc_crypt_init (ppdoc *pdf, const void *userpass, size_t userpa
     default:
       return PPCRYPT_FAIL;
   }
-
+  if (crypt->filekeylength > PPCRYPT_MAX_KEY)
+    return PPCRYPT_FAIL;
   /* setup passwords */
   if (userpass != NULL)
     ppcrypt_set_user_password(crypt, userpass, userpasslength);

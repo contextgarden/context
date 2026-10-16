@@ -21,9 +21,7 @@ local concat, serialize, sort, fastcopy, mergedtable = table.concat, table.seria
 local sortedhash, sortedkeys, sequenced = table.sortedhash, table.sortedkeys, table.sequenced
 local parsers = utilities.parsers
 local settings_to_hash, hash_to_string, settings_to_array = parsers.settings_to_hash, parsers.hash_to_string, parsers.settings_to_array
-local formatcolumns = utilities.formatters.formatcolumns
 local mergehashes = utilities.parsers.mergehashes
-local formatters = string.formatters
 local basename = file.basename
 
 local utfchar, utfbyte, utfsplit = utf.char, utf.byte, utf.split
@@ -32,7 +30,6 @@ local round = math.round
 local context, commands = context, commands
 
 local P, R, S, C, Cc, Ct, Cs, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cc, lpeg.Ct, lpeg.Cs, lpeg.match
------ Cf, Cg = lpeg.Cf, lpeg.Cg
 
 local trace_features      = false  trackers.register("fonts.features",   function(v) trace_features   = v end)
 local trace_defining      = false  trackers.register("fonts.defining",   function(v) trace_defining   = v end)
@@ -48,6 +45,11 @@ local report_cummulative  = logs.reporter("fonts","cummulative")
 local report_defining     = logs.reporter("fonts","defining")
 local report_status       = logs.reporter("fonts","status")
 local report_mapfiles     = logs.reporter("fonts","mapfiles")
+
+local formatting          = string.formatting
+local formatted           = string.formatted
+
+local formatcolumns       = utilities.formatters.formatcolumns
 
 local setmetatableindex   = table.setmetatableindex
 
@@ -169,10 +171,8 @@ end
 
 helpers.name = getfontname
 
-local addformatter = utilities.strings.formatters.add
-
-addformatter(formatters,"font:name",    [["'"..fontname(%s).."'"]],          { fontname  = helpers.name })
-addformatter(formatters,"font:features",[["'"..sequenced(%s," ",true).."'"]],{ sequenced = table.sequenced })
+sequencer.extensions["font:name"]     = function(s) return formatted("%a",helpers.name(s)) end
+sequencer.extensions["font:features"] = function(s) return formatted("%a",table.sequenced(s," ",true)) end
 
 -- ... like font-sfm or so
 
@@ -1619,7 +1619,7 @@ do  -- else too many locals
             local cs = cs or specification.cs
             if not cs then
                 n  = n + 1 -- beware ... there can be many and they are often used once
-             -- cs = formatters["internal font %s"](n)
+             -- cs = formatted("internal font %s",n)
                 cs = "internal font " .. n
             else
                 specification.cs = cs
@@ -1834,7 +1834,7 @@ function definers.resolve(specification) -- overload function in font-con.lua
         elseif not normal.goodies then
             local g = normal.goodies
             if g and g ~= "" then
-                normal.goodies = formatters["%s,%s"](g,goodies)
+                normal.goodies = formatted("%s,%s",g,goodies)
             else
                 normal.goodies = goodies
             end
@@ -2165,8 +2165,8 @@ function loggers.reportdefinedfonts()
             local parameters = data.parameters or { }
             tn = tn + 1
             t[tn] = {
-  formatters["%03i"](id                    or 0),
-  formatters["%p"  ](parameters.size       or 0),
+    formatted("%03i",id                    or 0),
+    formatted("%p"  ,parameters.size       or 0),
                      properties.format     or "unknown",
                      properties.name       or "",
                      properties.psname     or "",
@@ -2284,10 +2284,10 @@ function fonts.definetypeface(name,t)
     local boldwidth    = t.boldwidth    or t.width  or p.boldwidth    or p.width  or "normal"
     Shape = Shapes[shape] or "Serif"
     ctx_startfontclass { name }
-        ctx_definefontsynonym( { formatters["%s"]          (Shape) }, { formatters["spec:%s-%s-regular-%s"] (fontname, normalweight, normalwidth) } )
-        ctx_definefontsynonym( { formatters["%sBold"]      (Shape) }, { formatters["spec:%s-%s-regular-%s"] (fontname, boldweight,   boldwidth  ) } )
-        ctx_definefontsynonym( { formatters["%sBoldItalic"](Shape) }, { formatters["spec:%s-%s-italic-%s"]  (fontname, boldweight,   boldwidth  ) } )
-        ctx_definefontsynonym( { formatters["%sItalic"]    (Shape) }, { formatters["spec:%s-%s-italic-%s"]  (fontname, normalweight, normalwidth) } )
+        ctx_definefontsynonym( { formatted("%s"          ,Shape) }, { formatted("spec:%s-%s-regular-%s",fontname, normalweight, normalwidth) } )
+        ctx_definefontsynonym( { formatted("%sBold"      ,Shape) }, { formatted("spec:%s-%s-regular-%s",fontname, boldweight,   boldwidth  ) } )
+        ctx_definefontsynonym( { formatted("%sBoldItalic",Shape) }, { formatted("spec:%s-%s-italic-%s" ,fontname, boldweight,   boldwidth  ) } )
+        ctx_definefontsynonym( { formatted("%sItalic"    ,Shape) }, { formatted("spec:%s-%s-italic-%s" ,fontname, normalweight, normalwidth) } )
     ctx_stopfontclass()
     local settings = sequenced({ features = t.features },",")
     ctx_dofastdefinetypeface(name, shortcut, shape, size, settings)
@@ -2497,7 +2497,7 @@ do
         arguments = "string"
     }
 
-    local f_strip  = formatters["%0.2fpt"] -- normally this value is changed only once
+    local f_strip  = formatting("%0.2fpt") -- normally this value is changed only once
     local stripper = lpeg.patterns.stripzeros
 
     local cache = { }
@@ -2561,7 +2561,7 @@ do
         name      = "normalizedbodyfontsize",
         arguments = "dimension",
         actions   = function(d)
-            context(lpegmatch(stripper,f_strip(d/65536)))
+            context(lpegmatch(stripper,formatted(f_strip,d/65536)))
         end
     }
 
@@ -2684,7 +2684,7 @@ do
         if variants then
             local t = { }
             for k, v in sortedhash(variants) do
-                t[#t+1] = formatters["0x%X (%i)"](k,k)
+                t[#t+1] = formatted("0x%X (%i)",k,k)
             end
             value = tonumber(value) or 0xFE00 -- 917762
             report("fontname : %s",tfmdata.properties.fontname)
@@ -3017,7 +3017,7 @@ end
 
 statistics.register("body font sizes", function()
     if next(unknown) then
-        return formatters["defined: % t, undefined: % t"](sortedkeys(list),sortedkeys(unknown))
+        return formatted("defined: % t, undefined: % t",sortedkeys(list),sortedkeys(unknown))
     end
 end)
 

@@ -141,14 +141,19 @@
     # define FALLTHROUGH ((void) 0);
 # endif
 
-# if (! defined(__STDC_VERSION__) || __STDC_VERSION__ < 199901L) && ! defined(hypot)
+# if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || defined(_MSC_VER)
 
-    static inline double hypot(double x, double y)
+    # define lmt_hypot hypot
+
+# else
+
+    static inline double lmt_hypot(double x, double y)
     {
         double ax = fabs(x);
         double ay = fabs(y);
-        if (ax == 0.0 && ay == 0.0) return 0.0;
-        if (ax > ay) {
+        if (ax == 0.0 && ay == 0.0) {
+            return 0.0;
+        } else if (ax > ay) {
             double r = ay / ax;
             return ax * sqrt(1.0 + r * r);
         } else {
@@ -180,5 +185,35 @@ static inline bool odd_double (double             a) { return fabs(fmod(a, 2.0))
 */
 
 # define SAFE __attribute__((annotate("safe")))
+
+// void enforce_fpu_consistency(void)
+// {
+//     /* Force round-to-nearest (IEEE-754 default). */
+//     fesetround(FE_TONEAREST);
+//     // Flush Denormals To Zero (FTZ) and Denormals Are Zero (DAZ) if needed.
+//     // Denormal behavior varies between x86 and ARM processors. Disabling
+//     // denormals ensures both speed and deterministic behavior.
+// # if defined(__x86_64__) || defined(_M_X64)
+//     _mm_setcsr(_mm_getcsr() | 0x8000 | 0x0040); // Sets FTZ and DAZ on SSE/AVX
+// # endif
+// }
+//
+// # include <fenv.h>
+//
+// void enforce_cross_platform_fpu()
+// {
+//     // Force standard IEEE round-to-nearest
+//     std::fesetround(FE_TONEAREST);
+// # if defined(__x86_64__) || defined(_M_X64)
+//     // Enable Flush-to-Zero (FTZ) and Denormals-are-Zero (DAZ) on x86
+//     _mm_setcsr(_mm_getcsr() | 0x8000 | 0x0040);
+// # elif defined(__aarch64__)
+//     // Enable Flush-to-Zero on ARM64 FPSCR register
+//     uint64_t fpcr;
+//     asm volatile("mrs %0, fpcr" : "=r"(fpcr));
+//     fpcr |= (1ULL << 24); // Set FZ bit
+//     asm volatile("msr fpcr, %0" :: "r"(fpcr));
+// # endif
+// }
 
 # endif

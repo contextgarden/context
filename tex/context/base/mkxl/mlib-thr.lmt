@@ -39,6 +39,7 @@ local newindex = lua.newindex
 local strip, lower = string.strip, string.lower
 local setmetatableindex = table.setmetatableindex
 local replacer = utilities.templates.replacer
+local formatted = string.formatted
 
 local huge        <const> = math.huge
 local infinity    <const> = huge
@@ -3077,7 +3078,7 @@ do
             elseif not last then
                 return -- not saved
             end
-            name = string.formatters["l_m_t_x_%s_%s_%04i.lua"](environment.jobname,name,last)
+            name = formatted("l_m_t_x_%s_%s_%04i.lua",environment.jobname,name,last)
             return file.robustname(name)
         end
     end

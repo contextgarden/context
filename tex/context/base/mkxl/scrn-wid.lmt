@@ -293,7 +293,7 @@ local function initializer()
     tobesaved = linkedlists.tobesaved
 end
 
-job.register("job.linkedlists.collected", tobesaved, initializer, nil)
+job.register("job.linkedlists.collected", tobesaved, initializer)
 
 implement {
     name      = "definelinkedlist",

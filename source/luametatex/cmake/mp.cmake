@@ -1,5 +1,4 @@
 set(mp_sources
-
     source/mp/mp.c
     source/mp/mpstrings.c
     source/mp/mpmathscaled.c
@@ -14,15 +13,13 @@ set(mp_sources
 
     source/libraries/avl/avl.c
 
-    source/utilities/auxbytemaps.c
-
     source/lua/lmtmplib.c
-
-    source/luarest/lmtxdecimallib.c
-    source/luarest/lmtxintervallib.c
 )
 
 add_library(mp STATIC ${mp_sources})
+
+# Ensure target dependencies for circular symbol resolution
+target_link_libraries(mp PRIVATE utilities luarest lua)
 
 target_include_directories(mp PRIVATE
     .
@@ -44,19 +41,28 @@ target_compile_definitions(mp PUBLIC
     DECNUMDIGITS=1000
 )
 
-if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
+# Floating-point precision rules for MetaPost path solving
+if (MSVC)
     target_compile_options(mp PRIVATE
-        -Wno-unreachable-code-break
+     #  /O2 /Oi /Ot
+        /fp:precise
     )
-endif()
-
-if (NOT MSVC)
+else()
     target_compile_options(mp PRIVATE
+        -O3
+        -fno-fast-math
+        -ffp-contract=off
+        -fno-associative-math
+        -fno-strict-aliasing
         -Wno-unused-parameter
         -Wno-sign-compare
         -Wno-cast-qual
         -Wno-cast-align
-        # for decnumber with lto
-        -fno-strict-aliasing
+    )
+endif()
+
+if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    target_compile_options(mp PRIVATE
+        -Wno-unreachable-code-break
     )
 endif()

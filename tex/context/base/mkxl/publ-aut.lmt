@@ -17,7 +17,6 @@ local type, next, tostring, tonumber = type, next, tostring, tonumber
 local concat, sortedhash = table.concat, table.sortedhash
 local utfsub = utf.sub
 local find = string.find
-local formatters = string.formatters
 
 local P, S, C, V, Cs, Ct, Cc = lpeg.P, lpeg.S, lpeg.C, lpeg.V, lpeg.Cs, lpeg.Ct, lpeg.Cc
 ----- Cg, Cf = lpeg.Cg, lpeg.Cf
@@ -366,7 +365,6 @@ local ctx_btxciteauthorsetup  = context.btxciteauthorsetup
 local ctx_btxlistauthorsetup  = context.btxlistauthorsetup
 
 local concatstate = publications.concatstate
-local f_invalid   = formatters["<invalid %s: %s>"]
 
 local currentauthordata      = nil
 local currentauthorsymbol    = nil

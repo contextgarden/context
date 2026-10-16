@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['util-deb'] = {
 -- node.hasattribute which is bound to a hasattribute local variable in mkiv)
 
 local type, next, xpcall, print = type, next, xpcall, print
-local format, sub, gsub = string.format, string.sub, string.gsub
+local sub, gsub = string.sub, string.gsub
 local sort = table.sort
 local setmetatableindex = table.setmetatableindex
 
@@ -20,6 +20,8 @@ local debugger     = utilities.debugger or { }
 utilities.debugger = debugger
 
 local report       = logs.reporter("debugger")
+
+local formatted    = string.formatted
 
 local ticks        = os.gettimeofday -- todo: use a more precise one
 local seconds      = function(n) return n or 0 end
@@ -153,7 +155,7 @@ function debugger.showstats(printer,threshold)
     if length > 50 then
         length = 50
     end
-    local fmt = string.formatters["%4.9k s  %3.3k %%  %4.9k s  %3.3k %%  %8i #  %-" .. length .. "s  %4i  %s"]
+    local fmt = "%4.9k s  %3.3k %%  %4.9k s  %3.3k %%  %8i #  %-" .. length .. "s  %4i  %s"
     for i=1,#dataset do
         local data   = dataset[i]
         local real   = data[1]
@@ -168,12 +170,12 @@ function debugger.showstats(printer,threshold)
         if #name > length then
             name = sub(name,1,length)
         end
-        printer(fmt(seconds(total),100*total/totaltime,seconds(real),100*real/realtime,count,name,line,source))
+        printer(formatted(fmt,seconds(total),100*total/totaltime,seconds(real),100*real/realtime,count,name,line,source))
     end
     printer("")
-    printer(format("functions : %i", functions))
-    printer(format("calls     : %i", calls))
-    printer(format("overhead  : %f", seconds(overhead/1000)))
+    printer(formatted("functions : %i", functions))
+    printer(formatted("calls     : %i", calls))
+    printer(formatted("overhead  : %f", seconds(overhead/1000)))
 
  -- table.save("luatex-profile.lua",names)
 end

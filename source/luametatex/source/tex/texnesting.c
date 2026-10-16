@@ -425,9 +425,11 @@ void tex_show_activities(void)
                     while (r != page_insert_head) {
                         halfword index = insert_index(r);
                         halfword multiplier = tex_get_insert_multiplier(index);
-                        halfword size = multiplier == scaling_factor ? insert_total_height(r) : tex_x_over_n_factor(insert_total_height(r)) * multiplier;
-                     // halfword size = multiplier == scaling_factor ? insert_total_height(r) : insert_total_height(r) * multiplier / scaling_factor;
-                     // halfword size = multiplier == scaling_factor ? insert_total_height(r) : scaledround(insert_total_height(r) * multiplier / scaling_factor_double) ;
+                     // scaled size = multiplier == scaling_factor ? insert_total_height(r) : tex_x_over_n_factor(insert_total_height(r)) * multiplier;
+                     // scaled size = multiplier == scaling_factor ? insert_total_height(r) : insert_total_height(r) * multiplier / scaling_factor;
+                     // scaled size = multiplier == scaling_factor ? insert_total_height(r) : scaledround(insert_total_height(r) * multiplier / scaling_factor_double) ;
+                        scaled height = insert_total_height(r);
+                        scaled size   = (multiplier == scaling_factor) ? height : tex_xn_over_1000(height, multiplier);
                         if (node_type(r) == split_node && node_subtype(r) == insert_split_subtype) {
                             halfword q = page_head;
                             halfword n = 0;
@@ -792,7 +794,7 @@ void tex_start_mvl(void)
 {
     halfword index = 0; 
     halfword options = 0;
-    halfword prevdepth = max_dimen;
+    scaled prevdepth = max_dimen;
     while (1) {
         switch (tex_scan_character("iop", 0, 1, 0)) {
             case 'i':

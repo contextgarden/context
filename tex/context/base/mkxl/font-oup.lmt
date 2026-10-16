@@ -12,7 +12,10 @@ local lpegmatch = lpeg.match
 local insert, remove, copy, unpack = table.insert, table.remove, table.copy, table.unpack
 local find = string.find
 
-local formatters           = string.formatters
+----- formatters           = string.formatters
+local formatting           = string.formatting
+local formatted            = string.formatted
+
 local sortedkeys           = table.sortedkeys
 local sortedhash           = table.sortedhash
 local setmetatableindex    = table.setmetatableindex
@@ -31,11 +34,11 @@ local trace_unicodes       = false  trackers.register("otf.unicodes",      funct
 local readers              = fonts.handlers.otf.readers
 local privateoffset        = fonts.constructors and fonts.constructors.privateoffset or 0xF0000 -- 0x10FFFF
 
-local f_private            = formatters["P%05X"]
-local f_unicode            = formatters["U%05X"]
-local f_index              = formatters["I%05X"]
-local f_character_y        = formatters["%C"]
-local f_character_n        = formatters["[ %C ]"]
+local f_private            = formatting("P%05X")
+local f_unicode            = formatting("U%05X")
+local f_index              = formatting("I%05X")
+local f_character_y        = formatting("%C")
+local f_character_n        = formatting("[ %C ]")
 
 local check_duplicates     = true    -- can become an option (pseudo feature) / always needed anyway
 local check_soft_hyphen    = context -- only in context
@@ -503,20 +506,20 @@ local function copyduplicates(fontdata)
            for u, d in next, duplicates do
                 local du = descriptions[u]
                 if du then
-                    local t = { f_character_y(u), "@", f_index(du.index), "->" }
+                    local t = { formatted(f_character_y,u), "@", formatted(f_index,du.index), "->" }
                     local n = 0
                     local m = 25
                     for u in next, d do
                         if descriptions[u] then
                             if n < m then
-                                t[n+4] = f_character_n(u)
+                                t[n+4] = formatted(f_character_n,u)
                             end
                         else
                             local c = copy(du)
                             c.unicode = u -- better this way
                             descriptions[u] = c
                             if n < m then
-                                t[n+4] = f_character_y(u)
+                                t[n+4] = formatted(f_character_y,u)
                             end
                         end
                         n = n + 1
@@ -728,7 +731,7 @@ local function checklookups(fontdata,missing,nofmissing)
         for i, r in next, missing do
             if r then
                 local data = descriptions[i]
-                local name = data and data.name or f_index(i)
+                local name = data and data.name or formatted(f_index,i)
                 if not ignore[name] then
                     done[name] = true
                 end
@@ -814,7 +817,7 @@ local function unifyglyphs(fontdata,usenames)
     end
     descriptions[zerocode] = zero
     if names then
-        local name  = glyphs[0].name or f_private(zerocode)
+        local name  = glyphs[0].name or formatted(f_private,zerocode)
         indices[0]  = name
         names[name] = zerocode
     else
@@ -828,28 +831,28 @@ local function unifyglyphs(fontdata,usenames)
             local unicode = glyph.unicode -- this is the primary one
             if not unicode then
                 unicode        = private
-                local name     = glyph.name or f_private(unicode)
+                local name     = glyph.name or formatted(f_private,unicode)
                 indices[index] = name
                 names[name]    = unicode
                 private        = private + 1
             elseif unicode >= firstprivate then
                 unicode        = private
-                local name     = glyph.name or f_private(unicode)
+                local name     = glyph.name or formatted(f_private,unicode)
                 indices[index] = name
                 names[name]    = unicode
                 private        = private + 1
             elseif unicode >= puafirst and unicode <= pualast then
-                local name     = glyph.name or f_private(unicode)
+                local name     = glyph.name or formatted(f_private,unicode)
                 indices[index] = name
                 names[name]    = unicode
             elseif descriptions[unicode] then
                 unicode        = private
-                local name     = glyph.name or f_private(unicode)
+                local name     = glyph.name or formatted(f_private,unicode)
                 indices[index] = name
                 names[name]    = unicode
                 private        = private + 1
             else
-                local name     = glyph.name or f_unicode(unicode)
+                local name     = glyph.name or formatted(f_unicode,unicode)
                 indices[index] = name
                 names[name]    = unicode
             end
@@ -1408,97 +1411,102 @@ local trace_loading = false  trackers.register("otf.loading", function(v) trace_
 
 local report_otf    = logs.reporter("fonts","otf loading")
 
-local function tabstr_normal(t)
-    local s = { }
-    local n = 0
-    for k, v in next, t do
-        n = n + 1
-        if type(v) == "table" then
-            s[n] = k .. ">" .. tabstr_normal(v)
-        elseif v == true then
-            s[n] = k .. "+" -- "=true"
-        elseif v then
-            s[n] = k .. "=" .. v
-        else
-            s[n] = k .. "-" -- "=false"
-        end
-    end
-    if n == 0 then
-        return ""
-    elseif n == 1 then
-        return s[1]
-    else
-        sort(s) -- costly but needed (occasional wrong hit otherwise)
-        return concat(s,",")
-    end
-end
+-- local function tabstr_normal(t)
+--     local s = { }
+--     local n = 0
+--     for k, v in next, t do
+--         n = n + 1
+--         if type(v) == "table" then
+--             s[n] = k .. ">" .. tabstr_normal(v)
+--         elseif v == true then
+--             s[n] = k .. "+" -- "=true"
+--         elseif v then
+--             s[n] = k .. "=" .. v
+--         else
+--             s[n] = k .. "-" -- "=false"
+--         end
+--     end
+--     if n == 0 then
+--         return ""
+--     elseif n == 1 then
+--         return s[1]
+--     else
+--         sort(s) -- costly but needed (occasional wrong hit otherwise)
+--         return concat(s,",")
+--     end
+-- end
 
-local function tabstr_flat(t)
-    local s = { }
-    local n = 0
-    for k, v in next, t do
-        n = n + 1
-        s[n] = k .. "=" .. v
-    end
-    if n == 0 then
-        return ""
-    elseif n == 1 then
-        return s[1]
-    else
-        sort(s) -- costly but needed (occasional wrong hit otherwise)
-        return concat(s,",")
-    end
-end
+-- local function tabstr_flat(t)
+--     local s = { }
+--     local n = 0
+--     for k, v in next, t do
+--         n = n + 1
+--         s[n] = k .. "=" .. v
+--     end
+--     if n == 0 then
+--         return ""
+--     elseif n == 1 then
+--         return s[1]
+--     else
+--         sort(s) -- costly but needed (occasional wrong hit otherwise)
+--         return concat(s,",")
+--     end
+-- end
 
-local function tabstr_mixed(t) -- indexed
-    local n = #t
-    if n == 0 then
-        return ""
-    elseif n == 1 then
-        local k = t[1]
-        if k == true then
-            return "++" -- we need to distinguish from "true"
-        elseif k == false then
-            return "--" -- we need to distinguish from "false"
-        else
-            return tostring(k) -- number or string
-        end
-    else
-        local s = { }
-        for i=1,n do
-            local k = t[i]
-            if k == true then
-                s[i] = "++" -- we need to distinguish from "true"
-            elseif k == false then
-                s[i] = "--" -- we need to distinguish from "false"
-            else
-                s[i] = k -- number or string
-            end
-        end
-        return concat(s,",")
-    end
-end
+-- local function tabstr_mixed(t) -- indexed
+--     local n = #t
+--     if n == 0 then
+--         return ""
+--     elseif n == 1 then
+--         local k = t[1]
+--         if k == true then
+--             return "++" -- we need to distinguish from "true"
+--         elseif k == false then
+--             return "--" -- we need to distinguish from "false"
+--         else
+--             return tostring(k) -- number or string
+--         end
+--     else
+--         local s = { }
+--         for i=1,n do
+--             local k = t[i]
+--             if k == true then
+--                 s[i] = "++" -- we need to distinguish from "true"
+--             elseif k == false then
+--                 s[i] = "--" -- we need to distinguish from "false"
+--             else
+--                 s[i] = k -- number or string
+--             end
+--         end
+--         return concat(s,",")
+--     end
+-- end
 
-local function tabstr_boolean(t)
-    local s = { }
-    local n = 0
-    for k, v in next, t do
-        n = n + 1
-        if v then
-            s[n] = k .. "+"
-        else
-            s[n] = k .. "-"
-        end
-    end
-    if n == 0 then
-        return ""
-    elseif n == 1 then
-        return s[1]
-    else
-        sort(s) -- costly but needed (occasional wrong hit otherwise)
-        return concat(s,",")
-    end
-end
+-- local function tabstr_boolean(t)
+--     local s = { }
+--     local n = 0
+--     for k, v in next, t do
+--         n = n + 1
+--         if v then
+--             s[n] = k .. "+"
+--         else
+--             s[n] = k .. "-"
+--         end
+--     end
+--     if n == 0 then
+--         return ""
+--     elseif n == 1 then
+--         return s[1]
+--     else
+--         sort(s) -- costly but needed (occasional wrong hit otherwise)
+--         return concat(s,",")
+--     end
+-- end
+
+tabstr_normal  = sequencer.tabstr_normal
+tabstr_flat    = sequencer.tabstr_flat
+tabstr_mixed   = sequencer.tabstr_mixed
+tabstr_boolean = sequencer.tabstr_boolean
 
 -- beware: we cannot unpack and repack the same table because then sharing
 -- interferes (we could catch this if needed) .. so for now: save, reload

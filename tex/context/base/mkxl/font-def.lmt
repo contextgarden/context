@@ -12,10 +12,10 @@ local lower, gsub = string.lower, string.gsub
 local tostring, next = tostring, next
 local lpegmatch = lpeg.match
 local suffixonly, removesuffix, basename = file.suffix, file.removesuffix, file.basename
-local formatters = string.formatters
 local sortedhash, sortedkeys, setmetatableindex = table.sortedhash, table.sortedkeys, table.setmetatableindex
 
-local allocate = utilities.storage.allocate
+local allocate  = utilities.storage.allocate
+local formatted = string.formatted
 
 local trace_defining     = false  trackers  .register("fonts.defining", function(v) trace_defining     = v end)
 local directive_embedall = false  directives.register("fonts.embedall", function(v) directive_embedall = v end)
@@ -272,7 +272,7 @@ function definers.applypostprocessors(tfmdata)
             if type(extrahash) == "string" and extrahash ~= "" then
                 -- e.g. a reencoding needs this
                 extrahash = gsub(lower(extrahash),"[^a-z]","-")
-                properties.fullname = formatters["%s-%s"](properties.fullname,extrahash)
+                properties.fullname = formatted("%s-%s",properties.fullname,extrahash)
             end
         end
     end

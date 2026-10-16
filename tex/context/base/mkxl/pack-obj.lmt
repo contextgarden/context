@@ -48,7 +48,7 @@ local function initializer()
     tobesaved = jobobjects.tobesaved
 end
 
-job.register('job.objects.collected', tobesaved, initializer, nil)
+job.register('job.objects.collected', tobesaved, initializer)
 
 local c_realpageno <const> = tex.iscount("realpageno")
 

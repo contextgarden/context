@@ -6273,14 +6273,24 @@ few keywords in addition to \type {to} and \type {spread}:
 
 \starttabulate[|l|p|]
 \FL
-\BC keyword            \BC explanation \NC \NR
+\BC keyword             \BC explanation \NC \NR
 \TL
-\NC \type {attr}       \NC set the given attribute to the given value \NC \NR
-\NC \type {callback}   \NC trigger the \type {alignment} callback \NC \NR
-\NC \type {discard}    \NC discard zero \prm {tabskip}'s \NC \NR
-\NC \type {noskips}    \NC don't even process zero \prm {tabskip}'s \NC \NR
-\NC \type {reverse}    \NC reverse the final rows \NC \NR
-\NC \type {nolastskip} \NC remove the last \prm {tabskip} \NC \NR
+\NC \type {attr}        \NC set the given attribute to the given value \NC \NR
+\NC \type {callback}    \NC (integer) sets the \type {alignment} callback \NC \NR
+\NC \type {callbacks}   \NC (integer) adds to the callbacks \NC \NR
+\NC \type {discard}     \NC discard zero \prm {tabskip}'s when finalizing \NC \NR
+\NC \type {noskips}     \NC don't even process zero \prm {tabskip}'s \NC \NR
+\NC \type {nofirstskip} \NC suppress initial skip \NC \NR
+\NC \type {nolastskip}  \NC suppress final skip \NC \NR
+\NC \type {reverse}     \NC reverse the final rows \NC \NR
+\NC \type {collapse}    \NC combine \prm {tabsize} in spans \NC \NR
+\NC \type {nolastskip}  \NC remove the last \prm {tabskip} \NC \NR
+\NC \type {prune}       \NC remove empty edge columns \NC \NR
+\HL
+\NC \type {split}       \NC split marked multi-line cell boxes into rows \NC \NR
+\NC \type {minheight}   \NC minimum line height \NC \NR
+\NC \type {mindepth}    \NC minimum line depth \NC \NR
+\NC \type {gluemode}    \NC controls split-boundary handling \NC \NR
 \LL
 \stoptabulate
 
@@ -6324,6 +6334,11 @@ Here is an example of \typ {nolastskip} usage:
 This feature is mostly handy for repeated preamble entries:
 
 {\showboxes \getbuffer}
+
+The split related options control how a vertical cell box gets split over lines.
+This works with multiple cells and honors penalties, and vertical space. The
+callback kicks in at given stages (when enabled) and is discussed in the chapter
+about callbacks.
 
 \stopoldprimitive
 
@@ -10706,6 +10721,12 @@ The token list passed to this primitive signals that we don't enter a table row
 yet but for instance in a \prm {halign} do something between the lines: some
 calculation or injecting inter-row material. In \LUAMETATEX\ this primitive can
 be used nested.
+
+This command accepts keywords, like \type {anchor}, \type {source} and \type
+{target} and other boxlike properties \type {xoffset}, \type {yoffset}, \type
+{xmove}, \type {ymove}, \type {shift} (when \type {add} was given beforehand,
+shifts will accumulate) and \type {orientation}. With \type {reset} the
+attributes get wiped. It forgets what has been set after the row.
 
 The alignment options can be changed for the following row with \prm
 {alignoption}. It accepts \type {firstskip}, \type {lastskip}, \type

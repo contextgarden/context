@@ -115,6 +115,48 @@ that relates to a parameter and alignment tab (and in \CONTEXT\ that is not the
 case). The \TEX book has plenty alignment examples so if you really want to learn
 about them, consult that must|-|have|-|book.
 
+One of the special features is repetition and to make that a bit more visible
+we added \type {\alignloop} which is equivalent of the double \type {\aligntab}
+that indicates that the next specification si repeated
+
+\startbuffer
+\halign {
+      % \hss\ignorespaces\alignmark\unskip\hss \aligntab\aligntab
+        \hss\ignorespaces\alignmark\unskip\hss \alignloop
+        \hss\ignorespaces\alignmark\unskip\hss
+    \cr
+        one \aligntab two \aligntab three \aligntab four
+    \cr
+        1   \aligntab 2   \aligntab 3     \aligntab 4
+    \cr
+}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\blank\getbuffer\blank
+
+The fact that there has to be a previous entry with this double tab is that a
+cell specification holds the \type {\tabskip} and we need to keep that feature.
+But we can just add a bogus cell with no content:
+
+\startbuffer
+\halign {
+        \ignorespaces\alignmark\unskip
+        \alignloop
+        \hss\ignorespaces\alignmark\unskip\hss
+    \cr
+        \aligntab one \aligntab two \aligntab three \aligntab four
+    \cr
+        \aligntab 1   \aligntab 2   \aligntab 3     \aligntab 4
+    \cr
+}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\blank\getbuffer\blank
+
 \stopsectionlevel
 
 \startsectionlevel[title=Between the lines]
@@ -439,11 +481,11 @@ also make that later on we don't have to consult useless nodes.
 
 \startsectionlevel[title=Plugins]
 
-Yet another \LUAMETATEX\ extension is a callback that kicks in between the
-preamble preroll and finalizing the alignment. Initially as test and
-demonstration a basic character alignment feature was written but that works so
-well that in some places it can replace (or compliment) the already existing
-features in the \CONTEXT\ table mechanisms.
+Yet another \LUAMETATEX\ extension is a callback that kicks in at various stages:
+preamble, preroll, package, and wrapup. Initially as test and demonstration a
+basic character alignment feature was written but that works so well that in some
+places it can replace (or compliment) the already existing features in the
+\CONTEXT\ table mechanisms.
 
 \startbuffer
 \starttabulate[|lG{.}|cG{,}|rG{=}|cG{x}|]
@@ -565,6 +607,11 @@ instead?}
 As always with such mechanisms, the question is \quotation {Where to stop?} But it
 makes for nice demos and as long as little code is needed it doesn't hurt.
 
+% 0 preamble
+% 1 preroll
+% 2 package
+% 3 wrapup
+
 \stopsectionlevel
 
 \startsectionlevel[title=Pitfalls and tricks]
@@ -601,7 +648,8 @@ In case of doubt, look at this:
 {\switchtobodyfont[8pt] \typebuffer[option=TEX]} \getbuffer
 
 The next example shows the effect of \type {\omit} and \type {\span}. The first one
-makes that in this cell the preamble template is ignored.
+makes that in this cell the preamble template is ignored. This means that the
+\type {\tabsize} of the first column is used.
 
 \startbuffer
 \halign \bgroup
@@ -609,20 +657,51 @@ makes that in this cell the preamble template is ignored.
     \tabsize 2cm\relax \hss[\alignmark]\hss \aligntab
     \tabsize 2cm\relax \hss[\alignmark]\cr
            1\aligntab       2\aligntab       3\cr
-     \omit 1\aligntab \omit 2\aligntab \omit 3\cr
+     \omit 4\aligntab \omit 5\aligntab \omit 6\cr
            1\aligntab       2\span           3\cr
            1\span           2\aligntab       3\cr
            1\span           2\span           3\cr
-           1\span \omit     2\span \omit     3\cr
-     \omit 1\span \omit     2\span \omit     3\cr
+           1\span \omit     7\span \omit     8\hfill 9\cr
+     \omit 1\span \omit     7\span \omit     8\hfill 9\cr
 \egroup
 \stopbuffer
 
 \typebuffer[option=TEX]
 
-Spans are applied at the end so you see a mix of templates applied.
+Spans are applied at the end so you see a mix of templates applied. The result
+(scaled up) is shown in \in {figure} [align:tabsize:1].
 
-{\showboxes\getbuffer[blownup-2]}
+\startplacefigure
+    [reference=align:tabsize:1,
+     title={The effect of \type {\tabsize}.}]
+    \showboxes\getbuffer[blownup-2]
+\stopplacefigure
+
+The \type {combine} option will add the \type {\tabsize} of an omitted cell to
+the assemble. This is shown in \in {figure} [align:tabsize:2].
+
+\startbuffer
+\halign combine \bgroup
+    \tabsize 2cm\relax     [\alignmark]\hss \aligntab
+    \tabsize 2cm\relax \hss[\alignmark]\hss \aligntab
+    \tabsize 2cm\relax \hss[\alignmark]\cr
+           1\aligntab       2\aligntab       3\cr
+     \omit 4\aligntab \omit 5\aligntab \omit 6\cr
+           1\aligntab       2\span           3\cr
+           1\span           2\aligntab       3\cr
+           1\span           2\span           3\cr
+           1\span \omit     7\span \omit     8\hfill 9\cr
+     \omit 1\span \omit     7\span \omit     8\hfill 9\cr
+\egroup
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startplacefigure
+    [reference=align:tabsize:2,
+     title={The effect of \type {\tabsize} with \type {combine}.}]
+    \showboxes\getbuffer[blownup-2]
+\stopplacefigure
 
 When you define an alignment inside a macro, you need to duplicate the \type
 {\alignmark} signals. This is similar to embedded macro definitions. But in

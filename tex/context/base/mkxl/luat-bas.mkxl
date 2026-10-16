@@ -21,7 +21,7 @@
 \registerctxluafile{l-lpeg}    {}
 \registerctxluafile{l-function}{}
 \registerctxluafile{l-string}  {}
-\registerctxluafile{l-table}   {}
+\registerctxluafile{l-table}   {autosuffix}
 \registerctxluafile{l-boolean} {}
 \registerctxluafile{l-number}  {autosuffix}
 \registerctxluafile{l-math}    {}

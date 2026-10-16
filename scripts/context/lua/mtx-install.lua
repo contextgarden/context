@@ -51,6 +51,8 @@ local fetch    = false
 local https    = false
 local request  = false
 
+io.output():setvbuf("no")
+
 -- check for 200
 
 if client and client.supported and client.supported() then
@@ -518,11 +520,14 @@ function install.update()
         return
     end
 
+    report("using servers %a",server)
+
     local list   = utilities.parsers.settings_to_array(server)
     local server = false
 
     for i=1,#list do
         local host = list[i]
+        report("checking: protocol %a, host %a, instance %a",protocol,host,instance)
         local data, status = fetch(protocol .. "://" .. host .. "/" .. instance .. "/tex/status.tma")
         if tonumber(status) == 200 and type(data) == "string" then
             local t = loadstring(data)
@@ -643,7 +648,7 @@ function install.update()
     else
      -- report("xbit bad : %s",contextbin)
     end
-    -- in case we can't fidn the cache etc
+    -- in case we can't find the cache etc
     run("%s --generate",mtxrunbin)
     -- always wipe bytecodes (we have no way to catch vm updates)
     if environment.argument("erase") then
@@ -688,7 +693,7 @@ function install.goodies()
 end
 
 if environment.argument("secure") then
-    if https() then
+    if https then
         protocol = "https"
     else
         report("https is not supported, quitting")

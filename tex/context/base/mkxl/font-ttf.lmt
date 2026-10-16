@@ -34,8 +34,8 @@ if not modules then modules = { } end modules ['font-ttf'] = {
 --    delta  = (1-factor)*left + factor * right
 
 local next, type, unpack = next, type, unpack
-local sqrt, round, abs, min, max = math.sqrt, math.round, math.abs, math.min, math.max
-local char, rep = string.char, string.rep
+local sqrt, round, floor, abs, min, max = math.sqrt, math.round, math.floor, math.abs, math.min, math.max
+local byte, char, rep = string.byte, string.char, string.rep
 local concat = table.concat
 local setmetatableindex = table.setmetatableindex
 
@@ -58,6 +58,7 @@ local read2dot14        = streamreader.read2dot14     -- 16-bit signed fixed num
 local readinteger       = streamreader.readinteger1
 local readcardinaltable = streamreader.readcardinaltable
 local readintegertable  = streamreader.readintegertable
+local readstring        = streamreader.readstring
 
 directives.register("fonts.streamreader",function()
 
@@ -75,6 +76,7 @@ directives.register("fonts.streamreader",function()
     readinteger       = streamreader.readinteger1
     readcardinaltable = streamreader.readcardinaltable
     readintegertable  = streamreader.readintegertable
+    readstring        = streamreader.readstring
 
 end)
 
@@ -929,7 +931,13 @@ local function repackpoints(glyphs,shapes)
                 for i=1,nofcontours do
                     r = r + 1 result[r] = toshort(contours[i]-1)
                 end
-                r = r + 1 result[r] = s_zero -- no instructions
+                local instructions = shape.instructions
+                if instructions then
+                    r = r + 1 result[r] = toshort(#instructions)
+                    r = r + 1 result[r] = instructions
+                else
+                    r = r + 1 result[r] = s_zero -- no instructions
+                end
                 local points   = shape.points
                 local currentx = 0
                 local currenty = 0
@@ -939,8 +947,8 @@ local function repackpoints(glyphs,shapes)
                 local nofflags = 0
                 for i=1,#points do
                     local pt = points[i]
-                    local px = pt[1]
-                    local py = pt[2]
+                    local px = floor(pt[1] + 0.5) -- instances have fractions, we round like
+                    local py = floor(pt[2] + 0.5) -- freetype and so don't accumulate errors
                     local fl = pt[3] and 0x01 or 0x00
                     if px == currentx then
                         fl = fl + 0x10
@@ -1055,7 +1063,7 @@ local flags = { }
 -- local flag_overlap_simple <const> = 0x40
 -- local flag_reserved       <const> = 0x80
 
-local function readglyph(f,nofcontours,glyphend) -- read deltas here, saves space
+local function readglyph(f,nofcontours,glyphend,keephints) -- read deltas here, saves space
     local points          = { }
  -- local instructions    = { }
     local contours        = { } -- readintegertable(f,nofcontours,short)
@@ -1076,7 +1084,12 @@ local function readglyph(f,nofcontours,glyphend) -- read deltas here, saves spac
     if getposition(f) + nofinstructions > glyphend then
         return
     end
-    skipbytes(f,nofinstructions)
+    local instructions = false
+    if keephints and nofinstructions > 0 then
+        instructions = readstring(f,nofinstructions)
+    else
+        skipbytes(f,nofinstructions)
+    end
     -- Because flags can repeat we don't know the amount ... in fact this is not
     -- that efficient (small files but more mem). Why bother.
     --
@@ -1156,11 +1169,12 @@ local function readglyph(f,nofcontours,glyphend) -- read deltas here, saves spac
         points[i][2] = y
     end
     return {
-        type      = "glyph",
-        points    = points,
-        contours  = contours,
-        nofpoints = nofpoints,
-     -- overlap   = hasoverlap or nil
+        type         = "glyph",
+        points       = points,
+        contours     = contours,
+        nofpoints    = nofpoints,
+        instructions = instructions or nil,
+     -- overlap      = hasoverlap or nil
     }
 end
 
@@ -1319,6 +1333,66 @@ function readers.loca(f,fontdata,specification)
     end
 end
 
+-- When we keep the hints (fonts.truetype.keephints) the cvt, fpgm and prep tables are copied,
+-- as pdftex does, and so are the glyph instructions. Their point numbers stay valid because we
+-- repack all points, but composites are flattened so they lose theirs. An instance of a
+-- variable font is embedded as static font, so its cvt gets the cvar deltas and we can't keep
+-- hints that ask for the variation (getvariation).
+
+local hinttags = { "cvt", "fpgm", "prep" }
+
+local function getvariation(code) -- we need to skip the pushed data
+    local i = 1
+    local n = code and #code or 0
+    while i <= n do
+        local b = byte(code,i)
+        if b == 0x91 then
+            return true
+        elseif b == 0x40 then -- npushb
+            i = i + 2 + (byte(code,i+1) or 0)
+        elseif b == 0x41 then -- npushw
+            i = i + 2 + 2 * (byte(code,i+1) or 0)
+        elseif b >= 0xB0 and b <= 0xB7 then -- pushb
+            i = i + 2 + (b - 0xB0)
+        elseif b >= 0xB8 and b <= 0xBF then -- pushw
+            i = i + 3 + 2 * (b - 0xB8)
+        else
+            i = i + 1
+        end
+    end
+    return false
+end
+
+local function usesvariation(hinttables,shapes)
+    if getvariation(hinttables.fpgm) or getvariation(hinttables.prep) then
+        return true
+    end
+    for index=0,#shapes do
+        local shape = shapes[index]
+        if shape and getvariation(shape.instructions) then
+            return true
+        end
+    end
+    return false
+end
+
+local function readhinttables(f,fontdata,specification)
+    local tables     = fontdata.tables
+    local hinttables = { }
+    for i=1,#hinttags do
+        local tag       = hinttags[i]
+        local datatable = tables[tag]
+        if datatable and datatable.length > 0 then
+            setposition(f,datatable.offset)
+            hinttables[tag] = readstring(f,datatable.length)
+        end
+    end
+    if specification.instance and hinttables.cvt then
+        hinttables.cvt = readers.cvar(f,fontdata,specification) or hinttables.cvt
+    end
+    return hinttables
+end
+
 function readers.glyf(f,fontdata,specification) -- part goes to cff module
     local tableoffset = gotodatatable(f,fontdata,"glyf",specification.glyphs)
     if tableoffset then
@@ -1330,6 +1404,7 @@ function readers.glyf(f,fontdata,specification) -- part goes to cff module
             local nothing    = { 0, 0, 0, 0 }
             local shapes     = { }
             local loadshapes = specification.shapes or specification.instance or specification.streams
+            local hinttables = specification.keephints and specification.streams and readhinttables(f,fontdata,specification)
             for index=0,nofglyphs-1 do
                 local location = locations[index]
                 local length   = locations[index+1] - location
@@ -1353,7 +1428,7 @@ function readers.glyf(f,fontdata,specification) -- part goes to cff module
                     elseif nofcontours == 0 then
                         shapes[index] = readnothing(f)
                     elseif nofcontours > 0 then
-                        shapes[index] = readglyph(f,nofcontours,glyphend)
+                        shapes[index] = readglyph(f,nofcontours,glyphend,hinttables)
                     else
                         shapes[index] = readcomposite(f,glyphend)
                     end
@@ -1377,6 +1452,17 @@ function readers.glyf(f,fontdata,specification) -- part goes to cff module
                 if checknotdef(glyphs,shapes,fontdata.fontheader and fontdata.fontheader.units) then
                     report("missing .notdef, using a rectangle instead")
                 end
+                if hinttables and fontdata.tables.fvar and usesvariation(hinttables,shapes) then
+                    report("hints dropped because they ask for the variation")
+                    hinttables = false
+                    for index=0,#shapes do
+                        local shape = shapes[index]
+                        if shape then
+                            shape.instructions = nil
+                        end
+                    end
+                end
+                fontdata.hinttables = hinttables or nil
                 if specification.instance then
                     if specification.streams then
                         repackpoints(glyphs,shapes)
@@ -1719,4 +1805,86 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
             startoffset = nextoffset
         end
     end
+end
+
+-- The cvar table looks like gvar but has one tuple (always embedded) per variation and one
+-- delta per cvt entry. It is only needed when we keep the hints of an instance.
+
+function readers.cvar(f,fontdata,specification)
+    local factors     = specification.factors
+    local tableoffset = gotodatatable(f,fontdata,"cvar",factors)
+    if not tableoffset then
+        return
+    end
+    local cvt       = fontdata.tables.cvt
+    local nofvalues = cvt.length // 2
+    local nofaxis   = #factors
+    local version   = readulong(f) -- 1.0
+    local count     = readushort(f)
+    local offset    = tableoffset + readushort(f) -- to serialized
+    local sizes     = { }
+    local private   = { }
+    local regions   = { }
+    for i=1,(count & 0x0FFF) do
+        sizes[i]    = readushort(f)
+        local flags = readushort(f)
+        if (flags & 0x8000) == 0 then
+            return -- no embedded peak, invalid
+        end
+        local peak  = readtuplerecord(f,nofaxis)
+        local start = nil
+        local stop  = nil
+        if (flags & 0x4000) ~= 0 then -- intermediate
+            start = readtuplerecord(f,nofaxis)
+            stop  = readtuplerecord(f,nofaxis)
+        end
+        local region = { }
+        for a=1,nofaxis do
+            local p = peak[a]
+            region[a] = {
+                start = start and start[a] or min(p,0),
+                peak  = p,
+                stop  = stop  and stop [a] or max(p,0),
+            }
+        end
+        regions[i] = region
+        private[i] = (flags & 0x2000) ~= 0
+    end
+    local scales    = helpers.getscales(regions,factors)
+    local shared    = nil
+    local nofshared = nil
+    if (count & 0x8000) ~= 0 then -- shared points
+        setposition(f,offset)
+        shared, nofshared = readpoints(f)
+        offset = getposition(f)
+    end
+    local deltas = { }
+    for i=1,#regions do
+        setposition(f,offset)
+        local points    = shared
+        local nofpoints = nofshared
+        if private[i] then
+            points, nofpoints = readpoints(f)
+        end
+        if nofpoints == 0 then -- all entries
+            nofpoints = nofvalues
+        end
+        local scale  = scales[i]
+        local values = nofpoints and scale ~= 0 and readdeltas(f,nofpoints)
+        if values then
+            for j=1,nofpoints do
+                local k = points and points[j] or j
+                deltas[k] = (deltas[k] or 0) + scale * (values[j] or 0)
+            end
+        end
+        offset = offset + sizes[i]
+    end
+    setposition(f,cvt.offset)
+    local result = { }
+    for i=1,nofvalues do
+        local value = readshort(f)
+        local delta = deltas[i]
+        result[i] = toshort(delta and floor(value + delta + 0.5) or value) -- rounding like freetype
+    end
+    return concat(result)
 end

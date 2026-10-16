@@ -830,11 +830,12 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_val(lmt_node_fields_rule, 15, integer_field,   off);
     set_value_entry_val(lmt_node_fields_rule, 16, integer_field,   thickness);
 
-    lmt_node_fields_style = lmt_aux_allocate_value_info(3);
+    lmt_node_fields_style = lmt_aux_allocate_value_info(4);
 
     set_value_entry_val(lmt_node_fields_style, 0, attribute_field, attr);
     set_value_entry_val(lmt_node_fields_style, 1, integer_field,   style);
     set_value_entry_val(lmt_node_fields_style, 2, integer_field,   scale);
+    set_value_entry_val(lmt_node_fields_style, 3, integer_field,   glyphscale);
 
     lmt_node_fields_parameter = lmt_aux_allocate_value_info(3);
 
@@ -3666,6 +3667,9 @@ void tex_show_node_list(halfword p, int threshold, int max)
                     tex_print_format("%l..<content>"); /* one level */
                     tex_print_token_list(NULL, align_record_post_part(p)); /*tex No ref count token here. */
                     break;
+                case style_node:
+                    tex_print_format(", style %i, scale %i, glyphscale", style_style(p), style_scale(p), style_glyph_scale(p));
+                    break;
                 case temp_node:
                     break;
                 default:
@@ -3686,7 +3690,7 @@ void tex_show_node_list(halfword p, int threshold, int max)
 
 */
 
-static halfword tex_aux_get_actual_box_width(halfword r, halfword p, scaled initial_width)
+static scaled tex_aux_get_actual_box_width(halfword r, halfword p, scaled initial_width)
 {
     /*tex calculated |size| */
     scaled w = -max_dimension;
@@ -3784,7 +3788,7 @@ static halfword tex_aux_get_actual_box_width(halfword r, halfword p, scaled init
     return w;
 }
 
-halfword tex_actual_box_width(halfword r, scaled base_width)
+scaled tex_actual_box_width(halfword r, scaled base_width)
 {
     /*tex
 
@@ -4166,14 +4170,14 @@ int tex_glyph_has_dimensions(halfword p)
     }
 }
 
-halfword tex_kern_dimension(halfword p)
+scaled tex_kern_dimension(halfword p)
 {
     return kern_amount(p);
 }
 
-halfword tex_kern_dimension_ex(halfword p)
+scaled tex_kern_dimension_ex(halfword p)
 {
-    halfword k = kern_amount(p);
+    scaled k = kern_amount(p);
     if (k && kern_expansion(p)) {
         k = tex_ext_xn_over_d(k, scaling_factor_squared + kern_expansion(p), scaling_factor_squared);
     }
@@ -5556,7 +5560,7 @@ int tex_flatten_leaders(halfword box, int grp, int just_pack, int location, int 
                     halfword leader = glue_leader_ptr(current);
                     if (leader && (node_type(leader) == hlist_node || node_type(leader) == vlist_node)) {
                         halfword packed = null;
-                        halfword amount = glue_amount(current);
+                        scaled amount = glue_amount(current);
                         halfword callback = glue_callback(current);
                         double width = (double) amount;
                         switch (box_glue_sign(box)) {

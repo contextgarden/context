@@ -31,7 +31,7 @@ local helpinfo = [[
 
 local application = logs.application {
     name     = "mtx-server",
-    banner   = "Simple Webserver For Helpers 0.10",
+    banner   = "Simple Webserver For Helpers 1.00",
     helpinfo = helpinfo,
 }
 
@@ -48,116 +48,9 @@ local gettime = os.gettimeofday or os.clock
 scripts           = scripts           or { }
 scripts.webserver = scripts.webserver or { }
 
-local socket = socket or require("socket")
------ http   = http   or require("socket.http") -- not needed
-
--- The following two lists are taken from webrick (ruby) and
--- extended with a few extra suffixes.
-
-local mimetypes = {
-    ai    = 'application/postscript',
-    asc   = 'text/plain',
-    avi   = 'video/x-msvideo',
-    bin   = 'application/octet-stream',
-    bmp   = 'image/bmp',
-    bz2   = 'application/x-bzip2',
-    cer   = 'application/pkix-cert',
-    class = 'application/octet-stream',
-    crl   = 'application/pkix-crl',
-    crt   = 'application/x-x509-ca-cert',
-    css   = 'text/css',
-    dms   = 'application/octet-stream',
-    doc   = 'application/msword',
-    dvi   = 'application/x-dvi',
-    eps   = 'application/postscript',
-    etx   = 'text/x-setext',
-    exe   = 'application/octet-stream',
-    gif   = 'image/gif',
-    gz    = 'application/x-tar',
-    hqx   = 'application/mac-binhex40',
-    htm   = 'text/html',
-    html  = 'text/html',
-    jpe   = 'image/jpeg',
-    jpeg  = 'image/jpeg',
-    jpg   = 'image/jpeg',
-    lha   = 'application/octet-stream',
-    lzh   = 'application/octet-stream',
-    mov   = 'video/quicktime',
-    mpe   = 'video/mpeg',
-    mpeg  = 'video/mpeg',
-    mpg   = 'video/mpeg',
-    pbm   = 'image/x-portable-bitmap',
-    pdf   = 'application/pdf',
-    pgm   = 'image/x-portable-graymap',
-    png   = 'image/png',
-    pnm   = 'image/x-portable-anymap',
-    ppm   = 'image/x-portable-pixmap',
-    ppt   = 'application/vnd.ms-powerpoint',
-    ps    = 'application/postscript',
-    qt    = 'video/quicktime',
-    ras   = 'image/x-cmu-raster',
-    rb    = 'text/plain',
-    rd    = 'text/plain',
-    rgb   = 'image/x-rgb',
-    rtf   = 'application/rtf',
-    sgm   = 'text/sgml',
-    sgml  = 'text/sgml',
-    snd   = 'audio/basic',
-    tar   = 'application/x-tar',
-    tgz   = 'application/x-tar',
-    tif   = 'image/tiff',
-    tiff  = 'image/tiff',
-    txt   = 'text/plain',
-    xbm   = 'image/x-xbitmap',
-    xls   = 'application/vnd.ms-excel',
-    xml   = 'text/xml',
-    xpm   = 'image/x-xpixmap',
-    xwd   = 'image/x-xwindowdump',
-    zip   = 'application/zip',
-}
-
-local messages = {
-    [100] = 'Continue',
-    [101] = 'Switching Protocols',
-    [200] = 'OK',
-    [201] = 'Created',
-    [202] = 'Accepted',
-    [203] = 'Non-Authoritative Information',
-    [204] = 'No Content',
-    [205] = 'Reset Content',
-    [206] = 'Partial Content',
-    [300] = 'Multiple Choices',
-    [301] = 'Moved Permanently',
-    [302] = 'Found',
-    [303] = 'See Other',
-    [304] = 'Not Modified',
-    [305] = 'Use Proxy',
-    [307] = 'Temporary Redirect',
-    [400] = 'Bad Request',
-    [401] = 'Unauthorized',
-    [402] = 'Payment Required',
-    [403] = 'Forbidden',
-    [404] = 'Not Found',
-    [405] = 'Method Not Allowed',
-    [406] = 'Not Acceptable',
-    [407] = 'Proxy Authentication Required',
-    [408] = 'Request Timeout',
-    [409] = 'Conflict',
-    [410] = 'Gone',
-    [411] = 'Length Required',
-    [412] = 'Precondition Failed',
-    [413] = 'Request Entity Too Large',
-    [414] = 'Request-URI Too Large',
-    [415] = 'Unsupported Media Type',
-    [416] = 'Request Range Not Satisfiable',
-    [417] = 'Expectation Failed',
-    [500] = 'Internal Server Error',
-    [501] = 'Not Implemented',
-    [502] = 'Bad Gateway',
-    [503] = 'Service Unavailable',
-    [504] = 'Gateway Timeout',
-    [505] = 'HTTP Version Not Supported',
-}
+local httpserver = server.httpserver
+local mimetypes  = server.mimetypes
+local messages   = server.messages
 
 local f_content_length = formatters["Content-Length: %s\r\n"]
 local f_content_type   = formatters["Content-Type: %s\r\n"]
@@ -168,7 +61,7 @@ local handlers = { }
 local function errormessage(client,configuration,n)
     local data = f_error_title(n,messages[n],n,messages[n])
     report("handling error %s: %s",n,messages[n])
-    handlers.generic(client,configuration,data,nil,true)
+    return handlers.generic(client,configuration,data,nil,true)
 end
 
 local validpaths, registered = { }, { }
@@ -202,17 +95,21 @@ function handlers.generic(client,configuration,data,suffix,iscontent)
         end
     end
     if data and data ~= "" then
-        client:send("HTTP/1.1 200 OK\r\n")
-        client:send("Connection: close\r\n")
-        client:send(f_content_length(#data))
-        client:send(f_content_type(suffix and mimetypes[suffix] or "text/html"))
-        client:send("Cache-Control: no-cache, no-store, must-revalidate, max-age=0\r\n")
-        client:send("\r\n")
-        client:send(data)
-        client:send("\r\n")
+        return {
+            status = 200,
+            body   = data,
+            mime   = suffix and mimetypes[suffix],
+--             headers = {
+--                 ["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0",
+--             }
+        }
     else
         report("unknown file: %s",tostring(name))
-        errormessage(client,configuration,404)
+        return {
+            status = 404,
+            mime   = "text/html",
+            body   = configuration,
+        }
     end
 end
 
@@ -251,7 +148,7 @@ function handlers.lua(client,configuration,filename,suffix,iscontent,hashed) -- 
             end
         else
             report("problematic script: %s",filename)
-            errormessage(client,configuration,404)
+            return errormessage(client,configuration,404)
         end
     end
     if result then
@@ -266,22 +163,22 @@ function handlers.lua(client,configuration,filename,suffix,iscontent,hashed) -- 
             if result.content then
                 local suffix = result.type or "text/html"
                 local action = handlers[suffix] or handlers.generic
-                action(client,configuration,result.content,suffix,true) -- content
+                return action(client,configuration,result.content,suffix,true) -- content
             elseif result.filename then
                 local suffix = filesuffix(result.filename) or "text/html"
                 local action = handlers[suffix] or handlers.generic
-                action(client,configuration,result.filename,suffix,false) -- filename
+                return action(client,configuration,result.filename,suffix,false) -- filename
             else
                 report("no content of filename in result")
-                errormessage(client,configuration,404)
+                return errormessage(client,configuration,404)
             end
         else
             report("no valid result")
-            errormessage(client,configuration,500)
+            return errormessage(client,configuration,500)
         end
     else
         report("no result")
-        errormessage(client,configuration,404)
+        return errormessage(client,configuration,404)
     end
 end
 
@@ -291,20 +188,6 @@ handlers.pdf  = handlers.generic
 
 local indices    = { "index.htm", "index.html" }
 local portnumber = 8088
-
-local newline    = patterns.newline
-local spacer     = patterns.spacer
-local whitespace = patterns.whitespace
-local method     = P("GET")
-                 + P("POST")
-local identify   = (1-method)^0
-                 * C(method)
-                 * spacer^1
-                 * C((1-spacer)^1)
-                 * spacer^1
-                 * P("HTTP/")
-                 * (1-whitespace)^0
-                 * C(P(1)^0)
 
 function scripts.webserver.run(configuration)
     -- check configuration
@@ -339,38 +222,30 @@ function scripts.webserver.run(configuration)
         configuration.scripts = dir.expandname(joinpath(configuration.root or ".",configuration.scripts or "."))
     end
     -- so far for checks
-    report("running at port: %s",configuration.port)
-    report("document root: %s",configuration.root or resolvers.ownpath)
-    report("main index file: %s",configuration.index)
-    report("scripts subpath: %s",configuration.scripts)
+    report("running at port : %s",configuration.port)
+    report("document root   : %s",configuration.root or resolvers.ownpath)
+    report("main index file : %s",configuration.index)
+    report("scripts subpath : %s",configuration.scripts)
     report("context services: http://localhost:%s/mtx-server-ctx-startup.lua",configuration.port)
-    local server = assert(socket.bind("*", configuration.port))
+
     local script = configuration.script
-    while true do -- blocking
-     -- local start = gettime()
-        local client = server:accept()
-        client:settimeout(configuration.timeout or 60)
-        local request, e = client:receive()
-        if e then
-            -- probably a time out
-         -- errormessage(client,configuration,404)
-        else
-            local from = client:getpeername()
-            report("request from: %s",tostring(from))
-            report("request data: %s",tostring(request))
-         -- local fullurl = match(request,"(GET) (.+) HTTP/.*$") or "" -- todo: more clever / post
-         -- if fullurl == "" then
-            local method, fullurl, body = lpegmatch(identify,request)
+
+    httpserver {
+        port       = configuration.port,
+        timeout    = configuration.timeout or 60,
+        report     = report,
+     -- statistics = "statistics",
+        action     = function(request)
+            local from    = request.ip
+            local method  = request.method
+            local fullurl = request.path
+            local body    = request.body
+            report("request from  : %s",tostring(from))
+            report("request method: %s",tostring(method))
+            report("request url   : %s",fullurl)
             if method == "" or fullurl == "" then
-                report("no url")
-                errormessage(client,configuration,404)
+                return errormessage(client,configuration,404)
             else
-
-                -- todo: method: POST
-
-                fullurl = url.unescapeget(fullurl) or ""
-                report("requested url: %s",fullurl)
-             -- fullurl = socket.url.unescape(fullurl) -- happens later
                 local hashed = urlhashed(fullurl)
                 local query = urlquery(hashed.query)
                 local filename = hashed.path -- hm, not query?
@@ -382,14 +257,12 @@ function scripts.webserver.run(configuration)
                     local action = handlers[suffix] or handlers.generic
                     if action then
                         report("performing action: %s",filename)
-                        action(client,configuration,filename,suffix,false,hashed) -- filename and no content
+                        return action(client,configuration,filename,suffix,false,hashed) -- filename and no content
                     else
                         report("invalid action: %s",filename)
-                        errormessage(client,configuration,404)
+                        return errormessage(client,configuration,404)
                     end
                 elseif filename then
-                    local rawname = socket.url.unescape(filename)
-                    filename = rawname
                     report("requested action: %s",filename or "?")
                     if find(filename,"%.%.") then
                         filename = nil -- invalid path
@@ -402,20 +275,18 @@ function scripts.webserver.run(configuration)
                     local action = handlers[suffix] or handlers.generic
                     if action then
                         report("performing action: %s",filename or "?")
-                        action(client,configuration,filename,suffix,false,hashed) -- filename and no content
+                        return action(client,configuration,filename,suffix,false,hashed) -- filename and no content
                     else
                         report("invalid action: %s",filename or "?")
-                        errormessage(client,configuration,404)
+                        return errormessage(client,configuration,404)
                     end
                 else
                     report("invalid request")
-                    errormessage(client,configuration,404)
+                    return errormessage(client,configuration,404)
                 end
             end
         end
-        client:close()
-     -- report("time spent with client: %0.03f seconds",gettime()-start)
-    end
+    }
 end
 
 if environment.argument("auto") then

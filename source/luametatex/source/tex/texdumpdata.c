@@ -8,7 +8,7 @@ dump_state_info lmt_dump_state = {
     .statistics = { 0 },
 };
 
-const static char *dump_statistic_names[] = {
+static const char *dump_statistic_names[] = {
     [dump_stat_fingerprint]    = "fingerprint",
     [dump_stat_engine]         = "engine",
     [dump_stat_preamble]       = "preamble",

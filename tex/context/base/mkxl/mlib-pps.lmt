@@ -7,14 +7,18 @@ if not modules then modules = { } end modules ['mlib-pps'] = {
 }
 
 local next = next
-local format, gmatch, match, split, gsub = string.format, string.gmatch, string.match, string.split, string.gsub
+local gmatch, match, split, gsub = string.gmatch, string.match, string.split, string.gsub
 local tonumber, type, unpack, next, select = tonumber, type, unpack, next, select
 local round, sqrt, min, max, abs = math.round, math.sqrt, math.min, math.max, math.abs
 local insert, remove, concat = table.insert, table.remove, table.concat
 local Cs, Cf, C, Cg, Ct, P, S, V, Carg = lpeg.Cs, lpeg.Cf, lpeg.C, lpeg.Cg, lpeg.Ct, lpeg.P, lpeg.S, lpeg.V, lpeg.Carg
 local lpegmatch, tsplitat, tsplitter = lpeg.match, lpeg.tsplitat, lpeg.tsplitter
-local formatters, toboolean = string.formatters, string.toboolean
+local toboolean = string.toboolean
 local stepper = utilities.parsers.stepper
+
+----- formatters = string.formatters
+local formatting = string.formatting
+local formatted  = string.formatted
 
 local mplib                = mplib
 local metapost             = metapost
@@ -101,31 +105,57 @@ function metapost.setoutercolor(mode,colormodel,colorattribute,transparencyattri
     innertransparency = outertransparency -- not yet used
 end
 
--- todo: get this from the lpdf module
--- todo: we need 4 digits when we have 1/254 1/255
-
-local f_f     = formatters["%.6N"]
-local f_ff    = formatters["%.3N"]
-local f_cm    = formatters["%.6N %.6N %.6N %.6N %.6N %.6N cm"]
-local f_cm_b  = formatters["q %.6N %.6N %.6N %.6N %.6N %.6N cm"]
-local f_gray  = formatters["%.3N g %.3N G"]
-local f_rgb   = formatters["%.3N %.3N %.3N rg %.3N %.3N %.3N RG"]
-local f_cmyk  = formatters["%.3N %.3N %.3N %.3N k %.3N %.3N %.3N %.3N K"]
-local f_scn   = formatters["%.3N"]
-local f_shade = formatters["MpSh%s"]
-local f_spot  = formatters["/%s cs /%s CS %s SCN %s scn"]
+local f_f     = formatting("%.6N")
+local f_ff    = formatting("%.3N")
+local f_cm    = formatting("%.6N %.6N %.6N %.6N %.6N %.6N cm")
+local f_cm_b  = formatting("q %.6N %.6N %.6N %.6N %.6N %.6N cm")
+local f_scn   = formatting("%.3N")
+local f_shade = formatting("MpSh%s")
 
 local s_cm_e <const> = "Q"
 
-local function checked_color_pair(color,...)
-    if not color then
-        return innercolor, outercolor
-    end
+local f_gray  = formatting("%.3N g %.3N G")
+local f_rgb   = formatting("%.3N %.3N %.3N rg %.3N %.3N %.3N RG")
+local f_cmyk  = formatting("%.3N %.3N %.3N %.3N k %.3N %.3N %.3N %.3N K")
+local f_spot  = formatting("/%s cs /%s CS %s SCN %s scn")
+
+local function checked_color_none(r,g,b)
+    return innercolor, outercolor
+end
+
+local function checked_color_rgb(r,g,b)
     if outercolormode == 3 then
-        innercolor = color(...)
+        innercolor = formatted(f_rgb,r,g,b,r,g,b)
         return innercolor, innercolor
     else
-        return color(...), outercolor
+        return formatted(f_rgb,r,g,b,r,g,b), outercolor
+    end
+end
+
+local function checked_color_cmyk(c,m,y,k)
+    if outercolormode == 3 then
+        innercolor = formatted(f_cmyk,c,m,y,k,c,m,y,k)
+        return innercolor, innercolor
+    else
+        return formatted(f_cmyk,c,m,y,k,c,m,y,k), outercolor
+    end
+end
+
+local function checked_color_gray(s)
+    if outercolormode == 3 then
+        innercolor = formatted(f_gray,s,s)
+        return innercolor, innercolor
+    else
+        return formatted(f_gray,s,s), outercolor
+    end
+end
+
+local function checked_color_spot(name,p)
+    if outercolormode == 3 then
+        innercolor = formatted(f_spot,name,p)
+        return innercolor, innercolor
+    else
+        return formatted(f_spot,name,p,name,p), outercolor
     end
 end
 
@@ -171,7 +201,7 @@ local commasplitter = tsplitat(",")
 
 local function checkandconvertspot(n_a,f_a,c_a,v_a,n_b,f_b,c_b,v_b)
     -- must be the same but we don't check
-    local name = f_shade(nofshades)
+    local name = formatted(f_shade,nofshades)
     local ca = lpegmatch(commasplitter,v_a)
     local cb = lpegmatch(commasplitter,v_b)
     if #ca == 0 or #cb == 0 then
@@ -185,7 +215,7 @@ local function checkandconvertspot(n_a,f_a,c_a,v_a,n_b,f_b,c_b,v_b)
 end
 
 local function checkandconvert(ca,cb,model)
-    local name = f_shade(nofshades)
+    local name = formatted(f_shade,nofshades)
     if not ca or not cb or type(ca) == "string" then
         return { 0 }, { 1 }, "DeviceGray", name
     else
@@ -336,92 +366,22 @@ metapost.reducetogray = true
 
 local models = { }
 
-do
-    local f = string.f6
-
---  local t = { false, " g ", false, " G" }
---  f_gray= function(s)
---      if s == 0 then s = "0" elseif s == 1 then s = "1" else s = f(s,"%.3f") end
---      t[1] = s t[3] = s
---      return concat(t)
---  end
-
---  local t = { false, " ", false, " ", false, " rg ", false, " ", false, " ", false, " RG" }
---  f_rgb = function(r,g,b)
---      if r == 0 then r = "0" elseif r == 1 then r = "1" else r = f(r,"%.3f") end
---      if g == 0 then g = "0" elseif g == 1 then g = "1" else g = f(g,"%.3f") end
---      if b == 0 then b = "0" elseif b == 1 then b = "1" else b = f(b,"%.3f") end
---      t[1] = r t[ 7] = r
---      t[3] = g t[ 9] = g
---      t[5] = b t[11] = b
---      return concat(t)
---  end
-
---  local t = { false, false, false, "rg", false, false, false, "RG" }
---  f_rgb = function(r,g,b)
---      if r == 0 then r = "0" elseif r == 1 then r = "1" else r = f(r,"%.3f") end
---      if g == 0 then g = "0" elseif g == 1 then g = "1" else g = f(g,"%.3f") end
---      if b == 0 then b = "0" elseif b == 1 then b = "1" else b = f(b,"%.3f") end
---      t[1] = r t[5] = r
---      t[2] = g t[6] = g
---      t[3] = b t[7] = b
---      return concat(t," ")
---  end
-
-    f_gray = function(s)
-     -- if s == 0 then s = "0" elseif s == 1 then s = "1" else s = f(s,"%.3f") end
-     -- return s .. " g "
-     --     .. s .. " G"
-        if s == 0 then
-            return "0 g 0 G"
-        elseif s == 1 then
-            return "1 g 1 G"
-        else
-            s = f(s,"%.3f")
-            return s .. " g "
-                .. s .. " G"
-        end
-    end
-    f_rgb = function(r,g,b)
-        if r == 0 then r = "0" elseif r == 1 then r = "1" else r = f(r,"%.3f") end
-        if g == 0 then g = "0" elseif g == 1 then g = "1" else g = f(g,"%.3f") end
-        if b == 0 then b = "0" elseif b == 1 then b = "1" else b = f(b,"%.3f") end
-        return r .. " " .. g .. " " .. b .. " rg "
-            .. r .. " " .. g .. " " .. b .. " RG"
-    end
-    f_cmyk = function(c,m,y,k)
-        if c == 0 then c = "0" elseif c == 1 then c = "1" else c = f(c,"%.3f") end
-        if m == 0 then m = "0" elseif m == 1 then m = "1" else m = f(m,"%.3f") end
-        if y == 0 then y = "0" elseif y == 1 then y = "1" else y = f(y,"%.3f") end
-        if k == 0 then k = "0" elseif k == 1 then k = "1" else k = f(k,"%.3f") end
-        return c .. " " .. m .. " " .. y .. " " .. k .. " k "
-            .. c .. " " .. m .. " " .. y .. " " .. k .. " K"
-    end
-    -- no gain
- -- f_gray = helper.pdfgray
- -- f_rgb  = helper.pdfrgb
- -- f_cmyk = helper.pdfcmyk
-end
-
 function models.all(cr)
     local n = #cr
     if n == 0 then
-        return checked_color_pair()
+        return checked_color_none()
     elseif metapost.reducetogray then
         if n == 1 then
             local s = cr[1]
---             return checked_color_pair(f_gray,s,s)
-            return checked_color_pair(f_gray,s)
+            return checked_color_gray(s)
         elseif n == 3 then
             local r = cr[1]
             local g = cr[2]
             local b = cr[3]
             if r == g and g == b then
---                 return checked_color_pair(f_gray,r,r)
-                return checked_color_pair(f_gray,r)
+                return checked_color_gray(r)
             else
---                 return checked_color_pair(f_rgb,r,g,b,r,g,b)
-                return checked_color_pair(f_rgb,r,g,b)
+                return checked_color_rgb(r,g,b)
             end
         else
             local c = cr[1]
@@ -430,52 +390,44 @@ function models.all(cr)
             local k = cr[4]
             if c == m and m == y and y == 0 then
                 k = 1 - k
---                 return checked_color_pair(f_gray,k,k)
-                return checked_color_pair(f_gray,k)
+                return checked_color_gray(k)
             else
---                 return checked_color_pair(f_cmyk,c,m,y,k,c,m,y,k)
-                return checked_color_pair(f_cmyk,c,m,y,k)
+                return checked_color_cmyk(c,m,y,k)
             end
         end
     elseif n == 1 then
         local s = cr[1]
---         return checked_color_pair(f_gray,s,s)
-        return checked_color_pair(f_gray,s)
+        return checked_color_gray(s)
     elseif n == 3 then
         local r = cr[1]
         local g = cr[2]
         local b = cr[3]
---         return checked_color_pair(f_rgb,r,g,b,r,g,b)
-        return checked_color_pair(f_rgb,r,g,b)
+        return checked_color_rgb(r,g,b)
     else
         local c = cr[1]
         local m = cr[2]
         local y = cr[3]
         local k = cr[4]
---         return checked_color_pair(f_cmyk,c,m,y,k,c,m,y,k)
-        return checked_color_pair(f_cmyk,c,m,y,k)
+        return checked_color_cmyk(c,m,y,k)
     end
 end
 
 function models.rgb(cr)
     local n = #cr
     if n == 0 then
-        return checked_color_pair()
+        return checked_color_none()
     elseif metapost.reducetogray then
         if n == 1 then
             local s = cr[1]
---             return checked_color_pair(f_gray,s,s)
-            return checked_color_pair(f_gray,s)
+            return checked_color_gray(s)
         elseif n == 3 then
             local r = cr[1]
             local g = cr[2]
             local b = cr[3]
             if r == g and g == b then
---                 return checked_color_pair(f_gray,r,r)
-                return checked_color_pair(f_gray,r)
+                return checked_color_gray(r)
             else
---                 return checked_color_pair(f_rgb,r,g,b,r,g,b)
-                return checked_color_pair(f_rgb,r,g,b)
+                return checked_color_rgb(r,g,b)
             end
         else
             local c = cr[1]
@@ -484,18 +436,15 @@ function models.rgb(cr)
             local k = cr[4]
             if c == m and m == y and y == 0 then
                 k = 1 - k
---                 return checked_color_pair(f_gray,k,k)
-                return checked_color_pair(f_gray,k)
+                return checked_color_gray(k)
             else
                 local r, g, b = cmyktorgb(c,m,y,k)
---                 return checked_color_pair(f_rgb,r,g,b,r,g,b)
-                return checked_color_pair(f_rgb,r,g,b)
+                return checked_color_rgb(r,g,b)
             end
         end
     elseif n == 1 then
         local s = cr[1]
---         return checked_color_pair(f_gray,s,s)
-        return checked_color_pair(f_gray,s)
+        return checked_color_gray(s)
     else
         local r = cr[1]
         local g = cr[2]
@@ -504,31 +453,27 @@ function models.rgb(cr)
         if n == 3 then
             r, g, b = cmyktorgb(r,g,b,cr[4])
         end
---         return checked_color_pair(f_rgb,r,g,b,r,g,b)
-        return checked_color_pair(f_rgb,r,g,b)
+        return checked_color_rgb(r,g,b)
     end
 end
 
 function models.cmyk(cr)
     local n = #cr
     if n == 0 then
-        return checked_color_pair()
+        return checked_color_none()
     elseif metapost.reducetogray then
         if n == 1 then
             local s = cr[1]
---             return checked_color_pair(f_gray,s,s)
-            return checked_color_pair(f_gray,s)
+            return checked_color_gray(s)
         elseif n == 3 then
             local r = cr[1]
             local g = cr[2]
             local b = cr[3]
             if r == g and g == b then
---                 return checked_color_pair(f_gray,r,r)
-                return checked_color_pair(f_gray,r)
+                return checked_color_gray(r)
             else
                 local c, m, y, k = rgbtocmyk(r,g,b)
---                 return checked_color_pair(f_cmyk,c,m,y,k,c,m,y,k)
-                return checked_color_pair(f_cmyk,c,m,y,k)
+                return checked_color_cmyk(c,m,y,k)
             end
         else
             local c = cr[1]
@@ -537,17 +482,14 @@ function models.cmyk(cr)
             local k = cr[4]
             if c == m and m == y and y == 0 then
                 k = 1 - k
---                 return checked_color_pair(f_gray,k,k)
-                return checked_color_pair(f_gray,k)
+                return checked_color_gray(k)
             else
---                 return checked_color_pair(f_cmyk,c,m,y,k,c,m,y,k)
-                return checked_color_pair(f_cmyk,c,m,y,k)
+                return checked_color_cmyk(c,m,y,k)
             end
         end
     elseif n == 1 then
         local s = cr[1]
---         return checked_color_pair(f_gray,s,s)
-        return checked_color_pair(f_gray,s)
+        return checked_color_gray(s)
     else
         local c = cr[1]
         local m = cr[2]
@@ -560,8 +502,7 @@ function models.cmyk(cr)
                 c, m, y, k = rgbtocmyk(c,m,y)
             end
         end
---         return checked_color_pair(f_cmyk,c,m,y,k,c,m,y,k)
-        return checked_color_pair(f_cmyk,c,m,y,k)
+        return checked_color_cmyk(c,m,y,k)
     end
 end
 
@@ -569,7 +510,7 @@ function models.gray(cr)
     local n = #cr
     local s = 0
     if n == 0 then
-        return checked_color_pair()
+        return checked_color_none()
     elseif n == 4 then
         s = cmyktogray(cr[1],cr[2],cr[3],cr[4])
     elseif n == 3 then
@@ -577,8 +518,7 @@ function models.gray(cr)
     else
         s = cr[1]
     end
---     return checked_color_pair(f_gray,s,s)
-    return checked_color_pair(f_gray,s)
+    return checked_color_gray(s)
 end
 
 models[1] = models.all
@@ -890,20 +830,19 @@ local tx_reset, tx_process  do
             return s
         else
             local f = lpegmatch(cleaner,t[1])
-            return formatters[f](unpack(t,2))
+            return formatted(f,unpack(t,2))
         end
     end
 
-    local fmt = formatters["%s %s %s % t"]
-    ----- pat = tsplitat(":")
+    local fmt = "%s %s %s % t"
     local pat = lpeg.tsplitter(":",tonumber) -- so that %F can do its work
 
-    local f_gray_yes = formatters["s=%.3N,a=%i,t=%.3N"]
-    local f_gray_nop = formatters["s=%.3N"]
-    local f_rgb_yes  = formatters["r=%.3N,g=%.3N,b=%.3N,a=%.3N,t=%.3N"]
-    local f_rgb_nop  = formatters["r=%.3N,g=%.3N,b=%.3N"]
-    local f_cmyk_yes = formatters["c=%.3N,m=%.3N,y=%.3N,k=%.3N,a=%.3N,t=%.3N"]
-    local f_cmyk_nop = formatters["c=%.3N,m=%.3N,y=%.3N,k=%.3N"]
+    local f_gray_yes = formatting("s=%.3N,a=%i,t=%.3N")
+    local f_gray_nop = formatting("s=%.3N")
+    local f_rgb_yes  = formatting("r=%.3N,g=%.3N,b=%.3N,a=%.3N,t=%.3N")
+    local f_rgb_nop  = formatting("r=%.3N,g=%.3N,b=%.3N")
+    local f_cmyk_yes = formatting("c=%.3N,m=%.3N,y=%.3N,k=%.3N,a=%.3N,t=%.3N")
+    local f_cmyk_nop = formatting("c=%.3N,m=%.3N,y=%.3N,k=%.3N")
 
     local ctx_MPLIBsetNtext = context.MPLIBsetNtextX
     local ctx_MPLIBsetCtext = context.MPLIBsetCtextX
@@ -929,21 +868,21 @@ local tx_reset, tx_process  do
             ctx_MPLIBsetNtext(mp_target,mp_text)
         elseif #mp_c == 1 then
             if mp_a and mp_t then
-                ctx_MPLIBsetCtext(mp_target,f_gray_yes(mp_c[1],mp_a,mp_t),mp_text)
+                ctx_MPLIBsetCtext(mp_target,formatted(f_gray_yes,mp_c[1],mp_a,mp_t),mp_text)
             else
-                ctx_MPLIBsetCtext(mp_target,f_gray_nop(mp_c[1]),mp_text)
+                ctx_MPLIBsetCtext(mp_target,formatted(f_gray_nop,mp_c[1]),mp_text)
             end
         elseif #mp_c == 3 then
             if mp_a and mp_t then
-                ctx_MPLIBsetCtext(mp_target,f_rgb_yes(mp_c[1],mp_c[2],mp_c[3],mp_a,mp_t),mp_text)
+                ctx_MPLIBsetCtext(mp_target,formatted(f_rgb_yes,mp_c[1],mp_c[2],mp_c[3],mp_a,mp_t),mp_text)
             else
-                ctx_MPLIBsetCtext(mp_target,f_rgb_nop(mp_c[1],mp_c[2],mp_c[3]),mp_text)
+                ctx_MPLIBsetCtext(mp_target,formatted(f_rgb_nop,mp_c[1],mp_c[2],mp_c[3]),mp_text)
             end
         elseif #mp_c == 4 then
             if mp_a and mp_t then
-                ctx_MPLIBsetCtext(mp_target,f_cmyk_yes(mp_c[1],mp_c[2],mp_c[3],mp_c[4],mp_a,mp_t),mp_text)
+                ctx_MPLIBsetCtext(mp_target,formatted(f_cmyk_yes,mp_c[1],mp_c[2],mp_c[3],mp_c[4],mp_a,mp_t),mp_text)
             else
-                ctx_MPLIBsetCtext(mp_target,f_cmyk_nop(mp_c[1],mp_c[2],mp_c[3],mp_c[4]),mp_text)
+                ctx_MPLIBsetCtext(mp_target,formatted(f_cmyk_nop,mp_c[1],mp_c[2],mp_c[3],mp_c[4]),mp_text)
             end
         else
             -- can't happen
@@ -1125,7 +1064,7 @@ local tx_reset, tx_process  do
             end
         end
         local f = lpegmatch(cleaner,fmt)
-        local s = formatters[f](unpack(t)) or ""
+        local s = formatted(f,unpack(t)) or ""
         mf_some_text(index,s)
     end
 
@@ -1202,7 +1141,7 @@ local tx_reset, tx_process  do
                     end
                 end
                 if not mp_hash then
-                    mp_hash = fmt(mp_text,mp_a or "-",mp_t or "-",mp_c or "-")
+                    mp_hash = formatted(fmt,mp_text,mp_a or "-",mp_t or "-",mp_c or "-")
                 end
                 box = cache[mp_hash]
                 if box then
@@ -1228,12 +1167,12 @@ local tx_reset, tx_process  do
                 local target = mp_target
                 before[#before+1] = function()
                     context.MPLIBgettextscaledcm(target,
-                        f_f(sx), -- bah ... %s no longer checks
-                        f_f(rx), -- bah ... %s no longer checks
-                        f_f(ry), -- bah ... %s no longer checks
-                        f_f(sy), -- bah ... %s no longer checks
-                        f_f(tx), -- bah ... %s no longer checks
-                        f_f(ty), -- bah ... %s no longer checks
+                        formatted(f_f,sx), -- bah ... %s no longer checks
+                        formatted(f_f,rx), -- bah ... %s no longer checks
+                        formatted(f_f,ry), -- bah ... %s no longer checks
+                        formatted(f_f,sy), -- bah ... %s no longer checks
+                        formatted(f_f,tx), -- bah ... %s no longer checks
+                        formatted(f_f,ty), -- bah ... %s no longer checks
                         sxsy(box.width,box.height,box.depth))
                 end
             else
@@ -1266,12 +1205,12 @@ local function bx_process(object,prescript,before,after)
         local wd, ht, dp = nodes.boxes.dimensions(bx_category,bx_name)
         before[#before+1] = function()
             context.MPLIBgetboxscaledcm(bx_category,bx_name,
-                f_f(sx), -- bah ... %s no longer checks
-                f_f(rx), -- bah ... %s no longer checks
-                f_f(ry), -- bah ... %s no longer checks
-                f_f(sy), -- bah ... %s no longer checks
-                f_f(tx), -- bah ... %s no longer checks
-                f_f(ty), -- bah ... %s no longer checks
+                formatted(f_f,sx), -- bah ... %s no longer checks
+                formatted(f_f,rx), -- bah ... %s no longer checks
+                formatted(f_f,ry), -- bah ... %s no longer checks
+                formatted(f_f,sy), -- bah ... %s no longer checks
+                formatted(f_f,tx), -- bah ... %s no longer checks
+                formatted(f_f,ty), -- bah ... %s no longer checks
                 sxsy(wd,ht,dp))
         end
         if not trace_textexts then
@@ -1414,14 +1353,14 @@ local function sh_process(object,prescript,before,after)
                 ca = { ca }
                 cb = { cb }
                 -- todo: cache the formatted
-                fractions = { tonumber(prescript[formatters["sh_fraction_%i"](1)]) or 0 }
-                opacities = { tonumber(prescript[formatters["sh_opacity_%i"](1)]) or false }
+                fractions = { tonumber(prescript[formatted("sh_fraction_%i",1)]) or 0 }
+                opacities = { tonumber(prescript[formatted("sh_opacity_%i", 1)]) or false }
                 for i=2,steps do
-                    local colora = lpegmatch(colorsplitter,prescript[formatters["sh_color_a_%i"](i)])
-                    local colorb = lpegmatch(colorsplitter,prescript[formatters["sh_color_b_%i"](i)])
+                    local colora = lpegmatch(colorsplitter,prescript[formatted("sh_color_a_%i",i)])
+                    local colorb = lpegmatch(colorsplitter,prescript[formatted("sh_color_b_%i",i)])
                     ca[i], cb[i] = checkandconvert(colora,colorb,model)
-                    fractions[i] = tonumber(prescript[formatters["sh_fraction_%i"](i)]) or (i/steps)
-                    opacities[i] = tonumber(prescript[formatters["sh_opacity_%i"](i)]) or false
+                    fractions[i] = tonumber(prescript[formatted("sh_fraction_%i",i)]) or (i/steps)
+                    opacities[i] = tonumber(prescript[formatted("sh_opacity_%i" ,i)]) or false
                 end
             end
         end
@@ -1444,9 +1383,9 @@ local function sh_process(object,prescript,before,after)
         -- kind of ugly the pdf code here
         before[#before+1] = "q /Pattern cs" -- when did pattern space creep in?
         if transformation then
-            before[#before+1] = f_cm(unpack(transformation))
+            before[#before+1] = formatted(f_cm,unpack(transformation))
         end
-        after[#after+1] = formatters["W n /%s sh Q"](name)
+        after[#after+1] = formatted("W n /%s sh Q",name)
         -- false, not nil, else mt triggered
         object.color   = false -- hm, not object.color ?
         object.type    = false
@@ -1563,7 +1502,7 @@ end
 local function fg_process(object,prescript,before,after)
     local fg_name = prescript.fg_name
     if fg_name then
-        before[#before+1] = f_cm_b(cm(object)) -- beware: does not use the cm stack
+        before[#before+1] = formatted(f_cm_b,cm(object)) -- beware: does not use the cm stack
         before[#before+1] = function()
             context.MPLIBfigure(fg_name,prescript.fg_mask or "")
         end
@@ -1580,7 +1519,7 @@ end
 --     if ms_name then
 --         local sx, rx, ry, sy, tx, ty = cm(object)
 --      -- print(sx, rx, ry, sy, tx, ty)
---         before[#before+1] = f_cm_b(cm(object)) -- beware: does not use the cm stack
+--         before[#before+1] = formatted(f_cm_b,cm(object)) -- beware: does not use the cm stack
 --         before[#before+1] = function()
 --             context.MPLIBmesh(
 --                 ms_name,
@@ -1589,12 +1528,12 @@ end
 --                 prescript.ms_lly  or "0",
 --                 prescript.ms_urx  or "0",
 --                 prescript.ms_ury  or "0",
---                 f_f(sx), -- bah ... %s no longer checks
---                 f_f(rx), -- bah ... %s no longer checks
---                 f_f(ry), -- bah ... %s no longer checks
---                 f_f(sy), -- bah ... %s no longer checks
---                 f_f(tx), -- bah ... %s no longer checks
---                 f_f(ty)  -- bah ... %s no longer checks
+--                 formatted(f_f,sx), -- bah ... %s no longer checks
+--                 formatted(f_f,rx), -- bah ... %s no longer checks
+--                 formatted(f_f,ry), -- bah ... %s no longer checks
+--                 formatted(f_f,sy), -- bah ... %s no longer checks
+--                 formatted(f_f,tx), -- bah ... %s no longer checks
+--                 formatted(f_f,ty)  -- bah ... %s no longer checks
 --             )
 --         end
 --         before[#before+1] = s_cm_e
@@ -1607,7 +1546,7 @@ local function ms_process(object,prescript,before,after)
     local ms_name = prescript.ms_name
     if ms_name then
 --         print("todo: cleanup mesh")
-        before[#before+1] = f_cm_b(cm(object)) -- beware: does not use the cm stack
+        before[#before+1] = formatted(f_cm_b,cm(object)) -- beware: does not use the cm stack
         before[#before+1] = metapost.mesh(ms_name,prescript.ms_kind)
         before[#before+1] = s_cm_e
         object.path    = false
@@ -1619,7 +1558,7 @@ local function vp_process(object,prescript,before,after)
     local vp_name = prescript.vp_name
     if vp_name then
 --         print("todo: cleanup points")
-        before[#before+1] = f_cm_b(cm(object)) -- beware: does not use the cm stack
+        before[#before+1] = formatted(f_cm_b,cm(object)) -- beware: does not use the cm stack
         after [#after +1] = s_cm_e
         local result = metapost.points(vp_name,prescript.vp_kind)
         if result then
@@ -1633,7 +1572,7 @@ end
 -- color and transparency
 
 local value = Cs ( (
-    (Carg(1) * C((1-P(","))^1)) / function(a,b) return f_ff(a * tonumber(b)) end
+    (Carg(1) * C((1-P(","))^1)) / function(a,b) return formatted(f_ff,a * tonumber(b)) end
   + P(","))^1
 )
 
@@ -1643,15 +1582,15 @@ local t_list = attributes.list[attributes.private('transparency')]
 local c_list = attributes.list[attributes.private('color')]
 
 local remappers = {
-    [1] = formatters["s=%s"],
-    [3] = formatters["r=%s,g=%s,b=%s"],
-    [4] = formatters["c=%s,m=%s,y=%s,k=%s"],
+    [1] = "s=%s",
+    [3] = "r=%s,g=%s,b=%s",
+    [4] = "c=%s,m=%s,y=%s,k=%s",
 }
 
 local processlast = 0
 local processhash = setmetatableindex(function(t,k)
     processlast = processlast + 1
-    local v = formatters["mp_%s"](processlast)
+    local v = formatted("mp_%s",processlast)
     defineprocesscolor(v,k,true,true)
     t[k] = v
     return v
@@ -1660,7 +1599,7 @@ end)
 local function checked_transparency(alternative,transparency,before,after)
     alternative  = tonumber(alternative)  or 1
     transparency = tonumber(transparency) or 0
-    before[#before+1] = formatters["/Tr%s gs"](registertransparency(nil,alternative,transparency,true))
+    before[#before+1] = formatted("/Tr%s gs",registertransparency(nil,alternative,transparency,true))
     after [#after +1] = "/Tr0 gs" -- outertransparency
 end
 
@@ -1685,7 +1624,7 @@ local function tr_process(object,prescript,before,after)
                 local components    = split(sp_value,":")
                 local specification = remappers[#components]
                 if specification then
-                    specification = specification(unpack(components))
+                    specification = formatted(specification,unpack(components))
                 else
                     specification = "s=0"
                 end
@@ -1701,12 +1640,12 @@ local function tr_process(object,prescript,before,after)
                     local components    = split(sp_value,":")
                     local specification = remappers[#components]
                     if specification then
-                        specification = specification(unpack(components))
+                        specification = formatted(specification,unpack(components))
                     else
                         specification = "s=0"
                     end
                     local sp_spec = processhash[specification]
-                    sp_specs[i] = formatters["%s=1"](sp_spec)
+                    sp_specs[i] = formatted("%s=1",sp_spec)
                 end
                 sp_specs = concat(sp_specs,",")
                 definemultitonecolor(sp_name,sp_specs,"","")
@@ -1734,35 +1673,32 @@ local function tr_process(object,prescript,before,after)
                     local factor     = cs[1]
                     if colorspace == 2 then
                         local s = factor * v[2]
---                         c_b, c_a = checked_color_pair(f_gray,s,s)
-                        c_b, c_a = checked_color_pair(f_gray,s)
+                        c_b, c_a = checked_color_gray(s)
                     elseif colorspace == 3 then
                         local r = factor * v[3]
                         local g = factor * v[4]
                         local b = factor * v[5]
---                         c_b, c_a = checked_color_pair(f_rgb,r,g,b,r,g,b)
-                        c_b, c_a = checked_color_pair(f_rgb,r,g,b)
+                        c_b, c_a = checked_color_rgb(r,g,b)
                     elseif colorspace == 4 or colorspace == 1 then
                         local c = factor * v[6]
                         local m = factor * v[7]
                         local y = factor * v[8]
                         local k = factor * v[9]
-                        c_b, c_a = checked_color_pair(f_cmyk,c,m,y,k,c,m,y,k)
+                        c_b, c_a = checked_color_cmyk(c,m,y,k,c,m,y,k)
                     elseif colorspace == 5 then
                         -- not all viewers show the fractions ok
                         local name  = v[10]
                         local value = split(v[13],",")
                         if factor ~= 1 then
                             for i=1,#value do
-                                value[i] = f_scn(factor * (tonumber(value[i]) or 1))
+                                value[i] = formatted(f_scn,factor * (tonumber(value[i]) or 1))
                             end
                         end
                         value = concat(value," ")
-                        c_b, c_a = checked_color_pair(f_spot,name,name,value,value)
+                        c_b, c_a = checked_color_spot(name,name,value,value)
                     else
                         local s = factor *v[2]
---                         c_b, c_a = checked_color_pair(f_gray,s,s)
-                        c_b, c_a = checked_color_pair(f_gray,s)
+                        c_b, c_a = checked_color_gray(s)
                     end
                 end
             end

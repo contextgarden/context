@@ -21,7 +21,7 @@ if not modules then modules = { } end modules ['math-ini'] = {
 -- changes in the engine(s).
 
 local next, type = next, type
-local formatters, find, nospaces = string.formatters, string.find, string.nospaces
+local find, nospaces = string.find, string.nospaces
 local utfchar, utfbyte = utf.char, utf.byte
 local sortedhash = table.sortedhash
 local toboolean = toboolean
@@ -34,6 +34,9 @@ local ctx_doifelsesomething = commands.doifelsesomething
 local trace_defining        = false  trackers.register("math.defining", function(v) trace_defining = v end)
 
 local report_math           = logs.reporter("mathematics","initializing")
+
+local formatting            = string.formatting
+local formatted             = string.formatted
 
 mathematics                 = mathematics or { }
 local mathematics           = mathematics
@@ -513,7 +516,7 @@ do
         actions   = { dictionaries.groupsetgroup, context },
     }
 
-    local f_dictionary = false
+    local f_dictionary = formatting("properties [%04X:%04X:%04X] [%s] %U : %s")
     local whatdetail   = "all"
 
     local function get_math_dictionary_callback(n,properties,group,index,font,char)
@@ -534,10 +537,7 @@ do
                         indexname = chardata[unicode]
                         indexname = indexname and indexname.description or "unknown"
                     end
-                    if not f_dictionary then
-                        f_dictionary = formatters["properties [%04X:%04X:%04X] [%s] %U : %s"]
-                    end
-                    return f_dictionary(properties,group,index,groupname,unicode,indexname)
+                    return formatted(f_dictionary,properties,group,index,groupname,unicode,indexname)
                 end
             end
         end

@@ -12,14 +12,19 @@ target_include_directories(luametatex PRIVATE
     source/luacore/lua55/src
 )
 
+target_link_libraries(tex PRIVATE luaoptional)
+target_link_libraries(luaoptional PRIVATE tex)
+
 target_link_libraries(luametatex
+
+  #  $<LINK_GROUP:REDEF,tex,luarest,utilities,luaoptional,mp>
+
+    luaoptional
     tex
+    luarest
+    utilities
     lua
     mp
-
-    luarest
-    luasocket
-    luaoptional
 
     pplib
     miniz
@@ -32,6 +37,19 @@ target_link_libraries(luametatex
 
 #   qhull
 )
+
+if (LMT_SOCKET_TOO)
+    target_link_libraries(luametatex
+        luasocket
+    )
+else()
+    if (WIN32)
+        target_link_libraries(luametatex
+            wsock32
+            ws2_32
+        )
+    endif()
+endif()
 
 if (LUAMETATEX_NOLDL) 
     # mingw ucrt
@@ -81,7 +99,7 @@ if (${CMAKE_HOST_SOLARIS})
         socket
         nsl
         resolv
-)
+    )
 endif()
 
 if (DEFINED LMT_OPTIMIZE)

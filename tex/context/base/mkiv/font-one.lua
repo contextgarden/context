@@ -114,7 +114,7 @@ function afm.load(filename)
                 data.pfbtime = pfbtime
                 report_afm("saving %a in cache",name)
              -- data.resources.unicodes = nil -- consistent with otf but here we save not much
-                data = containers.write(afm.cache, name, data)
+                data = containers.write(afm.cache,name,data)
                 data = containers.read(afm.cache,name)
             end
         end
@@ -363,8 +363,8 @@ local function enhance_add_extra_kerns(rawdata) -- using shcodes is not robust h
                 if kerns then
                     local extrakerns
                     for complex, simple in next, what do
-                        complex = unicodes[complex]
-                        simple = unicodes[simple]
+                        local complex = unicodes[complex]
+                        local simple = unicodes[simple]
                         if complex and simple then
                             local ks = kerns[simple]
                             if ks and not kerns[complex] then
@@ -386,8 +386,8 @@ local function enhance_add_extra_kerns(rawdata) -- using shcodes is not robust h
     local function do_it_copy(what)
         if what then
             for complex, simple in next, what do
-                complex = unicodes[complex]
-                simple  = unicodes[simple]
+                local complex = unicodes[complex]
+                local simple  = unicodes[simple]
                 if complex and simple then
                     local complexdescription = descriptions[complex]
                     if complexdescription then -- optional
@@ -709,7 +709,7 @@ local function read_from_afm(specification)
     if tfmdata then
         tfmdata.properties.name = specification.name
         tfmdata.properties.id   = specification.id
-        tfmdata = constructors.scale(tfmdata, specification)
+        tfmdata = constructors.scale(tfmdata,specification)
         local allfeatures = tfmdata.shared.features or specification.features.normal
         constructors.applymanipulators("afm",tfmdata,allfeatures,trace_features,report_afm)
         fonts.loggers.register(tfmdata,'afm',specification)

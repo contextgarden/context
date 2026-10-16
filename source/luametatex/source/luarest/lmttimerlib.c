@@ -194,7 +194,7 @@ typedef struct timer {
 
     static inline timer * timerlib_aux_valid(lua_State *L, int i)
     {
-        timer * t = lua_touserdata(L, i);
+        timer *t = lua_touserdata(L, i);
         if (t && lua_getmetatable(L, i)) {
             lua_get_metatablelua(timer_instance);
             if (! lua_rawequal(L, -1, -2)) {

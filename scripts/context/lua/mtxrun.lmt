@@ -1516,7 +1516,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 40788, stripped down to: 21839
+-- original size: 42469, stripped down to: 10539
 
 if not modules then modules={} end modules ['l-table']={
  version=1.001,
@@ -1528,7 +1528,7 @@ if not modules then modules={} end modules ['l-table']={
 local type,next,tostring,tonumber,select,rawget=type,next,tostring,tonumber,select,rawget
 local table,string=table,string
 local concat,sort=table.concat,table.sort
-local format,lower,find=string.format,string.lower,string.find
+local lower,find=string.lower,string.find
 local getmetatable,setmetatable=getmetatable,setmetatable
 local lpegmatch,patterns=lpeg.match,lpeg.patterns
 local floor=math.floor
@@ -1735,30 +1735,7 @@ table.sortedhashonly=sortedhashonly
 table.sortedindexonly=sortedindexonly
 table.sortedhashkeys=sortedhashkeys
 local function nothing() end
-local function sortedhash(t,cmp)
- if t then
-  local s
-  if cmp then
-   s=sortedhashkeys(t,function(a,b) return cmp(t,a,b) end)
-  else
-   s=sortedkeys(t) 
-  end
-  local m=#s
-  if m==1 then
-   return next,t
-  elseif m>0 then
-   local n=0
-   return function()
-    if n<m then
-     n=n+1
-     local k=s[n]
-     return k,t[k]
-    end
-   end
-  end
- end
- return nothing
-end
+local sortedhash=sequencer.sortedhash
 table.sortedhash=sortedhash
 table.sortedpairs=sortedhash 
 function table.append(t,list)
@@ -1908,402 +1885,12 @@ function table.fromhash(t)
  end
  return hsh
 end
-local noquotes,hexify,handle,compact,inline,metacheck,accurate
-local reserved=table.tohash { 
- 'and','break','do','else','elseif','end','false','for','function','if',
- 'in','local','nil','not','or','repeat','return','then','true','until','while',
- 'NaN','goto','const','global',
-}
-local function is_simple_table(t,hexify,accurate) 
- local nt=#t
- if nt>0 then
-  local n=0
-  for _,v in next,t do
-   n=n+1
-   if type(v)=="table" then
-    return nil
-   end
-  end
-  local haszero=rawget(t,0) 
-  if n==nt then
-   local tt={}
-   for i=1,nt do
-    local v=t[i]
-    local tv=type(v)
-    if tv=="number" then
-     if hexify then
-      tt[i]=format("0x%X",v)
-     elseif accurate then
-      tt[i]=format("%q",v)
-     else
-      tt[i]=v 
-     end
-    elseif tv=="string" then
-     tt[i]=format("%q",v) 
-    elseif tv=="boolean" then
-     tt[i]=v and "true" or "false"
-    else
-     return nil
-    end
-   end
-   return tt
-  elseif haszero and (n==nt+1) then
-   local tt={}
-   for i=0,nt do
-    local v=t[i]
-    local tv=type(v)
-    if tv=="number" then
-     if hexify then
-      tt[i+1]=format("0x%X",v)
-     elseif accurate then
-      tt[i+1]=format("%q",v)
-     else
-      tt[i+1]=v 
-     end
-    elseif tv=="string" then
-     tt[i+1]=format("%q",v) 
-    elseif tv=="boolean" then
-     tt[i+1]=v and "true" or "false"
-    else
-     return nil
-    end
-   end
-   tt[1]="[0] = "..tt[1]
-   return tt
-  end
- end
- return nil
-end
-table.is_simple_table=is_simple_table
-local propername=patterns.propername 
-local function dummy() end
-local function do_serialize(root,name,depth,level,indexed)
- if level>0 then
-  depth=depth.." "
-  if indexed then
-   handle(format("%s{",depth))
-  else
-   local tn=type(name)
-   if tn=="number" then
-    if hexify then
-     handle(format("%s[0x%X]={",depth,name))
-    else
-     handle(format("%s[%s]={",depth,name))
-    end
-   elseif tn=="string" then
-    if noquotes and not reserved[name] and lpegmatch(propername,name) then
-     handle(format("%s%s={",depth,name))
-    else
-     handle(format("%s[%q]={",depth,name))
-    end
-   elseif tn=="boolean" then
-    handle(format("%s[%s]={",depth,name and "true" or "false"))
-   else
-    handle(format("%s{",depth))
-   end
-  end
- end
- if root and next(root)~=nil then
-  local first=nil
-  local last=0
-  if compact then
-   last=#root
-   for k=1,last do
-    if rawget(root,k)==nil then
-     last=k-1
-     break
-    end
-   end
-   if last>0 then
-    first=1
-   end
-  end
-  local sk=sortedkeys(root)
-  for i=1,#sk do
-   local k=sk[i]
-   local v=root[k]
-   local tv=type(v)
-   local tk=type(k)
-   if compact and first and tk=="number" and k>=first and k<=last then
-    if tv=="number" then
-     if hexify then
-      handle(format("%s 0x%X,",depth,v))
-     elseif accurate then
-      handle(format("%s %q,",depth,v))
-     else
-      handle(format("%s %s,",depth,v)) 
-     end
-    elseif tv=="string" then
-     handle(format("%s %q,",depth,v))
-    elseif tv=="table" then
-     if next(v)==nil then
-      handle(format("%s {},",depth))
-     elseif inline then 
-      local st=is_simple_table(v,hexify,accurate)
-      if st then
-       handle(format("%s { %s },",depth,concat(st,", ")))
-      else
-       do_serialize(v,k,depth,level+1,true)
-      end
-     else
-      do_serialize(v,k,depth,level+1,true)
-     end
-    elseif tv=="boolean" then
-     handle(format("%s %s,",depth,v and "true" or "false"))
-    elseif tv=="function" then
-    else
-     handle(format("%s %q,",depth,tostring(v)))
-    end
-   elseif k=="__p__" then 
-    if false then
-     handle(format("%s __p__=nil,",depth))
-    end
-   elseif tv=="number" then
-    if tk=="number" then
-     if hexify then
-      if accurate then
-       handle(format("%s [0x%X]=%q,",depth,k,v))
-      else
-       handle(format("%s [0x%X]=%s,",depth,k,v))
-      end
-     elseif accurate then
-      handle(format("%s [%s]=%q,",depth,k,v))
-     else
-      handle(format("%s [%s]=%s,",depth,k,v)) 
-     end
-    elseif tk=="boolean" then
-     if hexify then
-      if accurate then
-       handle(format("%s [%s]=%q,",depth,k and "true" or "false",v))
-      else
-       handle(format("%s [%s]=%s,",depth,k and "true" or "false",v))
-      end
-     elseif accurate then
-      handle(format("%s [%s]=%q,",depth,k and "true" or "false",v))
-     else
-      handle(format("%s [%s]=%s,",depth,k and "true" or "false",v)) 
-     end
-    elseif tk~="string" then
-    elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
-     if hexify then
-      if accurate then
-       handle(format("%s %s=%q,",depth,k,v))
-      else
-       handle(format("%s %s=0x%X,",depth,k,v))
-      end
-     elseif accurate then
-      handle(format("%s %s=%q,",depth,k,v))
-     else
-      handle(format("%s %s=%s,",depth,k,v)) 
-     end
-    else
-     if hexify then
-      if accurate then
-       handle(format("%s [%q]=%q,",depth,k,v))
-      else
-       handle(format("%s [%q]=0x%X,",depth,k,v))
-      end
-     elseif accurate then
-      handle(format("%s [%q]=%q,",depth,k,v))
-     else
-      handle(format("%s [%q]=%s,",depth,k,v)) 
-     end
-    end
-   elseif tv=="string" then
-    if tk=="number" then
-     if hexify then
-      handle(format("%s [0x%X]=%q,",depth,k,v))
-     elseif accurate then
-      handle(format("%s [%q]=%q,",depth,k,v))
-     else
-      handle(format("%s [%s]=%q,",depth,k,v))
-     end
-    elseif tk=="boolean" then
-     handle(format("%s [%s]=%q,",depth,k and "true" or "false",v))
-    elseif tk~="string" then
-    elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
-     handle(format("%s %s=%q,",depth,k,v))
-    else
-     handle(format("%s [%q]=%q,",depth,k,v))
-    end
-   elseif tv=="table" then
-    if next(v)==nil then
-     if tk=="number" then
-      if hexify then
-       handle(format("%s [0x%X]={},",depth,k))
-      elseif accurate then
-       handle(format("%s [%q]={},",depth,k))
-      else
-       handle(format("%s [%s]={},",depth,k))
-      end
-     elseif tk=="boolean" then
-      handle(format("%s [%s]={},",depth,k and "true" or "false"))
-     elseif tk~="string" then
-     elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
-      handle(format("%s %s={},",depth,k))
-     else
-      handle(format("%s [%q]={},",depth,k))
-     end
-    elseif inline then
-     local st=is_simple_table(v,hexify,accurate)
-     if st then
-      if tk=="number" then
-       if hexify then
-        handle(format("%s [0x%X]={ %s },",depth,k,concat(st,", ")))
-       elseif accurate then
-        handle(format("%s [%q]={ %s },",depth,k,concat(st,", ")))
-       else
-        handle(format("%s [%s]={ %s },",depth,k,concat(st,", ")))
-       end
-      elseif tk=="boolean" then
-       handle(format("%s [%s]={ %s },",depth,k and "true" or "false",concat(st,", ")))
-      elseif tk~="string" then
-      elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
-       handle(format("%s %s={ %s },",depth,k,concat(st,", ")))
-      else
-       handle(format("%s [%q]={ %s },",depth,k,concat(st,", ")))
-      end
-     else
-      do_serialize(v,k,depth,level+1)
-     end
-    else
-     do_serialize(v,k,depth,level+1)
-    end
-   elseif tv=="boolean" then
-    if tk=="number" then
-     if hexify then
-      handle(format("%s [0x%X]=%s,",depth,k,v and "true" or "false"))
-     elseif accurate then
-      handle(format("%s [%q]=%s,",depth,k,v and "true" or "false"))
-     else
-      handle(format("%s [%s]=%s,",depth,k,v and "true" or "false"))
-     end
-    elseif tk=="boolean" then
-     handle(format("%s [%s]=%s,",depth,tostring(k),v and "true" or "false"))
-    elseif tk~="string" then
-    elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
-     handle(format("%s %s=%s,",depth,k,v and "true" or "false"))
-    else
-     handle(format("%s [%q]=%s,",depth,k,v and "true" or "false"))
-    end
-   elseif tv=="function" then
-   elseif tk=="number" then
-    if hexify then
-     handle(format("%s [0x%X]=%q,",depth,k,tostring(v)))
-    elseif accurate then
-     handle(format("%s [%q]=%q,",depth,k,tostring(v)))
-    else
-     handle(format("%s [%s]=%q,",depth,k,tostring(v)))
-    end
-   elseif tk=="boolean" then
-    handle(format("%s [%s]=%q,",depth,k and "true" or "false",tostring(v)))
-   elseif tk~="string" then
-   elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
-    handle(format("%s %s=%q,",depth,k,tostring(v)))
-   else
-    handle(format("%s [%q]=%q,",depth,k,tostring(v)))
-   end
-  end
- end
- if level>0 then
-  handle(format("%s},",depth))
- end
-end
-local function serialize(_handle,root,name,specification) 
- local tname=type(name)
- if type(specification)=="table" then
-  noquotes=specification.noquotes
-  hexify=specification.hexify
-  accurate=specification.accurate
-  handle=_handle or specification.handle or print
-  compact=specification.compact
-  inline=specification.inline and compact
-  metacheck=specification.metacheck
-  if compact==nil then
-   compact=true
-  end
-  if inline==nil then
-   inline=compact
-  end
-  if metacheck==nil then
-   metacheck=true
-  end
- else
-  noquotes=false
-  hexify=false
-  handle=_handle or print
-  compact=true
-  inline=true
-  metacheck=true
- end
- if tname=="string" then
-  if name=="return" then
-   handle("return {")
-  else
-   handle(name.."={")
-  end
- elseif tname=="number" then
-  if hexify then
-   handle(format("[0x%X]={",name))
-  else
-   handle("["..name.."]={")
-  end
- elseif tname=="boolean" then
-  if name then
-   handle("return {")
-  else
-   handle("{")
-  end
- else
-  handle("t={")
- end
- if root then
-  if metacheck and getmetatable(root) then
-   local dummy=root._w_h_a_t_e_v_e_r_
-   root._w_h_a_t_e_v_e_r_=nil
-  end
-  if next(root)~=nil then
-   do_serialize(root,name,"",0)
-  end
- end
- handle("}")
-end
-function table.serialize(root,name,specification)
- local t={}
- local n=0
- local function flush(s)
-  n=n+1
-  t[n]=s
- end
- serialize(flush,root,name,specification)
- return concat(t,"\n")
-end
-table.tohandle=serialize
-local maxtab=2*1024
-function table.tofile(filename,root,name,specification)
+table.serialize=sequencer.serialize
+function table.tofile(filename,root,name)
  local f=io.open(filename,'w')
  if f then
-  if maxtab>1 then
-   local t={}
-   local n=0
-   local function flush(s)
-    n=n+1
-    t[n]=s
-    if n>maxtab then
-     f:write(concat(t,"\n"),"\n") 
-     t={} 
-     n=0
-    end
-   end
-   serialize(flush,root,name,specification)
-   f:write(concat(t,"\n"),"\n")
-  else
-   local function flush(s)
-    f:write(s,"\n")
-   end
-   serialize(flush,root,name,specification)
-  end
   f:close()
+  f:write(serialize(root,name))
   io.flush()
  end
 end
@@ -2469,63 +2056,16 @@ function table.reverse(t)
   return t
  end
 end
-local function sequenced(t,sep,simple)
- if not t then
-  return ""
- elseif type(t)~="table" then
-  return t 
- end
- local n=#t
- local s={}
- if n>0 then
-  for i=1,n do
-   local v=t[i]
-   if type(v)=="table" then
-    s[i]="{"..sequenced(v,sep,simple).."}"
-   else
-    s[i]=tostring(t[i])
-   end
-  end
- else
-  n=0
-  for k,v in sortedhash(t) do
-   if simple then
-    if v==true then
-     n=n+1
-     s[n]=k
-    elseif v and v~="" then
-     n=n+1
-     if type(v)=="table" then
-      s[n]=k.."={"..sequenced(v,sep,simple).."}"
-     else
-      s[n]=k.."="..tostring(v)
-     end
-    end
-   else
-    n=n+1
-    if type(v)=="table" then
-     s[n]=k.."={"..sequenced(v,sep,simple).."}"
-    else
-     s[n]=k.."="..tostring(v)
-    end
-   end
-  end
- end
- if sep==true then
-  return "{ "..concat(s,", ").." }"
- else
-  return concat(s,sep or " | ")
- end
-end
-table.sequenced=sequenced
+table.sequenced=sequencer.sequenced
+local serialize=sequencer.serialize
 function table.print(t,...)
- if type(t)~="table" then
-  print(tostring(t))
+ if type(t)=="table" then
+  print(serialize(t,...))
  else
-  serialize(print,t,...)
+  print(tostring(t))
  end
 end
-if setinspector then
+if setinspector then 
  setinspector("table",function(v) if type(v)=="table" then serialize(print,v,"table") return true end end)
 end
 function table.is_empty(t)
@@ -2983,7 +2523,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-number"] = package.loaded["l-number"] or true
 
--- original size: 2507, stripped down to: 1687
+-- original size: 2480, stripped down to: 1670
 
 if not modules then modules={} end modules ['l-number']={
  version=1.001,
@@ -2993,7 +2533,7 @@ if not modules then modules={} end modules ['l-number']={
  license="see context related readme files"
 }
 local tonumber=tonumber
-local format=string.format
+local format=sequencer.format
 local concat=table.concat
 local floor=math.floor
 number=number or {}
@@ -3040,13 +2580,9 @@ end
 function number.valid(str,default)
  return tonumber(str) or default or nil
 end
-function number.toevenhex(n)
+local function toevenhex(n)
  local s=format("%X",n)
- if #s%2==0 then
-  return s
- else
-  return "0"..s
- end
+ return (#s%2~=0) and ("0"..s) or s
 end
 function number.bytetodecimal(b)
  local d=floor(b*100/255+0.5)
@@ -3161,7 +2697,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 20908, stripped down to: 10884
+-- original size: 20768, stripped down to: 11065
 
 if not modules then modules={} end modules ['l-os']={
  version=1.001,
@@ -3174,7 +2710,8 @@ local os=os
 local date,time,difftime=os.date,os.time,os.difftime
 local find,format,gsub,upper,gmatch=string.find,string.format,string.gsub,string.upper,string.gmatch
 local concat=table.concat
-local random,ceil,randomseed,modf=math.random,math.ceil,math.randomseed,math.modf
+local floor,ceil,abs,modf=math.floor,math.ceil,math.abs,math.modf
+local random,randomseed=math.random,math.randomseed
 local type,setmetatable,tonumber,tostring=type,setmetatable,tonumber,tostring
 do
  local selfdir=os.selfdir
@@ -3441,24 +2978,25 @@ do
  end
 end
 do
- local hour,min
- function os.timezone(difference)
-  if not hour then
+ local td,tz
+ local function timezone(difference)
+  if not td then
    local current=time()
    local utcdate=date("!*t",current)
    local localdate=date("*t",current)
    localdate.isdst=false
    local timediff=difftime(time(localdate),time(utcdate))
-   hour,min=modf(timediff/3600)
-   min=min*60
+   local sign=timediff<0 and "-" or "+"
+   local absdiff=abs(timediff)
+   local hour=floor(absdiff/3600)
+   local minute=floor((absdiff%3600)/60)
+   td=(timediff<0 and -hour or hour),minute
+   tz=format("%s%02d:%02d",sign,hour,minute)
   end
-  if difference then
-   return hour,min
-  else
-   return format("%+03d:%02d",hour,min) 
-  end
+  return difference and td or tz
  end
- local timeformat=format("%%s%s",os.timezone())
+ os.timezone=timezone
+ local timeformat=format("%%s%s",timezone())
  local dateformat="%Y-%m-%d %H:%M:%S"
  local lasttime=nil
  local lastdate=nil
@@ -5782,7 +5320,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 50000, stripped down to: 26375
+-- original size: 47883, stripped down to: 26386
 
 if not modules then modules={} end modules ['util-str']={
  version=1.001,
@@ -5794,7 +5332,7 @@ if not modules then modules={} end modules ['util-str']={
 utilities=utilities or {}
 utilities.strings=utilities.strings or {}
 local strings=utilities.strings
-local format,gsub,rep,sub,find,char,byte=string.format,string.gsub,string.rep,string.sub,string.find,string.char,string.byte
+local format,gsub,match,rep,sub,find,char,byte=string.format,string.gsub,string.match,string.rep,string.sub,string.find,string.char,string.byte
 local load,dump=load,string.dump
 local tonumber,type,tostring,next,setmetatable,rawset=tonumber,type,tostring,next,setmetatable,rawset
 local unpack,concat=table.unpack,table.concat
@@ -5803,11 +5341,14 @@ local patterns,lpegmatch=lpeg.patterns,lpeg.match
 local tsplitat=lpeg.tsplitat
 local utfchar,utfbyte,utflen=utf.char,utf.byte,utf.len
 local round=math.round
-local loadstripped=function(str,shortcuts)
- if shortcuts then
-  return load(dump(load(str),true),nil,nil,shortcuts)
- else
-  return load(dump(load(str),true))
+local loadstripped=function(data,environment)
+ local code=load(data,"=stripped","t")
+ if not code then
+  return nil
+ elseif environment then
+  return load(dump(code,true),"=stripped","b",environment)
+ else 
+  return load(dump(code,true),"=stripped","b")
  end
 end
 if not number then number={} end 
@@ -6246,6 +5787,10 @@ local environment={
  stripzeros=patterns.stripzeros,
  escapedquotes=string.escapedquotes,
  FORMAT=string.f6,
+ FD=string.fd,
+ FD3=string.fd3,
+ FD6=string.fd6,
+ FD9=string.fd9,
  nspaces=hashes.spaces,
  X00=hashes.X00,
  X02=false,
@@ -6301,10 +5846,7 @@ local format_left=function(f)
   return format("a%s..utfpadding(a%s,%i)",n,n,-f)
  end
 end
-local format_q=JITSUPPORTED and function()
- n=n+1
- return format("(a%s ~= nil and format('%%q',tostring(a%s)) or '')",n,n)
-end or function()
+local format_q=function()
  n=n+1
  return format("(a%s ~= nil and format('%%q',a%s) or '')",n,n)
 end
@@ -6520,25 +6062,26 @@ local format_n=function()
  n=n+1
  return format("((a%s %% 1 == 0) and format('%%i',a%s) or tostring(a%s))",n,n,n)
 end
-local format_N  if environment.FORMAT then
- format_N=function(f)
-  n=n+1
-  if not f or f=="" then
-   return format("FORMAT(a%s,'%%.9f')",n)
-  elseif f==".6" or f=="0.6" then
-   return format("FORMAT(a%s)",n)
-  else
-   return format("FORMAT(a%s,'%%%sf')",n,f)
+local format_N=function(f)
+ n=n+1
+ if not f or f=="" then
+  return format("FD(a%s,9)",n)
+ end
+ if type(f)=="string" then
+  f=tonumber(match(f,"[^%d]*([%d+])f?"))
+ end
+ if type(f)=="number" then
+  if f==3 then
+   return format("FD3(a%s)",n)
+  elseif f==6 then
+   return format("FD6(a%s)",n)
+  elseif f==9 then
+   return format("FD9(a%s)",n)
+  elseif f>=1 and f<=20 then
+   return format("FD(a%s,%i)",n,f//1)
   end
  end
-else
- format_N=function(f) 
-  n=n+1
-  if not f or f=="" then
-   f=".9"
-  end 
-  return format("(((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripzero,format('%%%sf',a%s)))",n,n,f,n)
- end
+ return format("FD(a%s)",n)
 end
 local format_a=function(f)
  n=n+1
@@ -6721,7 +6264,6 @@ local builder=Cs { "start",
  ["<"]=(prefix_any*P("<"))/format_left,
  [">"]=(prefix_any*P(">"))/format_right,
  ["*"]=Cs(((1-P("%"))^1+P("%%")/"%%")^1)/format_rest,
- ["?"]=Cs(((1-P("%"))^1      )^1)/format_rest,
  ["!"]=Carg(2)*prefix_any*P("!")*C((1-P("!"))^1)*P("!")/format_extension,
 }
 local xx=setmetatable({},{ __index=function(t,k) local v=format("%02x",k) t[k]=v return v end })
@@ -6807,24 +6349,29 @@ local pattern=Cs((newline/(os.newline or "\r")+1)^0)
 function string.replacenewlines(str)
  return lpegmatch(pattern,str)
 end
-function strings.newcollector()
- local result,r={},0
- return
-  function(fmt,str,...) 
-   r=r+1
-   result[r]=str==nil and fmt or formatters[fmt](str,...)
-  end,
-  function(connector) 
-   if result then
-    local str=concat(result,connector)
-    result,r={},0
-    return str
+do
+ local formatted=string.formatted
+ function strings.newcollector()
+  local result,r={},0
+  return
+   function(fmt,str,...) 
+    r=r+1
+    result[r]=str==nil and fmt or formatted(fmt,str,...)
+   end,
+   function(connector) 
+    if result then
+     local str=concat(result,connector)
+     result,r={},0
+     return str
+    end
    end
-  end
+ end
 end
-local f_16_16=formatters["%0.5N"]
-function number.to16dot16(n)
- return f_16_16(n/65536.0)
+do
+ local formatted=string.formatted
+ function number.to16dot16(n)
+  return formatted("%0.5N",n/65536.0)
+ end
 end
 do
  local p_whitespace=patterns.whitespace
@@ -6842,20 +6389,110 @@ do
   return cache[s]
  end
 end
-if CONTEXTLMTXMODE and CONTEXTLMTXMODE>0 then
- local t={
-  ["#"]="#H",
-  ["\n"]="#L",
-  ['"']="#Q",
-  ["\r"]="#R",
-  [" "]="#S",
-  ["\t"]="#T",
-  ["\\"]="#X",
- }
- function string.texhashed(s)
-  return (gsub(s,".",t))
- end
+local t={
+ ["#"]="#H",
+ ["\n"]="#L",
+ ['"']="#Q",
+ ["\r"]="#R",
+ [" "]="#S",
+ ["\t"]="#T",
+ ["\\"]="#X",
+}
+function string.texhashed(s)
+ return (gsub(s,".",t))
 end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+package.loaded["util-for"] = package.loaded["util-for"] or true
+
+-- original size: 3750, stripped down to: 2305
+
+if not modules then modules={} end modules ['util-for']={
+ version=1.001,
+ comment="companion to luat-lib.mkiv",
+ author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+ copyright="PRAGMA ADE / ConTeXt Development Team",
+ license="see context related readme files"
+}
+local rawget=rawget
+local rawset=rawset
+local formatted=sequencer.format
+local patterns=lpeg.patterns
+local lpegmatch=lpeg.match
+local P,C,S,Cs,Cc=lpeg.P,lpeg.C,lpeg.S,lpeg.Cs,lpeg.Cc
+local map={
+ ["%.1N"]="%\x01",
+ ["%.2N"]="%\x02",
+ ["%.3N"]="%\x03",
+ ["%.4N"]="%\x04",
+ ["%.5N"]="%\x05",
+ ["%.6N"]="%\x06",
+ ["%.7N"]="%\x07",
+ ["%.8N"]="%\x08",
+ ["%.9N"]="%\x09",
+ ["%02i"]="%\x0B",
+ ["%03i"]="%\x0C",
+ ["%04i"]="%\x0E",
+ ["%05i"]="%\x0F",
+ ["%02X"]="%\x10",
+ ["%03X"]="%\x11",
+ ["%04X"]="%\x12",
+ ["%05X"]="%\x13",
+ ["%06X"]="%\x14",
+ ["%07X"]="%\x15",
+ ["%08X"]="%\x16",
+ ["(%.6N,%.6N)"]="%\x17",
+ ["(%.6N,%.6N,%.6N)"]="%\x18",
+ ["(%.3N)"]="%\x19",
+ ["(%.3N,%.3N,%.3N)"]="%\x1A",
+ ["(%.3N,%.3N,%.3N,%.3N)"]="%\x1B",
+}
+local anything=patterns.anything
+local pattern=Cs(((lpeg.utfchartabletopattern(map)/map)+1)^0)
+local formatting=function(s) return lpegmatch(pattern,s) end
+local formatters=setmetatable(
+ {},
+ {
+  __index=function(t,k)
+   local f=lpegmatch(pattern,k)
+   local v=function(...)
+    return formatted(f,...)
+   end
+   rawset(t,k,v)
+   return v
+  end,
+  __newindex=function()
+  end,
+  __call=function(t,...)
+   return formatted(...)
+  end,
+ }
+)
+local extensions=sequencer.extensions
+setmetatable(extensions,{
+ __newindex=function(t,k,v)
+  if rawget(t,k) then
+  else
+   rawset(t,k,v)
+  end
+ end
+})
+patterns.xmlescape=Cs((P("<")/"&lt;"+P(">")/"&gt;"+P("&")/"&amp;"+P('"')/"&quot;"+anything)^0)
+patterns.texescape=Cs((C(S("#$%\\{}"))/"\\%1"+anything)^0)
+patterns.ctxescape=Cs((C(S("#$%\\{}|"))/"\\%1"+anything)^0)
+patterns.luaescape=Cs(((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0) 
+patterns.luaquoted=Cs(Cc('"')*((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0*Cc('"'))
+extensions.xml=function(s) return lpegmatch(patterns.xmlescape,s) end
+extensions.tex=function(s) return lpegmatch(patterns.texescape,s) end
+extensions.lua=function(s) return lpegmatch(patterns.luaescape,s) end
+string.formatters=formatters
+string.formatting=formatting
+string.formatter=function(str,...) return formatters[str](...) end
+string.formatted=formatted
 
 
 end -- of closure
@@ -6864,7 +6501,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 31613, stripped down to: 17344
+-- original size: 25811, stripped down to: 7017
 
 if not modules then modules={} end modules ['util-tab']={
  version=1.001,
@@ -6882,8 +6519,8 @@ local setmetatable,getmetatable,tonumber,tostring,rawget=setmetatable,getmetatab
 local type,next,rawset,rawget,tonumber,tostring,load,select=type,next,rawset,rawget,tonumber,tostring,load,select
 local lpegmatch,P,Cs,Cc=lpeg.match,lpeg.P,lpeg.Cs,lpeg.Cc
 local sortedkeys,sortedpairs=table.sortedkeys,table.sortedpairs
-local formatters=string.formatters
 local utftoeight=utf.toeight
+local formatted=string.formatted
 local splitter=lpeg.tsplitat(".")
 function utilities.tables.definetable(target,nofirst,nolast) 
  local composed=nil
@@ -6893,11 +6530,11 @@ function utilities.tables.definetable(target,nofirst,nolast)
   local name=snippets[i]
   if composed then
    composed=composed.."."..name
-    t[#t+1]=formatters["if not %s then %s = { } end"](composed,composed)
+    t[#t+1]=formatted("if not %s then %s = { } end",composed,composed)
   else
    composed=name
    if not nofirst then
-    t[#t+1]=formatters["%s = %s or { }"](composed,composed)
+    t[#t+1]=formatted("%s = %s or { }",composed,composed)
    end
   end
  end
@@ -7034,33 +6671,31 @@ function table.tocsv(t,specification)
   return ""
  end
 end
-local nspaces=string.hashes.spaces
 local function toxml(t,d,result,step)
  local r=#result
  for k,v in sortedpairs(t) do
-  local s=nspaces[d] 
   local tk=type(k)
   local tv=type(v)
   if tv=="table" then
    if tk=="number" then
-    r=r+1 result[r]=formatters["%s<entry n='%s'>"](s,k)
+    r=r+1 result[r]=formatted("%w<entry n='%s'>",d,k)
     r=toxml(v,d+step,result,step)
-    r=r+1 result[r]=formatters["%s</entry>"](s,k)
+    r=r+1 result[r]=formatted("%w</entry>",d,k)
    else
-    r=r+1 result[r]=formatters["%s<%s>"](s,k)
+    r=r+1 result[r]=formatted("%w<%s>",d,k)
     r=toxml(v,d+step,result,step)
-    r=r+1 result[r]=formatters["%s</%s>"](s,k)
+    r=r+1 result[r]=formatted("%w</%s>",d,k)
    end
   elseif tv=="string" then
    if tk=="number" then
-    r=r+1 result[r]=formatters["%s<entry n='%s'>%!xml!</entry>"](s,k,v,k)
+    r=r+1 result[r]=formatted("%w<entry n='%s'>%!xml!</entry>",d,k,v,k)
    else
-    r=r+1 result[r]=formatters["%s<%s>%!xml!</%s>"](s,k,v,k)
+    r=r+1 result[r]=formatted("%w<%s>%!xml!</%s>",d,k,v,k)
    end
   elseif tk=="number" then
-   r=r+1 result[r]=formatters["%s<entry n='%s'>%S</entry>"](s,k,v,k)
+   r=r+1 result[r]=formatted("%w<entry n='%s'>%S</entry>",d,k,v,k)
   else
-   r=r+1 result[r]=formatters["%s<%s>%S</%s>"](s,k,v,k)
+   r=r+1 result[r]=formatted("%w<%s>%S</%s>",d,k,v,k)
   end
  end
  return r
@@ -7091,7 +6726,7 @@ function tables.encapsulate(core,capsule,protect)
  end
  for key,value in next,core do
   if capsule[key] then
-   print(formatters["\ninvalid %s %a in %a"]("inheritance",key,core))
+   print(formatted("\ninvalid %s %a in %a","inheritance",key,core))
    os.exit()
   else
    capsule[key]=value
@@ -7105,7 +6740,7 @@ function tables.encapsulate(core,capsule,protect)
    __index=capsule,
    __newindex=function(t,key,value)
     if capsule[key] then
-     print(formatters["\ninvalid %s %a' in %a"]("overload",key,core))
+     print(formatted("\ninvalid %s %a' in %a","overload",key,core))
      os.exit()
     else
      rawset(t,key,value)
@@ -7114,158 +6749,7 @@ function tables.encapsulate(core,capsule,protect)
   } )
  end
 end
-if JITSUPPORTED then
- local f_hashed_string=formatters["[%Q]=%Q,"]
- local f_hashed_number=formatters["[%Q]=%s,"]
- local f_hashed_boolean=formatters["[%Q]=%l,"]
- local f_hashed_table=formatters["[%Q]="]
- local f_indexed_string=formatters["[%s]=%Q,"]
- local f_indexed_number=formatters["[%s]=%s,"]
- local f_indexed_boolean=formatters["[%s]=%l,"]
- local f_indexed_table=formatters["[%s]="]
- local f_ordered_string=formatters["%Q,"]
- local f_ordered_number=formatters["%s,"]
- local f_ordered_boolean=formatters["%l,"]
- function table.fastserialize(t,prefix)
-  local r={ type(prefix)=="string" and prefix or "return" }
-  local m=1
-  local function fastserialize(t,outer) 
-   local n=#t
-   m=m+1
-   r[m]="{"
-   if n>0 then
-    local v=t[0]
-    if v then
-     local tv=type(v)
-     if tv=="string" then
-      m=m+1 r[m]=f_indexed_string(0,v)
-     elseif tv=="number" then
-      m=m+1 r[m]=f_indexed_number(0,v)
-     elseif tv=="table" then
-      m=m+1 r[m]=f_indexed_table(0)
-      fastserialize(v)
-      m=m+1 r[m]=f_indexed_table(0)
-     elseif tv=="boolean" then
-      m=m+1 r[m]=f_indexed_boolean(0,v)
-     end
-    end
-    for i=1,n do
-     local v=t[i]
-     local tv=type(v)
-     if tv=="string" then
-      m=m+1 r[m]=f_ordered_string(v)
-     elseif tv=="number" then
-      m=m+1 r[m]=f_ordered_number(v)
-     elseif tv=="table" then
-      fastserialize(v)
-     elseif tv=="boolean" then
-      m=m+1 r[m]=f_ordered_boolean(v)
-     end
-    end
-   end
-   for k,v in next,t do
-    local tk=type(k)
-    if tk=="number" then
-     if k>n or k<0 then
-      local tv=type(v)
-      if tv=="string" then
-       m=m+1 r[m]=f_indexed_string(k,v)
-      elseif tv=="number" then
-       m=m+1 r[m]=f_indexed_number(k,v)
-      elseif tv=="table" then
-       m=m+1 r[m]=f_indexed_table(k)
-       fastserialize(v)
-      elseif tv=="boolean" then
-       m=m+1 r[m]=f_indexed_boolean(k,v)
-      end
-     end
-    else
-     local tv=type(v)
-     if tv=="string" then
-      m=m+1 r[m]=f_hashed_string(k,v)
-     elseif tv=="number" then
-      m=m+1 r[m]=f_hashed_number(k,v)
-     elseif tv=="table" then
-      m=m+1 r[m]=f_hashed_table(k)
-      fastserialize(v)
-     elseif tv=="boolean" then
-      m=m+1 r[m]=f_hashed_boolean(k,v)
-     end
-    end
-   end
-   m=m+1
-   if outer then
-    r[m]="}"
-   else
-    r[m]="},"
-   end
-   return r
-  end
-  return concat(fastserialize(t,true))
- end
-else
- function table.fastserialize(t,prefix) 
-  local r={ type(prefix)=="string" and prefix or "return" }
-  local m=1
-  local function fastserialize(t,outer) 
-   local n=#t
-   m=m+1
-   r[m]="{"
-   if n>0 then
-    local v=t[0]
-    if v then
-     m=m+1
-     r[m]="[0]="
-     if type(v)=="table" then
-      fastserialize(v)
-     else
-      r[m]=format("%q,",v)
-     end
-    end
-    for i=1,n do
-     local v=t[i]
-     m=m+1
-     if type(v)=="table" then
-      r[m]=format("[%i]=",i)
-      fastserialize(v)
-     else
-      r[m]=format("[%i]=%q,",i,v)
-     end
-    end
-   end
-   for k,v in next,t do
-    local tk=type(k)
-    if tk=="number" then
-     if k>n or k<0 then
-      m=m+1
-      if type(v)=="table" then
-       r[m]=format("[%i]=",k)
-       fastserialize(v)
-      else
-       r[m]=format("[%i]=%q,",k,v)
-      end
-     end
-    else
-     m=m+1
-     if type(v)=="table" then
-      r[m]=format("[%q]=",k)
-      fastserialize(v)
-     else
-      r[m]=format("[%q]=%q,",k,v)
-     end
-    end
-   end
-   m=m+1
-   if outer then
-    r[m]="}"
-   else
-    r[m]="},"
-   end
-   return r
-  end
-  return concat(fastserialize(t,true))
- end
-end
+table.fastserialize=sequencer.fastserialize
 function table.deserialize(str)
  if not str or str=="" then
   return
@@ -7295,227 +6779,19 @@ function table.load(filename,loader)
   end
  end
 end
-function table.save(filename,t,n,...)
- io.savedata(filename,table.serialize(t,n==nil and true or n,...)) 
-end
 do
- local f_start_key_idx=formatters["%w{"]
- local f_start_key_num=JITSUPPORTED and formatters["%w[%s]={"] or formatters["%w[%q]={"]
- local f_start_key_str=formatters["%w[%q]={"]
- local f_start_key_boo=formatters["%w[%l]={"]
- local f_start_key_nop=formatters["%w{"]
- local f_stop=formatters["%w},"]
- local f_key_num_value_num=JITSUPPORTED and formatters["%w[%s]=%s,"] or formatters["%w[%s]=%q,"]
- local f_key_str_value_num=JITSUPPORTED and formatters["%w[%Q]=%s,"] or formatters["%w[%Q]=%q,"]
- local f_key_boo_value_num=JITSUPPORTED and formatters["%w[%l]=%s,"] or formatters["%w[%l]=%q,"]
- local f_key_num_value_str=JITSUPPORTED and formatters["%w[%s]=%Q,"] or formatters["%w[%q]=%Q,"]
- local f_key_str_value_str=formatters["%w[%Q]=%Q,"]
- local f_key_boo_value_str=formatters["%w[%l]=%Q,"]
- local f_key_num_value_boo=JITSUPPORTED and formatters["%w[%s]=%l,"] or formatters["%w[%q]=%l,"]
- local f_key_str_value_boo=formatters["%w[%Q]=%l,"]
- local f_key_boo_value_boo=formatters["%w[%l]=%l,"]
- local f_key_num_value_not=JITSUPPORTED and formatters["%w[%s]={},"] or formatters["%w[%q]={},"]
- local f_key_str_value_not=formatters["%w[%Q]={},"]
- local f_key_boo_value_not=formatters["%w[%l]={},"]
- local f_key_num_value_seq=JITSUPPORTED and formatters["%w[%s]={ %, t },"] or formatters["%w[%q]={ %, t },"]
- local f_key_str_value_seq=formatters["%w[%Q]={ %, t },"]
- local f_key_boo_value_seq=formatters["%w[%l]={ %, t },"]
- local f_val_num=JITSUPPORTED and formatters["%w%s,"] or formatters["%w%q,"]
- local f_val_str=formatters["%w%Q,"]
- local f_val_boo=formatters["%w%l,"]
- local f_val_not=formatters["%w{},"]
- local f_val_seq=formatters["%w{ %, t },"]
- local f_fin_seq=formatters[" %, t }"]
- local f_table_return=formatters["return {"]
- local f_table_name=formatters["%s={"]
- local f_table_direct=formatters["{"]
- local f_table_entry=formatters["[%Q]={"]
- local f_table_finish=formatters["}"]
- local spaces=utilities.strings.newrepeater(" ")
- local original_serialize=table.serialize
- local is_simple_table=table.is_simple_table
- local function serialize(root,name,specification)
-  if type(specification)=="table" then
-   return original_serialize(root,name,specification) 
-  end
-  local t 
-  local n=1
-  local unknown=false
-  local function do_serialize(root,name,depth,level,indexed)
-   if level>0 then
-    n=n+1
-    if indexed then
-     t[n]=f_start_key_idx(depth)
-    else
-     local tn=type(name)
-     if tn=="number" then
-      t[n]=f_start_key_num(depth,name)
-     elseif tn=="string" then
-      t[n]=f_start_key_str(depth,name)
-     elseif tn=="boolean" then
-      t[n]=f_start_key_boo(depth,name)
-     else
-      t[n]=f_start_key_nop(depth)
-     end
-    end
-    depth=depth+1
-   end
-   if root and next(root)~=nil then
-    local first=nil
-    local last=#root
-    if last>0 then
-     for k=1,last do
-      if rawget(root,k)==nil then
-       last=k-1
-       break
-      end
-     end
-     if last>0 then
-      first=1
-     end
-    end
-    local sk=sortedkeys(root)
-    for i=1,#sk do
-     local k=sk[i]
-     local v=root[k]
-     local tv=type(v)
-     local tk=type(k)
-     if first and tk=="number" and k<=last and k>=first then
-      if tv=="number" then
-       n=n+1 t[n]=f_val_num(depth,v)
-      elseif tv=="string" then
-       n=n+1 t[n]=f_val_str(depth,v)
-      elseif tv=="table" then
-       if next(v)==nil then 
-        n=n+1 t[n]=f_val_not(depth)
-       else
-        local st=is_simple_table(v)
-        if st then
-         n=n+1 t[n]=f_val_seq(depth,st)
-        else
-         do_serialize(v,k,depth,level+1,true)
-        end
-       end
-      elseif tv=="boolean" then
-       n=n+1 t[n]=f_val_boo(depth,v)
-      elseif unknown then
-       n=n+1 t[n]=f_val_str(depth,tostring(v))
-      end
-     elseif tv=="number" then
-      if tk=="number" then
-       n=n+1 t[n]=f_key_num_value_num(depth,k,v)
-      elseif tk=="string" then
-       n=n+1 t[n]=f_key_str_value_num(depth,k,v)
-      elseif tk=="boolean" then
-       n=n+1 t[n]=f_key_boo_value_num(depth,k,v)
-      elseif unknown then
-       n=n+1 t[n]=f_key_str_value_num(depth,tostring(k),v)
-      end
-     elseif tv=="string" then
-      if tk=="number" then
-       n=n+1 t[n]=f_key_num_value_str(depth,k,v)
-      elseif tk=="string" then
-       n=n+1 t[n]=f_key_str_value_str(depth,k,v)
-      elseif tk=="boolean" then
-       n=n+1 t[n]=f_key_boo_value_str(depth,k,v)
-      elseif unknown then
-       n=n+1 t[n]=f_key_str_value_str(depth,tostring(k),v)
-      end
-     elseif tv=="table" then
-      if next(v)==nil then
-       if tk=="number" then
-        n=n+1 t[n]=f_key_num_value_not(depth,k)
-       elseif tk=="string" then
-        n=n+1 t[n]=f_key_str_value_not(depth,k)
-       elseif tk=="boolean" then
-        n=n+1 t[n]=f_key_boo_value_not(depth,k)
-       elseif unknown then
-        n=n+1 t[n]=f_key_str_value_not(depth,tostring(k))
-       end
-      else
-       local st=is_simple_table(v)
-       if not st then
-        do_serialize(v,k,depth,level+1)
-       elseif tk=="number" then
-        n=n+1 t[n]=f_key_num_value_seq(depth,k,st)
-       elseif tk=="string" then
-        n=n+1 t[n]=f_key_str_value_seq(depth,k,st)
-       elseif tk=="boolean" then
-        n=n+1 t[n]=f_key_boo_value_seq(depth,k,st)
-       elseif unknown then
-        n=n+1 t[n]=f_key_str_value_seq(depth,tostring(k),st)
-       end
-      end
-     elseif tv=="boolean" then
-      if tk=="number" then
-       n=n+1 t[n]=f_key_num_value_boo(depth,k,v)
-      elseif tk=="string" then
-       n=n+1 t[n]=f_key_str_value_boo(depth,k,v)
-      elseif tk=="boolean" then
-       n=n+1 t[n]=f_key_boo_value_boo(depth,k,v)
-      elseif unknown then
-       n=n+1 t[n]=f_key_str_value_boo(depth,tostring(k),v)
-      end
-     else
-      if tk=="number" then
-       n=n+1 t[n]=f_key_num_value_str(depth,k,tostring(v))
-      elseif tk=="string" then
-       n=n+1 t[n]=f_key_str_value_str(depth,k,tostring(v))
-      elseif tk=="boolean" then
-       n=n+1 t[n]=f_key_boo_value_str(depth,k,tostring(v))
-      elseif unknown then
-       n=n+1 t[n]=f_key_str_value_str(depth,tostring(k),tostring(v))
-      end
-     end
-    end
-   end
-   if level>0 then
-    n=n+1 t[n]=f_stop(depth-1)
-   end
-  end
-  local tname=type(name)
-  if tname=="string" then
-   if name=="return" then
-    t={ f_table_return() }
-   else
-    t={ f_table_name(name) }
-   end
-  elseif tname=="number" then
-   t={ f_table_entry(name) }
-  elseif tname=="boolean" then
-   if name then
-    t={ f_table_return() }
-   else
-    t={ f_table_direct() }
-   end
-  else
-   t={ f_table_name("t") }
-  end
-  if root then
-   if getmetatable(root) then 
-    local dummy=root._w_h_a_t_e_v_e_r_ 
-    root._w_h_a_t_e_v_e_r_=nil
-   end
-   if next(root)~=nil then
-    local st=is_simple_table(root)
-    if st then
-     return t[1]..f_fin_seq(st) 
-    else
-     do_serialize(root,name,1,0)
-    end
-   end
-  end
-  n=n+1
-  t[n]=f_table_finish()
-  return concat(t,"\n")
+ local serialize=table.serialize
+ local savedata=io.savedata
+ function table.save(filename,t,n)
+  savedata(filename,serialize(t,n==nil and true or n))
  end
- table.serialize=serialize
+ table.tofile=table.save
 end
 if setinspector then
  local serialize=table.serialize
  setinspector("table",function(v)
   if type(v)=="table" then
-   print(serialize(v,"table",{ metacheck=false }))
+   print(serialize(v,"table",true,true))
    return true
   end
  end)
@@ -8893,2849 +8169,9 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
-package.loaded["util-soc-imp-reset"] = package.loaded["util-soc-imp-reset"] or true
-
--- original size: 374, stripped down to: 282
-
-local loaded=package.loaded
-loaded["socket"]=nil
-loaded["copas"]=nil
-loaded["ltn12"]=nil
-loaded["mbox"]=nil
-loaded["mime"]=nil
-loaded["socket.url"]=nil
-loaded["socket.headers"]=nil
-loaded["socket.tp"]=nil
-loaded["socket.http"]=nil
-loaded["socket.ftp"]=nil
-loaded["socket.smtp"]=nil
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
-package.loaded["util-soc-imp-socket"] = package.loaded["util-soc-imp-socket"] or true
-
--- original size: 4905, stripped down to: 3562
-
-
-local type,tostring,setmetatable=type,tostring,setmetatable
-local min=math.min
-local format=string.format
-local socket=socket or package.loaded.socket or require("socket.core")
-local connect=socket.connect
-local tcp4=socket.tcp4
-local tcp6=socket.tcp6
-local getaddrinfo=socket.dns.getaddrinfo
-local defaulthost="0.0.0.0"
-local function report(fmt,first,...)
- if logs then
-  report=logs and logs.reporter("socket")
-  report(fmt,first,...)
- elseif fmt then
-  fmt="socket: "..fmt
-  if first then
-   print(format(fmt,first,...))
-  else
-   print(fmt)
-  end
- end
-end
-socket.report=report
-function socket.connect4(address,port,laddress,lport)
- return connect(address,port,laddress,lport,"inet")
-end
-function socket.connect6(address,port,laddress,lport)
- return connect(address,port,laddress,lport,"inet6")
-end
-function socket.bind(host,port,backlog)
- if host=="*" or host=="" then
-  host=defaulthost
- end
- local addrinfo,err=getaddrinfo(host)
- if not addrinfo then
-  return nil,err
- end
- for i=1,#addrinfo do
-  local alt=addrinfo[i]
-  local sock,err=(alt.family=="inet" and tcp4 or tcp6)()
-  if not sock then
-   return nil,err or "unknown error"
-  end
-  sock:setoption("reuseaddr",true)
-  local res,err=sock:bind(alt.addr,port)
-  if res then
-   res,err=sock:listen(backlog)
-   if res then
-    return sock
-   else
-    sock:close()
-   end
-  else
-   sock:close()
-  end
- end
- return nil,"invalid address"
-end
-socket.try=socket.newtry()
-function socket.choose(list)
- return function(name,opt1,opt2)
-  if type(name)~="string" then
-   name,opt1,opt2="default",name,opt1
-  end
-  local f=list[name or "nil"]
-  if f then
-   return f(opt1,opt2)
-  else
-   report("error: unknown key '%s'",tostring(name))
-  end
- end
-end
-local sourcet={}
-local sinkt={}
-socket.sourcet=sourcet
-socket.sinkt=sinkt
-socket.BLOCKSIZE=2048
-sinkt["close-when-done"]=function(sock)
- return setmetatable (
-  {
-   getfd=function() return sock:getfd() end,
-   dirty=function() return sock:dirty() end,
-  },
-  {
-   __call=function(self,chunk,err)
-    if chunk then
-     return sock:send(chunk)
-    else
-     sock:close()
-     return 1 
-    end
-   end
-  }
- )
-end
-sinkt["keep-open"]=function(sock)
- return setmetatable (
-  {
-   getfd=function() return sock:getfd() end,
-   dirty=function() return sock:dirty() end,
-  },{
-   __call=function(self,chunk,err)
-    if chunk then
-     return sock:send(chunk)
-    else
-     return 1 
-    end
-   end
-  }
- )
-end
-sinkt["default"]=sinkt["keep-open"]
-socket.sink=socket.choose(sinkt)
-sourcet["by-length"]=function(sock,length)
- local blocksize=socket.BLOCKSIZE
- return setmetatable (
-  {
-   getfd=function() return sock:getfd() end,
-   dirty=function() return sock:dirty() end,
-  },
-  {
-   __call=function()
-    if length<=0 then
-     return nil
-    end
-    local chunk,err=sock:receive(min(blocksize,length))
-    if err then
-     return nil,err
-    end
-    length=length-#chunk
-    return chunk
-   end
-  }
- )
-end
-sourcet["until-closed"]=function(sock)
- local blocksize=socket.BLOCKSIZE
- local done=false
- return setmetatable (
-  {
-   getfd=function() return sock:getfd() end,
-   dirty=function() return sock:dirty() end,
-  },{
-   __call=function()
-    if done then
-     return nil
-    end
-    local chunk,status,partial=sock:receive(blocksize)
-    if not status then
-     return chunk
-    elseif status=="closed" then
-     sock:close()
-     done=true
-     return partial
-    else
-     return nil,status
-    end
-   end
-  }
- )
-end
-sourcet["default"]=sourcet["until-closed"]
-socket.source=socket.choose(sourcet)
-_G.socket=socket 
-package.loaded["socket"]=socket
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
-package.loaded["util-soc-imp-copas"] = package.loaded["util-soc-imp-copas"] or true
-
--- original size: 26186, stripped down to: 14893
-
-
-local socket=socket or require("socket")
-local ssl=ssl or nil 
-local WATCH_DOG_TIMEOUT=120
-local UDP_DATAGRAM_MAX=8192
-local type,next,pcall,getmetatable,tostring=type,next,pcall,getmetatable,tostring
-local min,max,random=math.min,math.max,math.random
-local find=string.find
-local insert,remove=table.insert,table.remove
-local gettime=socket.gettime
-local selectsocket=socket.select
-local createcoroutine=coroutine.create
-local resumecoroutine=coroutine.resume
-local yieldcoroutine=coroutine.yield
-local runningcoroutine=coroutine.running
-local function report(fmt,first,...)
- if logs then
-  report=logs and logs.reporter("copas")
-  report(fmt,first,...)
- elseif fmt then
-  fmt="copas: "..fmt
-  if first then
-   print(format(fmt,first,...))
-  else
-   print(fmt)
-  end
- end
-end
-local copas={
- _COPYRIGHT="Copyright (C) 2005-2016 Kepler Project",
- _DESCRIPTION="Coroutine Oriented Portable Asynchronous Services",
- _VERSION="Copas 2.0.1",
- autoclose=true,
- running=false,
- report=report,
- trace=false,
-}
-local function statushandler(status,...)
- if status then
-  return...
- end
- local err=(...)
- if type(err)=="table" then
-  err=err[1]
- end
- if copas.trace then
-  report("error: %s",tostring(err))
- end
- return nil,err
-end
-function socket.protect(func)
- return function(...)
-  return statushandler(pcall(func,...))
- end
-end
-function socket.newtry(finalizer)
- return function (...)
-  local status=(...)
-  if not status then
-   local detail=select(2,...)
-   pcall(finalizer,detail)
-   if copas.trace then
-    report("error: %s",tostring(detail))
-   end
-   return
-  end
-  return...
- end
-end
-local function newset()
- local reverse={}
- local set={}
- local queue={}
- setmetatable(set,{
-  __index={
-   insert=function(set,value)
-     if not reverse[value] then
-      local n=#set+1
-      set[n]=value
-      reverse[value]=n
-     end
-    end,
-   remove=function(set,value)
-     local index=reverse[value]
-     if index then
-      reverse[value]=nil
-      local n=#set
-      local top=set[n]
-      set[n]=nil
-      if top~=value then
-       reverse[top]=index
-       set[index]=top
-      end
-     end
-    end,
-   push=function (set,key,itm)
-     local entry=queue[key]
-     if entry==nil then 
-      queue[key]={ itm }
-     else
-      entry[#entry+1]=itm
-     end
-    end,
-   pop=function (set,key)
-     local top=queue[key]
-     if top~=nil then
-      local ret=remove(top,1)
-      if top[1]==nil then
-       queue[key]=nil
-      end
-      return ret
-     end
-    end
-  }
- } )
- return set
-end
-local _sleeping={
- times={},
- cos={},
- lethargy={},
- insert=function()
-  end,
- remove=function()
-  end,
- push=function(self,sleeptime,co)
-   if not co then
-    return
-   end
-   if sleeptime<0 then
-    self.lethargy[co]=true
-    return
-   else
-    sleeptime=gettime()+sleeptime
-   end
-   local t=self.times
-   local c=self.cos
-   local i=1
-   local n=#t
-   while i<=n and t[i]<=sleeptime do
-    i=i+1
-   end
-   insert(t,i,sleeptime)
-   insert(c,i,co)
-  end,
- getnext=
-  function(self)
-   local t=self.times
-   local delay=t[1] and t[1]-gettime() or nil
-   return delay and max(delay,0) or nil
-  end,
- pop=
-  function(self,time)
-   local t=self.times
-   local c=self.cos
-   if #t==0 or time<t[1] then
-    return
-   end
-   local co=c[1]
-   remove(t,1)
-   remove(c,1)
-   return co
-  end,
-  wakeup=function(self,co)
-    local let=self.lethargy
-    if let[co] then
-     self:push(0,co)
-     let[co]=nil
-    else
-     local c=self.cos
-     local t=self.times
-     for i=1,#c do
-      if c[i]==co then
-       remove(c,i)
-       remove(t,i)
-       self:push(0,co)
-       return
-      end
-     end
-    end
-   end
-}
-local _servers=newset() 
-local _reading=newset() 
-local _writing=newset() 
-local _reading_log={}
-local _writing_log={}
-local _is_timeout={  
- timeout=true,
- wantread=true,
- wantwrite=true,
-}
-local function isTCP(socket)
- return not find(tostring(socket),"^udp")
-end
-local function copasreceive(client,pattern,part)
- if not pattern or pattern=="" then
-  pattern="*l"
- end
- local current_log=_reading_log
- local s,err
- repeat
-  s,err,part=client:receive(pattern,part)
-  if s or (not _is_timeout[err]) then
-   current_log[client]=nil
-   return s,err,part
-  end
-  if err=="wantwrite" then
-   current_log=_writing_log
-   current_log[client]=gettime()
-   yieldcoroutine(client,_writing)
-  else
-   current_log=_reading_log
-   current_log[client]=gettime()
-   yieldcoroutine(client,_reading)
-  end
- until false
-end
-local function copasreceivefrom(client,size)
- local s,err,port
- if not size or size==0 then
-  size=UDP_DATAGRAM_MAX
- end
- repeat
-  s,err,port=client:receivefrom(size)
-  if s or err~="timeout" then
-   _reading_log[client]=nil
-   return s,err,port
-  end
-  _reading_log[client]=gettime()
-  yieldcoroutine(client,_reading)
- until false
-end
-local function copasreceivepartial(client,pattern,part)
- if not pattern or pattern=="" then
-  pattern="*l"
- end
- local logger=_reading_log
- local queue=_reading
- local s,err
- repeat
-  s,err,part=client:receive(pattern,part)
-  if s or (type(pattern)=="number" and part~="" and part) or not _is_timeout[err] then
-    logger[client]=nil
-    return s,err,part
-  end
-  if err=="wantwrite" then
-   logger=_writing_log
-   queue=_writing
-  else
-   logger=_reading_log
-   queue=_reading
-  end
-  logger[client]=gettime()
-  yieldcoroutine(client,queue)
- until false
-end
-local function copassend(client,data,from,to)
- if not from then
-  from=1
- end
- local lastIndex=from-1
- local logger=_writing_log
- local queue=_writing
- local s,err
- repeat
-  s,err,lastIndex=client:send(data,lastIndex+1,to)
-  if random(100)>90 then
-   logger[client]=gettime()
-   yieldcoroutine(client,queue)
-  end
-  if s or not _is_timeout[err] then
-   logger[client]=nil
-   return s,err,lastIndex
-  end
-  if err=="wantread" then
-   logger=_reading_log
-   queue=_reading
-  else
-   logger=_writing_log
-   queue=_writing
-  end
-  logger[client]=gettime()
-  yieldcoroutine(client,queue)
- until false
-end
-local function copassendto(client,data,ip,port)
- repeat
-  local s,err=client:sendto(data,ip,port)
-  if random(100)>90 then
-   _writing_log[client]=gettime()
-   yieldcoroutine(client,_writing)
-  end
-  if s or err~="timeout" then
-   _writing_log[client]=nil
-   return s,err
-  end
-  _writing_log[client]=gettime()
-  yieldcoroutine(client,_writing)
- until false
-end
-local function copasconnect(skt,host,port)
- skt:settimeout(0)
- local ret,err,tried_more_than_once
- repeat
-  ret,err=skt:connect (host,port)
-  if ret or (err~="timeout" and err~="Operation already in progress") then
-   if not ret and err=="already connected" and tried_more_than_once then
-    ret=1
-    err=nil
-   end
-   _writing_log[skt]=nil
-   return ret,err
-  end
-  tried_more_than_once=tried_more_than_once or true
-  _writing_log[skt]=gettime()
-  yieldcoroutine(skt,_writing)
- until false
-end
-local function copasdohandshake(skt,sslt) 
- if not ssl then
-  ssl=require("ssl")
- end
- if not ssl then
-  report("error: no ssl library")
-  return
- end
- local nskt,err=ssl.wrap(skt,sslt)
- if not nskt then
-  report("error: %s",tostring(err))
-  return
- end
- nskt:settimeout(0)
- local queue
- repeat
-  local success,err=nskt:dohandshake()
-  if success then
-   return nskt
-  elseif err=="wantwrite" then
-   queue=_writing
-  elseif err=="wantread" then
-   queue=_reading
-  else
-   report("error: %s",tostring(err))
-   return
-  end
-  yieldcoroutine(nskt,queue)
- until false
-end
-local function copasflush(client)
-end
-copas.connect=copassconnect
-copas.send=copassend
-copas.sendto=copassendto
-copas.receive=copasreceive
-copas.receivefrom=copasreceivefrom
-copas.copasreceivepartial=copasreceivepartial
-copas.copasreceivePartial=copasreceivepartial
-copas.dohandshake=copasdohandshake
-copas.flush=copasflush
-local function _skt_mt_tostring(self)
- return tostring(self.socket).." (copas wrapped)"
-end
-local _skt_mt_tcp_index={
- send=function(self,data,from,to)
-   return copassend (self.socket,data,from,to)
-  end,
- receive=function (self,pattern,prefix)
-   if self.timeout==0 then
-    return copasreceivePartial(self.socket,pattern,prefix)
-   else
-    return copasreceive(self.socket,pattern,prefix)
-   end
-  end,
- flush=function (self)
-   return copasflush(self.socket)
-  end,
- settimeout=function (self,time)
-   self.timeout=time
-   return true
-  end,
- connect=function(self,...)
-   local res,err=copasconnect(self.socket,...)
-   if res and self.ssl_params then
-    res,err=self:dohandshake()
-   end
-   return res,err
-  end,
- close=function(self,...)
-   return self.socket:close(...)
-  end,
- bind=function(self,...)
-   return self.socket:bind(...)
-  end,
- getsockname=function(self,...)
-   return self.socket:getsockname(...)
-  end,
- getstats=function(self,...)
-   return self.socket:getstats(...)
-  end,
- setstats=function(self,...)
-   return self.socket:setstats(...)
-  end,
- listen=function(self,...)
-   return self.socket:listen(...)
-  end,
- accept=function(self,...)
-   return self.socket:accept(...)
-  end,
- setoption=function(self,...)
-   return self.socket:setoption(...)
-  end,
- getpeername=function(self,...)
-   return self.socket:getpeername(...)
-  end,
- shutdown=function(self,...)
-   return self.socket:shutdown(...)
-  end,
- dohandshake=function(self,sslt)
-   self.ssl_params=sslt or self.ssl_params
-   local nskt,err=copasdohandshake(self.socket,self.ssl_params)
-   if not nskt then
-    return nskt,err
-   end
-   self.socket=nskt
-   return self
-  end,
-}
-local _skt_mt_tcp={
- __tostring=_skt_mt_tostring,
- __index=_skt_mt_tcp_index,
-}
-local _skt_mt_udp_index={
- sendto=function (self,...)
-   return copassendto(self.socket,...)
-  end,
- receive=function (self,size)
-   return copasreceive(self.socket,size or UDP_DATAGRAM_MAX)
-  end,
- receivefrom=function (self,size)
-   return copasreceivefrom(self.socket,size or UDP_DATAGRAM_MAX)
-  end,
- setpeername=function(self,...)
-   return self.socket:getpeername(...)
-  end,
- setsockname=function(self,...)
-   return self.socket:setsockname(...)
-  end,
- close=function(self,...)
-   return true
-  end
-}
-local _skt_mt_udp={
- __tostring=_skt_mt_tostring,
- __index=_skt_mt_udp_index,
-}
-for k,v in next,_skt_mt_tcp_index do
- if not _skt_mt_udp_index[k] then
-  _skt_mt_udp_index[k]=v
- end
-end
-local function wrap(skt,sslt)
- if getmetatable(skt)==_skt_mt_tcp or getmetatable(skt)==_skt_mt_udp then
-  return skt 
- end
- skt:settimeout(0)
- if isTCP(skt) then
-  return setmetatable ({ socket=skt,ssl_params=sslt },_skt_mt_tcp)
- else
-  return setmetatable ({ socket=skt },_skt_mt_udp)
- end
-end
-copas.wrap=wrap
-function copas.handler(handler,sslparams)
- return function (skt,...)
-  skt=wrap(skt)
-  if sslparams then
-   skt:dohandshake(sslparams)
-  end
-  return handler(skt,...)
- end
-end
-local _errhandlers={}
-function copas.setErrorHandler(err)
- local co=runningcoroutine()
- if co then
-  _errhandlers[co]=err
- end
-end
-local function _deferror (msg,co,skt)
- report("%s (%s) (%s)",msg,tostring(co),tostring(skt))
-end
-local function _doTick (co,skt,...)
- if not co then
-  return
- end
- local ok,res,new_q=resumecoroutine(co,skt,...)
- if ok and res and new_q then
-  new_q:insert(res)
-  new_q:push(res,co)
- else
-  if not ok then
-   pcall(_errhandlers[co] or _deferror,res,co,skt)
-  end
-  if skt and copas.autoclose and isTCP(skt) then
-   skt:close()
-  end
-  _errhandlers[co]=nil
- end
-end
-local function _accept(input,handler)
- local client=input:accept()
- if client then
-  client:settimeout(0)
-  local co=createcoroutine(handler)
-  _doTick (co,client)
- end
- return client
-end
-local function _tickRead(skt)
- _doTick(_reading:pop(skt),skt)
-end
-local function _tickWrite(skt)
- _doTick(_writing:pop(skt),skt)
-end
-local function addTCPserver(server,handler,timeout)
- server:settimeout(timeout or 0)
- _servers[server]=handler
- _reading:insert(server)
-end
-local function addUDPserver(server,handler,timeout)
- server:settimeout(timeout or 0)
- local co=createcoroutine(handler)
- _reading:insert(server)
- _doTick(co,server)
-end
-function copas.addserver(server,handler,timeout)
- if isTCP(server) then
-  addTCPserver(server,handler,timeout)
- else
-  addUDPserver(server,handler,timeout)
- end
-end
-function copas.removeserver(server,keep_open)
- local s=server
- local mt=getmetatable(server)
- if mt==_skt_mt_tcp or mt==_skt_mt_udp then
-  s=server.socket
- end
- _servers[s]=nil
- _reading:remove(s)
- if keep_open then
-  return true
- end
- return server:close()
-end
-function copas.addthread(handler,...)
- local thread=createcoroutine(function(_,...) return handler(...) end)
- _doTick(thread,nil,...)
- return thread
-end
-local _tasks={}
-local function addtaskRead(task)
- task.def_tick=_tickRead
- _tasks[task]=true
-end
-local function addtaskWrite(task)
- task.def_tick=_tickWrite
- _tasks[task]=true
-end
-local function tasks()
- return next,_tasks
-end
-local _readable_t={
- events=function(self)
-   local i=0
-   return function ()
-    i=i+1
-    return self._evs[i]
-   end
-  end,
- tick=function(self,input)
-   local handler=_servers[input]
-   if handler then
-    input=_accept(input,handler)
-   else
-    _reading:remove(input)
-    self.def_tick(input)
-   end
-  end
-}
-addtaskRead(_readable_t)
-local _writable_t={
- events=function(self)
-   local i=0
-   return function()
-    i=i+1
-    return self._evs[i]
-   end
-  end,
- tick=function(self,output)
-   _writing:remove(output)
-   self.def_tick(output)
-  end
-}
-addtaskWrite(_writable_t)
-local _sleeping_t={
- tick=function(self,time,...)
-  _doTick(_sleeping:pop(time),...)
- end
-}
-function copas.sleep(sleeptime)
- yieldcoroutine((sleeptime or 0),_sleeping)
-end
-function copas.wakeup(co)
- _sleeping:wakeup(co)
-end
-local last_cleansing=0
-local function _select(timeout)
- local now=gettime()
- local r_evs,w_evs,err=selectsocket(_reading,_writing,timeout)
- _readable_t._evs=r_evs
- _writable_t._evs=w_evs
- if (last_cleansing-now)>WATCH_DOG_TIMEOUT then
-  last_cleansing=now
-  for skt,time in next,_reading_log do
-   if not r_evs[skt] and (time-now)>WATCH_DOG_TIMEOUT then
-    local n=#r_evs+1
-    _reading_log[skt]=nil
-    r_evs[n]=skt
-    r_evs[skt]=n
-   end
-  end
-  for skt,time in next,_writing_log do
-   if not w_evs[skt] and (time-now)>WATCH_DOG_TIMEOUT then
-    local n=#w_evs+1
-    _writing_log[skt]=nil
-    w_evs[n]=skt
-    w_evs[skt]=n
-   end
-  end
- end
- if err=="timeout" and #r_evs+#w_evs>0 then
-  return nil
- else
-  return err
- end
-end
-local function copasfinished()
- return not (next(_reading) or next(_writing) or _sleeping:getnext())
-end
-local function copasstep(timeout)
- _sleeping_t:tick(gettime())
- local nextwait=_sleeping:getnext()
- if nextwait then
-  timeout=timeout and min(nextwait,timeout) or nextwait
- elseif copasfinished() then
-  return false
- end
- local err=_select(timeout)
- if err then
-  if err=="timeout" then
-   return false
-  end
-  return nil,err
- end
- for task in tasks() do
-  for event in task:events() do
-   task:tick(event)
-  end
- end
- return true
-end
-copas.finished=copasfinished
-copas.step=copasstep
-function copas.loop(timeout)
- copas.running=true
- while not copasfinished() do
-  copasstep(timeout)
- end
- copas.running=false
-end
-package.loaded["copas"]=copas
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
-package.loaded["util-soc-imp-ltn12"] = package.loaded["util-soc-imp-ltn12"] or true
-
--- original size: 8709, stripped down to: 5411
-
-
-local select,unpack=select,unpack
-local insert,remove=table.insert,table.remove
-local sub=string.sub
-local function report(fmt,first,...)
- if logs then
-  report=logs and logs.reporter("ltn12")
-  report(fmt,first,...)
- elseif fmt then
-  fmt="ltn12: "..fmt
-  if first then
-   print(format(fmt,first,...))
-  else
-   print(fmt)
-  end
- end
-end
-local filter={}
-local source={}
-local sink={}
-local pump={}
-local ltn12={
- _VERSION="LTN12 1.0.3",
- BLOCKSIZE=2048,
- filter=filter,
- source=source,
- sink=sink,
- pump=pump,
- report=report,
-}
-function filter.cycle(low,ctx,extra)
- if low then
-  return function(chunk)
-   return (low(ctx,chunk,extra))
-  end
- end
-end
-function filter.chain(...)
- local arg={... }
- local n=select('#',...)
- local top=1
- local index=1
- local retry=""
- return function(chunk)
-  retry=chunk and retry
-  while true do
-   local action=arg[index]
-   if index==top then
-    chunk=action(chunk)
-    if chunk=="" or top==n then
-     return chunk
-    elseif chunk then
-     index=index+1
-    else
-     top=top+1
-     index=top
-    end
-   else
-    chunk=action(chunk or "")
-    if chunk=="" then
-     index=index-1
-     chunk=retry
-    elseif chunk then
-     if index==n then
-      return chunk
-     else
-      index=index+1
-     end
-    else
-     report("error: filter returned inappropriate 'nil'")
-     return
-    end
-   end
-  end
- end
-end
-local function empty()
- return nil
-end
-function source.empty()
- return empty
-end
-local function sourceerror(err)
- return function()
-  return nil,err
- end
-end
-source.error=sourceerror
-function source.file(handle,io_err)
- if handle then
-  local blocksize=ltn12.BLOCKSIZE
-  return function()
-   local chunk=handle:read(blocksize)
-   if not chunk then
-    handle:close()
-   end
-   return chunk
-  end
- else
-  return sourceerror(io_err or "unable to open file")
- end
-end
-function source.simplify(src)
- return function()
-  local chunk,err_or_new=src()
-  if err_or_new then
-   src=err_or_new
-  end
-  if chunk then
-   return chunk
-  else
-   return nil,err_or_new
-  end
- end
-end
-function source.string(s)
- if s then
-  local blocksize=ltn12.BLOCKSIZE
-  local i=1
-  return function()
-   local nexti=i+blocksize
-   local chunk=sub(s,i,nexti-1)
-   i=nexti
-   if chunk~="" then
-    return chunk
-   else
-    return nil
-   end
-  end
- else return source.empty() end
-end
-function source.rewind(src)
- local t={}
- return function(chunk)
-  if chunk then
-   insert(t,chunk)
-  else
-   chunk=remove(t)
-   if chunk then
-    return chunk
-   else
-    return src()
-   end
-  end
- end
-end
-function source.chain(src,f,...)
- if... then
-  f=filter.chain(f,...)
- end
- local last_in=""
- local last_out=""
- local state="feeding"
- local err
- return function()
-  if not last_out then
-   report("error: source is empty")
-   return
-  end
-  while true do
-   if state=="feeding" then
-    last_in,err=src()
-    if err then
-     return nil,err
-    end
-    last_out=f(last_in)
-    if not last_out then
-     if last_in then
-      report("error: filter returned inappropriate 'nil'")
-     end
-     return nil
-    elseif last_out~="" then
-     state="eating"
-     if last_in then
-      last_in=""
-     end
-     return last_out
-    end
-   else
-    last_out=f(last_in)
-    if last_out=="" then
-     if last_in=="" then
-      state="feeding"
-     else
-      report("error: filter returned nothing")
-      return
-     end
-    elseif not last_out then
-     if last_in then
-      report("filter returned inappropriate 'nil'")
-     end
-     return nil
-    else
-     return last_out
-    end
-   end
-  end
- end
-end
-function source.cat(...)
- local arg={... }
- local src=remove(arg,1)
- return function()
-  while src do
-   local chunk,err=src()
-   if chunk then
-    return chunk
-   end
-   if err then
-    return nil,err
-   end
-   src=remove(arg,1)
-  end
- end
-end
-function sink.table(t)
- if not t then
-  t={}
- end
- local f=function(chunk,err)
-  if chunk then
-   insert(t,chunk)
-  end
-  return 1
- end
- return f,t
-end
-function sink.simplify(snk)
- return function(chunk,err)
-  local ret,err_or_new=snk(chunk,err)
-  if not ret then
-   return nil,err_or_new
-  end
-  if err_or_new then
-   snk=err_or_new
-  end
-  return 1
- end
-end
-local function null()
- return 1
-end
-function sink.null()
- return null
-end
-local function sinkerror(err)
- return function()
-  return nil,err
- end
-end
-sink.error=sinkerror
-function sink.file(handle,io_err)
- if handle then
-  return function(chunk,err)
-   if not chunk then
-    handle:close()
-    return 1
-   else
-    return handle:write(chunk)
-   end
-  end
- else
-  return sinkerror(io_err or "unable to open file")
- end
-end
-function sink.chain(f,snk,...)
- if... then
-  local args={ f,snk,... }
-  snk=remove(args,#args)
-  f=filter.chain(unpack(args))
- end
- return function(chunk,err)
-  if chunk~="" then
-   local filtered=f(chunk)
-   local done=chunk and ""
-   while true do
-    local ret,snkerr=snk(filtered,err)
-    if not ret then
-     return nil,snkerr
-    end
-    if filtered==done then
-     return 1
-    end
-    filtered=f(done)
-   end
-  else
-   return 1
-  end
- end
-end
-function pump.step(src,snk)
- local chunk,src_err=src()
- local ret,snk_err=snk(chunk,src_err)
- if chunk and ret then
-  return 1
- else
-  return nil,src_err or snk_err
- end
-end
-function pump.all(src,snk,step)
- if not step then
-  step=pump.step
- end
- while true do
-  local ret,err=step(src,snk)
-  if not ret then
-   if err then
-    return nil,err
-   else
-    return 1
-   end
-  end
- end
-end
-package.loaded["ltn12"]=ltn12
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
-package.loaded["util-soc-imp-mime"] = package.loaded["util-soc-imp-mime"] or true
-
--- original size: 2373, stripped down to: 1931
-
-
-local type,tostring=type,tostring
-local mime=mime  or package.loaded.mime  or require("mime.core")
-local ltn12=ltn12 or package.loaded.ltn12 or require("ltn12")
-local filtercycle=ltn12.filter.cycle
-local function report(fmt,first,...)
- if logs then
-  report=logs and logs.reporter("mime")
-  report(fmt,first,...)
- elseif fmt then
-  fmt="mime: "..fmt
-  if first then
-   print(format(fmt,first,...))
-  else
-   print(fmt)
-  end
- end
-end
-mime.report=report
-local encodet={}
-local decodet={}
-local wrapt={}
-mime.encodet=encodet
-mime.decodet=decodet
-mime.wrapt=wrapt
-local mime_b64=mime.b64
-local mime_qp=mime.qp
-local mime_unb64=mime.unb64
-local mime_unqp=mime.unqp
-local mime_wrp=mime.wrp
-local mime_qpwrp=mime.qpwrp
-local mime_eol=mime_eol
-local mime_dot=mime_dot
-encodet['base64']=function()
- return filtercycle(mime_b64,"")
-end
-encodet['quoted-printable']=function(mode)
- return filtercycle(mime_qp,"",mode=="binary" and "=0D=0A" or "\r\n")
-end
-decodet['base64']=function()
- return filtercycle(mime_unb64,"")
-end
-decodet['quoted-printable']=function()
- return filtercycle(mime_unqp,"")
-end
-local wraptext=function(length)
- if not length then
-  length=76
- end
- return filtercycle(mime_wrp,length,length)
-end
-local wrapquoted=function()
- return filtercycle(mime_qpwrp,76,76)
-end
-wrapt['text']=wraptext
-wrapt['base64']=wraptext
-wrapt['default']=wraptext
-wrapt['quoted-printable']=wrapquoted
-function mime.normalize(marker)
- return filtercycle(mime_eol,0,marker)
-end
-function mime.stuff()
- return filtercycle(mime_dot,2)
-end
-local function choose(list)
- return function(name,opt1,opt2)
-  if type(name)~="string" then
-   name,opt1,opt2="default",name,opt1
-  end
-  local filter=list[name or "nil"]
-  if filter then
-   return filter(opt1,opt2)
-  else
-   report("error: unknown key '%s'",tostring(name))
-  end
- end
-end
-mime.encode=choose(encodet)
-mime.decode=choose(decodet)
-mime.wrap=choose(wrapt)
-package.loaded["mime"]=mime
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
-package.loaded["util-soc-imp-url"] = package.loaded["util-soc-imp-url"] or true
-
--- original size: 6863, stripped down to: 5269
-
-
-local tonumber,tostring,type=tonumber,tostring,type
-local gsub,sub,match,find,format,byte,char=string.gsub,string.sub,string.match,string.find,string.format,string.byte,string.char
-local insert=table.insert
-local socket=socket or require("socket")
-local url={
- _VERSION="URL 1.0.3",
-}
-socket.url=url
-function url.escape(s)
- return (gsub(s,"([^A-Za-z0-9_])",function(c)
-  return format("%%%02x",byte(c))
- end))
-end
-local function make_set(t) 
- local s={}
- for i=1,#t do
-  s[t[i]]=true
- end
- return s
-end
-local segment_set=make_set {
- "-","_",".","!","~","*","'","(",
- ")",":","@","&","=","+","$",",",
-}
-local function protect_segment(s)
- return gsub(s,"([^A-Za-z0-9_])",function(c)
-  if segment_set[c] then
-   return c
-  else
-   return format("%%%02X",byte(c))
-  end
- end)
-end
-function url.unescape(s)
- return (gsub(s,"%%(%x%x)",function(hex)
-  return char(tonumber(hex,16))
- end))
-end
-local function absolute_path(base_path,relative_path)
- if find(relative_path,"^/") then
-  return relative_path
- end
- local path=gsub(base_path,"[^/]*$","")
- path=path..relative_path
- path=gsub(path,"([^/]*%./)",function (s)
-  if s~="./" then
-   return s
-  else
-   return ""
-  end
- end)
- path=gsub(path,"/%.$","/")
- local reduced
- while reduced~=path do
-  reduced=path
-  path=gsub(reduced,"([^/]*/%.%./)",function (s)
-   if s~="../../" then
-    return ""
-   else
-    return s
-   end
-  end)
- end
- path=gsub(reduced,"([^/]*/%.%.)$",function (s)
-  if s~="../.." then
-   return ""
-  else
-   return s
-  end
- end)
- return path
-end
-function url.parse(url,default)
- local parsed={}
- for k,v in next,default or parsed do
-  parsed[k]=v
- end
- if not url or url=="" then
-  return nil,"invalid url"
- end
- url=gsub(url,"#(.*)$",function(f)
-  parsed.fragment=f
-  return ""
- end)
- url=gsub(url,"^([%w][%w%+%-%.]*)%:",function(s)
-  parsed.scheme=s
-  return ""
- end)
- url=gsub(url,"^//([^/]*)",function(n)
-  parsed.authority=n
-  return ""
- end)
- url=gsub(url,"%?(.*)",function(q)
-  parsed.query=q
-  return ""
- end)
- url=gsub(url,"%;(.*)",function(p)
-  parsed.params=p
-  return ""
- end)
- if url~="" then
-  parsed.path=url
- end
- local authority=parsed.authority
- if not authority then
-  return parsed
- end
- authority=gsub(authority,"^([^@]*)@",function(u)
-  parsed.userinfo=u
-  return ""
- end)
- authority=gsub(authority,":([^:%]]*)$",function(p)
-  parsed.port=p
-  return ""
- end)
- if authority~="" then
-  parsed.host=match(authority,"^%[(.+)%]$") or authority
- end
- local userinfo=parsed.userinfo
- if not userinfo then
-  return parsed
- end
- userinfo=gsub(userinfo,":([^:]*)$",function(p)
-  parsed.password=p
-  return ""
- end)
- parsed.user=userinfo
- return parsed
-end
-function url.build(parsed)
- local url=parsed.path or ""
- if parsed.params then
-  url=url..";"..parsed.params
- end
- if parsed.query then
-  url=url.."?"..parsed.query
- end
- local authority=parsed.authority
- if parsed.host then
-  authority=parsed.host
-  if find(authority,":") then 
-   authority="["..authority.."]"
-  end
-  if parsed.port then
-   authority=authority..":"..tostring(parsed.port)
-  end
-  local userinfo=parsed.userinfo
-  if parsed.user then
-   userinfo=parsed.user
-   if parsed.password then
-    userinfo=userinfo..":"..parsed.password
-   end
-  end
-  if userinfo then authority=userinfo.."@"..authority end
- end
- if authority then
-  url="//"..authority..url
- end
- if parsed.scheme then
-  url=parsed.scheme..":"..url
- end
- if parsed.fragment then
-  url=url.."#"..parsed.fragment
- end
- return url
-end
-function url.absolute(base_url,relative_url)
- local base_parsed
- if type(base_url)=="table" then
-  base_parsed=base_url
-  base_url=url.build(base_parsed)
- else
-  base_parsed=url.parse(base_url)
- end
- local relative_parsed=url.parse(relative_url)
- if not base_parsed then
-  return relative_url
- elseif not relative_parsed then
-  return base_url
- elseif relative_parsed.scheme then
-  return relative_url
- else
-  relative_parsed.scheme=base_parsed.scheme
-  if not relative_parsed.authority then
-   relative_parsed.authority=base_parsed.authority
-   if not relative_parsed.path then
-    relative_parsed.path=base_parsed.path
-    if not relative_parsed.params then
-     relative_parsed.params=base_parsed.params
-     if not relative_parsed.query then
-      relative_parsed.query=base_parsed.query
-     end
-    end
-   else
-    relative_parsed.path=absolute_path(base_parsed.path or "",relative_parsed.path)
-   end
-  end
-  return url.build(relative_parsed)
- end
-end
-function url.parse_path(path)
- local parsed={}
- path=path or ""
- gsub(path,"([^/]+)",function (s)
-  insert(parsed,s)
- end)
- for i=1,#parsed do
-  parsed[i]=url.unescape(parsed[i])
- end
- if sub(path,1,1)=="/" then
-  parsed.is_absolute=1
- end
- if sub(path,-1,-1)=="/" then
-  parsed.is_directory=1
- end
- return parsed
-end
-function url.build_path(parsed,unsafe)
- local path=""
- local n=#parsed
- if unsafe then
-  for i=1,n-1 do
-   path=path..parsed[i].."/"
-  end
-  if n>0 then
-   path=path..parsed[n]
-   if parsed.is_directory then
-    path=path.."/"
-   end
-  end
- else
-  for i=1,n-1 do
-   path=path..protect_segment(parsed[i]).."/"
-  end
-  if n>0 then
-   path=path..protect_segment(parsed[n])
-   if parsed.is_directory then
-    path=path.."/"
-   end
-  end
- end
- if parsed.is_absolute then
-  path="/"..path
- end
- return path
-end
-package.loaded["socket.url"]=url
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
-package.loaded["util-soc-imp-headers"] = package.loaded["util-soc-imp-headers"] or true
-
--- original size: 5721, stripped down to: 3754
-
-
-local next=next
-local lower=string.lower
-local concat=table.concat
-local socket=socket or require("socket")
-local headers={}
-socket.headers=headers
-local canonic={
- ["accept"]="Accept",
- ["accept-charset"]="Accept-Charset",
- ["accept-encoding"]="Accept-Encoding",
- ["accept-language"]="Accept-Language",
- ["accept-ranges"]="Accept-Ranges",
- ["action"]="Action",
- ["alternate-recipient"]="Alternate-Recipient",
- ["age"]="Age",
- ["allow"]="Allow",
- ["arrival-date"]="Arrival-Date",
- ["authorization"]="Authorization",
- ["bcc"]="Bcc",
- ["cache-control"]="Cache-Control",
- ["cc"]="Cc",
- ["comments"]="Comments",
- ["connection"]="Connection",
- ["content-description"]="Content-Description",
- ["content-disposition"]="Content-Disposition",
- ["content-encoding"]="Content-Encoding",
- ["content-id"]="Content-ID",
- ["content-language"]="Content-Language",
- ["content-length"]="Content-Length",
- ["content-location"]="Content-Location",
- ["content-md5"]="Content-MD5",
- ["content-range"]="Content-Range",
- ["content-transfer-encoding"]="Content-Transfer-Encoding",
- ["content-type"]="Content-Type",
- ["cookie"]="Cookie",
- ["date"]="Date",
- ["diagnostic-code"]="Diagnostic-Code",
- ["dsn-gateway"]="DSN-Gateway",
- ["etag"]="ETag",
- ["expect"]="Expect",
- ["expires"]="Expires",
- ["final-log-id"]="Final-Log-ID",
- ["final-recipient"]="Final-Recipient",
- ["from"]="From",
- ["host"]="Host",
- ["if-match"]="If-Match",
- ["if-modified-since"]="If-Modified-Since",
- ["if-none-match"]="If-None-Match",
- ["if-range"]="If-Range",
- ["if-unmodified-since"]="If-Unmodified-Since",
- ["in-reply-to"]="In-Reply-To",
- ["keywords"]="Keywords",
- ["last-attempt-date"]="Last-Attempt-Date",
- ["last-modified"]="Last-Modified",
- ["location"]="Location",
- ["max-forwards"]="Max-Forwards",
- ["message-id"]="Message-ID",
- ["mime-version"]="MIME-Version",
- ["original-envelope-id"]="Original-Envelope-ID",
- ["original-recipient"]="Original-Recipient",
- ["pragma"]="Pragma",
- ["proxy-authenticate"]="Proxy-Authenticate",
- ["proxy-authorization"]="Proxy-Authorization",
- ["range"]="Range",
- ["received"]="Received",
- ["received-from-mta"]="Received-From-MTA",
- ["references"]="References",
- ["referer"]="Referer",
- ["remote-mta"]="Remote-MTA",
- ["reply-to"]="Reply-To",
- ["reporting-mta"]="Reporting-MTA",
- ["resent-bcc"]="Resent-Bcc",
- ["resent-cc"]="Resent-Cc",
- ["resent-date"]="Resent-Date",
- ["resent-from"]="Resent-From",
- ["resent-message-id"]="Resent-Message-ID",
- ["resent-reply-to"]="Resent-Reply-To",
- ["resent-sender"]="Resent-Sender",
- ["resent-to"]="Resent-To",
- ["retry-after"]="Retry-After",
- ["return-path"]="Return-Path",
- ["sender"]="Sender",
- ["server"]="Server",
- ["smtp-remote-recipient"]="SMTP-Remote-Recipient",
- ["status"]="Status",
- ["subject"]="Subject",
- ["te"]="TE",
- ["to"]="To",
- ["trailer"]="Trailer",
- ["transfer-encoding"]="Transfer-Encoding",
- ["upgrade"]="Upgrade",
- ["user-agent"]="User-Agent",
- ["vary"]="Vary",
- ["via"]="Via",
- ["warning"]="Warning",
- ["will-retry-until"]="Will-Retry-Until",
- ["www-authenticate"]="WWW-Authenticate",
- ["x-mailer"]="X-Mailer",
-}
-headers.canonic=setmetatable(canonic,{
- __index=function(t,k)
-  socket.report("invalid header: %s",k)
-  t[k]=k
-  return k
- end
-})
-function headers.normalize(headers)
- if not headers then
-  return {}
- end
- local normalized={}
- for k,v in next,headers do
-  normalized[#normalized+1]=canonic[k]..": "..v
- end
- normalized[#normalized+1]=""
- normalized[#normalized+1]=""
- return concat(normalized,"\r\n")
-end
-function headers.lower(lowered,headers)
- if not lowered then
-  return {}
- end
- if not headers then
-  lowered,headers={},lowered
- end
- for k,v in next,headers do
-  lowered[lower(k)]=v
- end
- return lowered
-end
-socket.headers=headers
-package.loaded["socket.headers"]=headers
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
-package.loaded["util-soc-imp-tp"] = package.loaded["util-soc-imp-tp"] or true
-
--- original size: 3116, stripped down to: 2533
-
-
-local setmetatable,next,type,tonumber=setmetatable,next,type,tonumber
-local find,upper=string.find,string.upper
-local socket=socket or require("socket")
-local ltn12=ltn12  or require("ltn12")
-local skipsocket=socket.skip
-local sinksocket=socket.sink
-local tcpsocket=socket.tcp
-local ltn12pump=ltn12.pump
-local pumpall=ltn12pump.all
-local pumpstep=ltn12pump.step
-local tp={
- TIMEOUT=60,
-}
-socket.tp=tp
-local function get_reply(c)
- local line,err=c:receive()
- local reply=line
- if err then return
-  nil,err
- end
- local code,sep=skipsocket(2,find(line,"^(%d%d%d)(.?)"))
- if not code then
-  return nil,"invalid server reply"
- end
- if sep=="-" then
-  local current
-  repeat
-   line,err=c:receive()
-   if err then
-    return nil,err
-   end
-   current,sep=skipsocket(2,find(line,"^(%d%d%d)(.?)"))
-   reply=reply.."\n"..line
-  until code==current and sep==" "
- end
- return code,reply
-end
-local methods={}
-local mt={ __index=methods }
-function methods.getpeername(self)
- return self.c:getpeername()
-end
-function methods.getsockname(self)
- return self.c:getpeername()
-end
-function methods.check(self,ok)
- local code,reply=get_reply(self.c)
- if not code then
-  return nil,reply
- end
- local c=tonumber(code)
- local t=type(ok)
- if t=="function" then
-  return ok(c,reply)
- elseif t=="table" then
-  for i=1,#ok do
-   if find(code,ok[i]) then
-    return c,reply
-   end
-  end
-  return nil,reply
- elseif find(code,ok) then
-  return c,reply
- else
-  return nil,reply
- end
-end
-function methods.command(self,cmd,arg)
- cmd=upper(cmd)
- if arg then
-  cmd=cmd.." "..arg.."\r\n"
- else
-  cmd=cmd.."\r\n"
- end
- return self.c:send(cmd)
-end
-function methods.sink(self,snk,pat)
- local chunk,err=self.c:receive(pat)
- return snk(chunk,err)
-end
-function methods.send(self,data)
- return self.c:send(data)
-end
-function methods.receive(self,pat)
- return self.c:receive(pat)
-end
-function methods.getfd(self)
- return self.c:getfd()
-end
-function methods.dirty(self)
- return self.c:dirty()
-end
-function methods.getcontrol(self)
- return self.c
-end
-function methods.source(self,source,step)
- local sink=sinksocket("keep-open",self.c)
- local ret,err=pumpall(source,sink,step or pumpstep)
- return ret,err
-end
-function methods.close(self)
- self.c:close()
- return 1
-end
-function tp.connect(host,port,timeout,create)
- local c,e=(create or tcpsocket)()
- if not c then
-  return nil,e
- end
- c:settimeout(timeout or tp.TIMEOUT)
- local r,e=c:connect(host,port)
- if not r then
-  c:close()
-  return nil,e
- end
- return setmetatable({ c=c },mt)
-end
-package.loaded["socket.tp"]=tp
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
-package.loaded["util-soc-imp-http"] = package.loaded["util-soc-imp-http"] or true
-
--- original size: 13055, stripped down to: 9818
-
-
-local tostring,tonumber,setmetatable,next,type=tostring,tonumber,setmetatable,next,type
-local find,lower,format,gsub,match=string.find,string.lower,string.format,string.gsub,string.match
-local concat=table.concat
-local socket=socket   or require("socket")
-local url=socket.url  or require("socket.url")
-local ltn12=ltn12    or require("ltn12")
-local mime=mime     or require("mime")
-local headers=socket.headers or require("socket.headers")
-local normalizeheaders=headers.normalize
-local parseurl=url.parse
-local buildurl=url.build
-local absoluteurl=url.absolute
-local unescapeurl=url.unescape
-local skipsocket=socket.skip
-local sinksocket=socket.sink
-local sourcesocket=socket.source
-local trysocket=socket.try
-local tcpsocket=socket.tcp
-local newtrysocket=socket.newtry
-local protectsocket=socket.protect
-local emptysource=ltn12.source.empty
-local stringsource=ltn12.source.string
-local rewindsource=ltn12.source.rewind
-local pumpstep=ltn12.pump.step
-local pumpall=ltn12.pump.all
-local sinknull=ltn12.sink.null
-local sinktable=ltn12.sink.table
-local lowerheaders=headers.lower
-local mimeb64=mime.b64
-local http={
- TIMEOUT=60,
- USERAGENT=socket._VERSION,
-}
-socket.http=http
-local PORT=80
-local SCHEMES={
- http=true,
-}
-local function receiveheaders(sock,headers)
- if not headers then
-  headers={}
- end
- local line,err=sock:receive("*l") 
- if err then
-  return nil,err
- end
- while line~="" do
-  local name,value=skipsocket(2,find(line,"^(.-):%s*(.*)"))
-  if not (name and value) then
-   return nil,"malformed response headers"
-  end
-  name=lower(name)
-  line,err=sock:receive("*l")
-  if err then
-   return nil,err
-  end
-  while find(line,"^%s") do
-   value=value..line
-   line=sock:receive("*l")
-   if err then
-    return nil,err
-   end
-  end
-  local found=headers[name]
-  if found then
-   value=found..", "..value
-  end
-  headers[name]=value
- end
- return headers
-end
-socket.sourcet["http-chunked"]=function(sock,headers)
- return setmetatable (
-  {
-   getfd=function() return sock:getfd() end,
-   dirty=function() return sock:dirty() end,
-  },{
-   __call=function()
-    local line,err=sock:receive("*l")
-    if err then
-     return nil,err
-    end
-    local size=tonumber(gsub(line,";.*",""),16)
-    if not size then
-     return nil,"invalid chunk size"
-    end
-    if size>0 then
-     local chunk,err,part=sock:receive(size)
-     if chunk then
-      sock:receive("*a")
-     end
-     return chunk,err
-    else
-     headers,err=receiveheaders(sock,headers)
-     if not headers then
-      return nil,err
-     end
-    end
-   end
-  }
- )
-end
-socket.sinkt["http-chunked"]=function(sock)
- return setmetatable(
-  {
-   getfd=function() return sock:getfd() end,
-   dirty=function() return sock:dirty() end,
-  },
-  {
-   __call=function(self,chunk,err)
-    if not chunk then
-     chunk=""
-    end
-    return sock:send(format("%X\r\n%s\r\n",#chunk,chunk))
-   end
- })
-end
-local methods={}
-local mt={ __index=methods }
-local function openhttp(host,port,create)
- local c=trysocket((create or tcpsocket)())
- local h=setmetatable({ c=c },mt)
- local try=newtrysocket(function() h:close() end)
- h.try=try
- try(c:settimeout(http.TIMEOUT))
- try(c:connect(host,port or PORT))
- return h
-end
-http.open=openhttp
-function methods.sendrequestline(self,method,uri)
- local requestline=format("%s %s HTTP/1.1\r\n",method or "GET",uri)
- return self.try(self.c:send(requestline))
-end
-function methods.sendheaders(self,headers)
- self.try(self.c:send(normalizeheaders(headers)))
- return 1
-end
-function methods.sendbody(self,headers,source,step)
- if not source then
-  source=emptysource()
- end
- if not step then
-  step=pumpstep
- end
- local mode="http-chunked"
- if headers["content-length"] then
-  mode="keep-open"
- end
- return self.try(pumpall(source,sinksocket(mode,self.c),step))
-end
-function methods.receivestatusline(self)
- local try=self.try
- local status,err=try(self.c:receive(5))
- if status~="HTTP/" then
-  if err=="timeout" then
-   return 408
-  else
-   return nil,status 
-  end
- end
- status=try(self.c:receive("*l",status))
- local code=skipsocket(2,find(status,"HTTP/%d*%.%d* (%d%d%d)"))
- return try(tonumber(code),status)
-end
-function methods.receiveheaders(self)
- return self.try(receiveheaders(self.c))
-end
-function methods.receivebody(self,headers,sink,step)
- if not sink then
-  sink=sinknull()
- end
- if not step then
-  step=pumpstep
- end
- local length=tonumber(headers["content-length"])
- local encoding=headers["transfer-encoding"] 
- local mode="default" 
- if encoding and encoding~="identity" then
-  mode="http-chunked"
- elseif length then
-  mode="by-length"
- end
- return self.try(pumpall(sourcesocket(mode,self.c,length),sink,step))
-end
-function methods.receive09body(self,status,sink,step)
- local source=rewindsource(sourcesocket("until-closed",self.c))
- source(status)
- return self.try(pumpall(source,sink,step))
-end
-function methods.close(self)
- return self.c:close()
-end
-local function adjusturi(request)
- if not request.proxy and not http.PROXY then
-  request={
-     path=trysocket(request.path,"invalid path 'nil'"),
-     params=request.params,
-     query=request.query,
-     fragment=request.fragment,
-  }
- end
- return buildurl(request)
-end
-local function adjustheaders(request)
- local headers={
-  ["user-agent"]=http.USERAGENT,
-  ["host"]=gsub(request.authority,"^.-@",""),
-  ["connection"]="close, TE",
-  ["te"]="trailers"
- }
- local username=request.user
- local password=request.password
- if username and password then
-  headers["authorization"]="Basic "..(mimeb64(username..":"..unescapeurl(password)))
- end
- local proxy=request.proxy or http.PROXY
- if proxy then
-  proxy=parseurl(proxy)
-  local username=proxy.user
-  local password=proxy.password
-  if username and password then
-   headers["proxy-authorization"]="Basic "..(mimeb64(username..":"..password))
-  end
- end
- local requestheaders=request.headers
- if requestheaders then
-  headers=lowerheaders(headers,requestheaders)
- end
- return headers
-end
-local default={
- host="",
- port=PORT,
- path="/",
- scheme="http"
-}
-local function adjustrequest(originalrequest)
- local url=originalrequest.url
- local request=url and parseurl(url,default) or {}
- for k,v in next,originalrequest do
-  request[k]=v
- end
- local host=request.host
- local port=request.port
- local uri=request.uri
- if not host or host=="" then
-  trysocket(nil,"invalid host '"..tostring(host).."'")
- end
- if port=="" then
-  request.port=PORT
- end
- if not uri or uri=="" then
-  request.uri=adjusturi(request)
- end
- request.headers=adjustheaders(request)
- local proxy=request.proxy or http.PROXY
- if proxy then
-  proxy=parseurl(proxy)
-  request.host=proxy.host
-  request.port=proxy.port or 3128
- end
- return request
-end
-local maxredericts=5
-local validredirects={ [301]=true,[302]=true,[303]=true,[307]=true }
-local validmethods={ [false]=true,GET=true,HEAD=true }
-local function shouldredirect(request,code,headers)
- local location=headers.location
- if not location then
-  return false
- end
- location=gsub(location,"%s","")
- if location=="" then
-  return false
- end
- local scheme=match(location,"^([%w][%w%+%-%.]*)%:")
- if scheme and not SCHEMES[scheme] then
-  return false
- end
- local method=request.method
- local redirect=request.redirect
- local redirects=request.nredirects or 0
- local maxredirects=request.maxredirects or maxredirects
- return redirect and validredirects[code] and validmethods[method] and redirects<=maxredirects
-end
-local function shouldreceivebody(request,code)
- if request.method=="HEAD" then
-  return nil
- end
- if code==204 or code==304 then
-  return nil
- end
- if code>=100 and code<200 then
-  return nil
- end
- return 1
-end
-local tredirect,trequest,srequest
-tredirect=function(request,location)
- local result,code,headers,status=trequest {
-  url=absoluteurl(request.url,location),
-  source=request.source,
-  sink=request.sink,
-  headers=request.headers,
-  proxy=request.proxy,
-  nredirects=(request.nredirects or 0)+1,
-  maxredirects=request.maxredirects or maxredirects,
-  create=request.create,
- }
- if not headers then
-  headers={}
- end
- if not headers.location then
-  headers.location=location
- end
- return result,code,headers,status
-end
-trequest=function(originalrequest)
- local request=adjustrequest(originalrequest)
- local connection=openhttp(request.host,request.port,request.create)
- local headers=request.headers
- connection:sendrequestline(request.method,request.uri)
- connection:sendheaders(headers)
- if request.source then
-  connection:sendbody(headers,request.source,request.step)
- end
- local code,status=connection:receivestatusline()
- if not code then
-  connection:receive09body(status,request.sink,request.step)
-  connection:close()
-  return 1,200
- elseif code==408 then
-  return 1,code
- end
- while code==100 do
-  connection:receiveheaders()
-  code,status=connection:receivestatusline()
- end
- headers=connection:receiveheaders()
- if shouldredirect(request,code,headers) and not request.source then
-  connection:close()
-  return tredirect(originalrequest,headers.location)
- end
- if shouldreceivebody(request,code) then
-  connection:receivebody(headers,request.sink,request.step)
- end
- connection:close()
- return 1,code,headers,status
-end
-local function genericform(url,body)
- local buffer={}
- local request={
-  url=url,
-  sink=sinktable(buffer),
-  target=buffer,
- }
- if body then
-  request.source=stringsource(body)
-  request.method="POST"
-  request.headers={
-   ["content-length"]=#body,
-   ["content-type"]="application/x-www-form-urlencoded"
-  }
- end
- return request
-end
-http.genericform=genericform
-srequest=function(url,body)
- local request=genericform(url,body)
- local _,code,headers,status=trequest(request)
- return concat(request.target),code,headers,status
-end
-http.request=protectsocket(function(request,body)
- if type(request)=="string" then
-  return srequest(request,body)
- else
-  return trequest(request)
- end
-end)
-package.loaded["socket.http"]=http
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
-package.loaded["util-soc-imp-ftp"] = package.loaded["util-soc-imp-ftp"] or true
-
--- original size: 10345, stripped down to: 8538
-
-
-local setmetatable,type,next=setmetatable,type,next
-local find,format,gsub,match=string.find,string.format,string.gsub,string.match
-local concat=table.concat
-local mod=math.mod
-local socket=socket  or require("socket")
-local url=socket.url or require("socket.url")
-local tp=socket.tp  or require("socket.tp")
-local ltn12=ltn12   or require("ltn12")
-local tcpsocket=socket.tcp
-local trysocket=socket.try
-local skipsocket=socket.skip
-local sinksocket=socket.sink
-local selectsocket=socket.select
-local bindsocket=socket.bind
-local newtrysocket=socket.newtry
-local sourcesocket=socket.source
-local protectsocket=socket.protect
-local parseurl=url.parse
-local unescapeurl=url.unescape
-local pumpall=ltn12.pump.all
-local pumpstep=ltn12.pump.step
-local sourcestring=ltn12.source.string
-local sinktable=ltn12.sink.table
-local ftp={
- TIMEOUT=60,
- USER="ftp",
- PASSWORD="anonymous@anonymous.org",
-}
-socket.ftp=ftp
-local PORT=21
-local methods={}
-local mt={ __index=methods }
-function ftp.open(server,port,create)
- local tp=trysocket(tp.connect(server,port or PORT,ftp.TIMEOUT,create))
- local f=setmetatable({ tp=tp },metat)
- f.try=newtrysocket(function() f:close() end)
- return f
-end
-function methods.portconnect(self)
- local try=self.try
- local server=self.server
- try(server:settimeout(ftp.TIMEOUT))
- self.data=try(server:accept())
- try(self.data:settimeout(ftp.TIMEOUT))
-end
-function methods.pasvconnect(self)
- local try=self.try
- self.data=try(tcpsocket())
- self(self.data:settimeout(ftp.TIMEOUT))
- self(self.data:connect(self.pasvt.address,self.pasvt.port))
-end
-function methods.login(self,user,password)
- local try=self.try
- local tp=self.tp
- try(tp:command("user",user or ftp.USER))
- local code,reply=try(tp:check{"2..",331})
- if code==331 then
-  try(tp:command("pass",password or ftp.PASSWORD))
-  try(tp:check("2.."))
- end
- return 1
-end
-function methods.pasv(self)
- local try=self.try
- local tp=self.tp
- try(tp:command("pasv"))
- local code,reply=try(self.tp:check("2.."))
- local pattern="(%d+)%D(%d+)%D(%d+)%D(%d+)%D(%d+)%D(%d+)"
- local a,b,c,d,p1,p2=skipsocket(2,find(reply,pattern))
- try(a and b and c and d and p1 and p2,reply)
- local address=format("%d.%d.%d.%d",a,b,c,d)
- local port=p1*256+p2
- local server=self.server
- self.pasvt={
-  address=address,
-  port=port,
- }
- if server then
-  server:close()
-  self.server=nil
- end
- return address,port
-end
-function methods.epsv(self)
- local try=self.try
- local tp=self.tp
- try(tp:command("epsv"))
- local code,reply=try(tp:check("229"))
- local pattern="%((.)(.-)%1(.-)%1(.-)%1%)"
- local d,prt,address,port=match(reply,pattern)
- try(port,"invalid epsv response")
- local address=tp:getpeername()
- local server=self.server
- self.pasvt={
-  address=address,
-  port=port,
- }
- if self.server then
-  server:close()
-  self.server=nil
- end
- return address,port
-end
-function methods.port(self,address,port)
- local try=self.try
- local tp=self.tp
- self.pasvt=nil
- if not address then
-  address=try(tp:getsockname())
-  self.server=try(bindsocket(address,0))
-  address,port=try(self.server:getsockname())
-  try(self.server:settimeout(ftp.TIMEOUT))
- end
- local pl=mod(port,256)
- local ph=(port-pl)/256
- local arg=gsub(format("%s,%d,%d",address,ph,pl),"%.",",")
- try(tp:command("port",arg))
- try(tp:check("2.."))
- return 1
-end
-function methods.eprt(self,family,address,port)
- local try=self.try
- local tp=self.tp
- self.pasvt=nil
- if not address then
-  address=try(tp:getsockname())
-  self.server=try(bindsocket(address,0))
-  address,port=try(self.server:getsockname())
-  try(self.server:settimeout(ftp.TIMEOUT))
- end
- local arg=format("|%s|%s|%d|",family,address,port)
- try(tp:command("eprt",arg))
- try(tp:check("2.."))
- return 1
-end
-function methods.send(self,sendt)
- local try=self.try
- local tp=self.tp
- try(self.pasvt or self.server,"need port or pasv first")
- if self.pasvt then
-  self:pasvconnect()
- end
- local argument=sendt.argument or unescapeurl(gsub(sendt.path or "","^[/\\]",""))
- if argument=="" then
-  argument=nil
- end
- local command=sendt.command or "stor"
- try(tp:command(command,argument))
- local code,reply=try(tp:check{"2..","1.."})
- if not self.pasvt then
-  self:portconnect()
- end
- local step=sendt.step or pumpstep
- local readt={ tp }
- local checkstep=function(src,snk)
-  local readyt=selectsocket(readt,nil,0)
-  if readyt[tp] then
-   code=try(tp:check("2.."))
-  end
-  return step(src,snk)
- end
- local sink=sinksocket("close-when-done",self.data)
- try(pumpall(sendt.source,sink,checkstep))
- if find(code,"1..") then
-  try(tp:check("2.."))
- end
- self.data:close()
- local sent=skipsocket(1,self.data:getstats())
- self.data=nil
- return sent
-end
-function methods.receive(self,recvt)
- local try=self.try
- local tp=self.tp
- try(self.pasvt or self.server,"need port or pasv first")
- if self.pasvt then self:pasvconnect() end
- local argument=recvt.argument or unescapeurl(gsub(recvt.path or "","^[/\\]",""))
- if argument=="" then
-  argument=nil
- end
- local command=recvt.command or "retr"
- try(tp:command(command,argument))
- local code,reply=try(tp:check{"1..","2.."})
- if code>=200 and code<=299 then
-  recvt.sink(reply)
-  return 1
- end
- if not self.pasvt then
-  self:portconnect()
- end
- local source=sourcesocket("until-closed",self.data)
- local step=recvt.step or pumpstep
- try(pumpall(source,recvt.sink,step))
- if find(code,"1..") then
-  try(tp:check("2.."))
- end
- self.data:close()
- self.data=nil
- return 1
-end
-function methods.cwd(self,dir)
- local try=self.try
- local tp=self.tp
- try(tp:command("cwd",dir))
- try(tp:check(250))
- return 1
-end
-function methods.type(self,typ)
- local try=self.try
- local tp=self.tp
- try(tp:command("type",typ))
- try(tp:check(200))
- return 1
-end
-function methods.greet(self)
- local try=self.try
- local tp=self.tp
- local code=try(tp:check{"1..","2.."})
- if find(code,"1..") then
-  try(tp:check("2.."))
- end
- return 1
-end
-function methods.quit(self)
- local try=self.try
- try(self.tp:command("quit"))
- try(self.tp:check("2.."))
- return 1
-end
-function methods.close(self)
- local data=self.data
- if data then
-  data:close()
- end
- local server=self.server
- if server then
-  server:close()
- end
- local tp=self.tp
- if tp then
-  tp:close()
- end
-end
-local function override(t)
- if t.url then
-  local u=parseurl(t.url)
-  for k,v in next,t do
-   u[k]=v
-  end
-  return u
- else
-  return t
- end
-end
-local function tput(putt)
- putt=override(putt)
- local host=putt.host
- trysocket(host,"missing hostname")
- local f=ftp.open(host,putt.port,putt.create)
- f:greet()
- f:login(putt.user,putt.password)
- local typ=putt.type
- if typ then
-  f:type(typ)
- end
- f:epsv()
- local sent=f:send(putt)
- f:quit()
- f:close()
- return sent
-end
-local default={
- path="/",
- scheme="ftp",
-}
-local function genericform(u)
- local t=trysocket(parseurl(u,default))
- trysocket(t.scheme=="ftp","wrong scheme '"..t.scheme.."'")
- trysocket(t.host,"missing hostname")
- local pat="^type=(.)$"
- if t.params then
-  local typ=skipsocket(2,find(t.params,pat))
-  t.type=typ
-  trysocket(typ=="a" or typ=="i","invalid type '"..typ.."'")
- end
- return t
-end
-ftp.genericform=genericform
-local function sput(u,body)
- local putt=genericform(u)
- putt.source=sourcestring(body)
- return tput(putt)
-end
-ftp.put=protectsocket(function(putt,body)
- if type(putt)=="string" then
-  return sput(putt,body)
- else
-  return tput(putt)
- end
-end)
-local function tget(gett)
- gett=override(gett)
- local host=gett.host
- trysocket(host,"missing hostname")
- local f=ftp.open(host,gett.port,gett.create)
- f:greet()
- f:login(gett.user,gett.password)
- if gett.type then
-  f:type(gett.type)
- end
- f:epsv()
- f:receive(gett)
- f:quit()
- return f:close()
-end
-local function sget(u)
- local gett=genericform(u)
- local t={}
- gett.sink=sinktable(t)
- tget(gett)
- return concat(t)
-end
-ftp.command=protectsocket(function(cmdt)
- cmdt=override(cmdt)
- local command=cmdt.command
- local argument=cmdt.argument
- local check=cmdt.check
- local host=cmdt.host
- trysocket(host,"missing hostname")
- trysocket(command,"missing command")
- local f=ftp.open(host,cmdt.port,cmdt.create)
- local try=f.try
- local tp=f.tp
- f:greet()
- f:login(cmdt.user,cmdt.password)
- if type(command)=="table" then
-  local argument=argument or {}
-  for i=1,#command do
-   local cmd=command[i]
-   try(tp:command(cmd,argument[i]))
-   if check and check[i] then
-    try(tp:check(check[i]))
-   end
-  end
- else
-  try(tp:command(command,argument))
-  if check then
-   try(tp:check(check))
-  end
- end
- f:quit()
- return f:close()
-end)
-ftp.get=protectsocket(function(gett)
- if type(gett)=="string" then
-  return sget(gett)
- else
-  return tget(gett)
- end
-end)
-package.loaded["socket.ftp"]=ftp
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
-package.loaded["util-soc-imp-smtp"] = package.loaded["util-soc-imp-smtp"] or true
-
--- original size: 7018, stripped down to: 5883
-
-
-local type,setmetatable,next=type,setmetatable,next
-local find,lower,format=string.find,string.lower,string.format
-local osdate,osgetenv=os.date,os.getenv
-local random=math.random
-local socket=socket   or require("socket")
-local headers=socket.headers or require("socket.headers")
-local ltn12=ltn12    or require("ltn12")
-local tp=socket.tp   or require("socket.tp")
-local mime=mime     or require("mime")
-local mimeb64=mime.b64
-local mimestuff=mime.stuff
-local skipsocket=socket.skip
-local trysocket=socket.try
-local newtrysocket=socket.newtry
-local protectsocket=socket.protect
-local normalizeheaders=headers.normalize
-local lowerheaders=headers.lower
-local createcoroutine=coroutine.create
-local resumecoroutine=coroutine.resume
-local yieldcoroutine=coroutine.resume
-local smtp={
- TIMEOUT=60,
- SERVER="localhost",
- PORT=25,
- DOMAIN=osgetenv("SERVER_NAME") or "localhost",
- ZONE="-0000",
-}
-socket.smtp=smtp
-local methods={}
-local mt={ __index=methods }
-function methods.greet(self,domain)
- local try=self.try
- local tp=self.tp
- try(tp:check("2.."))
- try(tp:command("EHLO",domain or _M.DOMAIN))
- return skipsocket(1,try(tp:check("2..")))
-end
-function methods.mail(self,from)
- local try=self.try
- local tp=self.tp
- try(tp:command("MAIL","FROM:"..from))
- return try(tp:check("2.."))
-end
-function methods.rcpt(self,to)
- local try=self.try
- local tp=self.tp
- try(tp:command("RCPT","TO:"..to))
- return try(tp:check("2.."))
-end
-function methods.data(self,src,step)
- local try=self.try
- local tp=self.tp
- try(tp:command("DATA"))
- try(tp:check("3.."))
- try(tp:source(src,step))
- try(tp:send("\r\n.\r\n"))
- return try(tp:check("2.."))
-end
-function methods.quit(self)
- local try=self.try
- local tp=self.tp
- try(tp:command("QUIT"))
- return try(tp:check("2.."))
-end
-function methods.close(self)
- return self.tp:close()
-end
-function methods.login(self,user,password)
- local try=self.try
- local tp=self.tp
- try(tp:command("AUTH","LOGIN"))
- try(tp:check("3.."))
- try(tp:send(mimeb64(user).."\r\n"))
- try(tp:check("3.."))
- try(tp:send(mimeb64(password).."\r\n"))
- return try(tp:check("2.."))
-end
-function methods.plain(self,user,password)
- local try=self.try
- local tp=self.tp
- local auth="PLAIN "..mimeb64("\0"..user.."\0"..password)
- try(tp:command("AUTH",auth))
- return try(tp:check("2.."))
-end
-function methods.auth(self,user,password,ext)
- if not user or not password then
-  return 1
- end
- local try=self.try
- if find(ext,"AUTH[^\n]+LOGIN") then
-  return self:login(user,password)
- elseif find(ext,"AUTH[^\n]+PLAIN") then
-  return self:plain(user,password)
- else
-  try(nil,"authentication not supported")
- end
-end
-function methods.send(self,mail)
- self:mail(mail.from)
- local receipt=mail.rcpt
- if type(receipt)=="table" then
-  for i=1,#receipt do
-   self:rcpt(receipt[i])
-  end
- elseif receipt then
-  self:rcpt(receipt)
- end
- self:data(ltn12.source.chain(mail.source,mimestuff()),mail.step)
-end
-local function opensmtp(self,server,port,create)
- if not server or server=="" then
-  server=smtp.SERVER
- end
- if not port or port=="" then
-  port=smtp.PORT
- end
- local s={
-  tp=trysocket(tp.connect(server,port,smtp.TIMEOUT,create)),
-  try=newtrysocket(function()
-   s:close()
-  end),
- }
- setmetatable(s,mt)
- return s
-end
-smtp.open=opensmtp
-local nofboundaries=0
-local function newboundary()
- nofboundaries=nofboundaries+1
- return format('%s%05d==%05u',osdate('%d%m%Y%H%M%S'),random(0,99999),nofboundaries)
-end
-local send_message
-local function send_headers(headers)
- yieldcoroutine(normalizeheaders(headers))
-end
-local function send_multipart(message)
- local boundary=newboundary()
- local headers=lowerheaders(message.headers)
- local body=message.body
- local preamble=body.preamble
- local epilogue=body.epilogue
- local content=headers['content-type'] or 'multipart/mixed'
- headers['content-type']=content..'; boundary="'..boundary..'"'
- send_headers(headers)
- if preamble then
-  yieldcoroutine(preamble)
-  yieldcoroutine("\r\n")
- end
- for i=1,#body do
-  yieldcoroutine("\r\n--"..boundary.."\r\n")
-  send_message(body[i])
- end
- yieldcoroutine("\r\n--"..boundary.."--\r\n\r\n")
- if epilogue then
-  yieldcoroutine(epilogue)
-  yieldcoroutine("\r\n")
- end
-end
-local default_content_type='text/plain; charset="UTF-8"'
-local function send_source(message)
- local headers=lowerheaders(message.headers)
- if not headers['content-type'] then
-  headers['content-type']=default_content_type
- end
- send_headers(headers)
- local getchunk=message.body
- while true do
-  local chunk,err=getchunk()
-  if err then
-   yieldcoroutine(nil,err)
-  elseif chunk then
-   yieldcoroutine(chunk)
-  else
-   break
-  end
- end
-end
-local function send_string(message)
- local headers=lowerheaders(message.headers)
- if not headers['content-type'] then
-  headers['content-type']=default_content_type
- end
- send_headers(headers)
- yieldcoroutine(message.body)
-end
-function send_message(message)
- local body=message.body
- if type(body)=="table" then
-  send_multipart(message)
- elseif type(body)=="function" then
-  send_source(message)
- else
-  send_string(message)
- end
-end
-local function adjust_headers(message)
- local headers=lowerheaders(message.headers)
- if not headers["date"] then
-  headers["date"]=osdate("!%a, %d %b %Y %H:%M:%S ")..(message.zone or smtp.ZONE)
- end
- if not headers["x-mailer"] then
-  headers["x-mailer"]=socket._VERSION
- end
- headers["mime-version"]="1.0"
- return headers
-end
-function smtp.message(message)
- message.headers=adjust_headers(message)
- local action=createcoroutine(function()
-  send_message(message)
- end)
- return function()
-  local ret,a,b=resumecoroutine(action)
-  if ret then
-   return a,b
-  else
-   return nil,a
-  end
- end
-end
-smtp.send=protectsocket(function(mail)
- local snd=opensmtp(smtp,mail.server,mail.port,mail.create)
- local ext=snd:greet(mail.domain)
- snd:auth(mail.user,mail.password,ext)
- snd:send(mail)
- snd:quit()
- return snd:close()
-end)
-package.loaded["socket.smtp"]=smtp
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
 package.loaded["trac-set"] = package.loaded["trac-set"] or true
 
--- original size: 14685, stripped down to: 9601
+-- original size: 14955, stripped down to: 9792
 
 if not modules then modules={} end modules ['trac-set']={ 
  version=1.001,
@@ -11747,7 +8183,7 @@ if not modules then modules={} end modules ['trac-set']={
 local type,next,tostring,tonumber=type,next,tostring,tonumber
 local print=print
 local concat,sortedhash=table.concat,table.sortedhash
-local formatters,find,lower,gsub,topattern=string.formatters,string.find,string.lower,string.gsub,string.topattern
+local find,lower,gsub,topattern=string.find,string.lower,string.gsub,string.topattern
 local is_boolean=string.is_boolean
 local settings_to_hash=utilities.parsers.settings_to_hash
 local allocate=utilities.storage.allocate
@@ -11755,6 +8191,7 @@ utilities=utilities or {}
 local utilities=utilities
 local setters=utilities.setters or {}
 utilities.setters=setters
+local formatted=string.formatted
 local data={}
 local trace_initialize=false 
 local frozen=true  
@@ -11763,18 +8200,19 @@ local function initialize_setter(filename,name,values)
  if setter then
   local data=setter.data
   if data then
+   local report=trace_initialize and setter.report or false
    for key,newvalue in sortedhash(values) do
     local newvalue=is_boolean(newvalue,newvalue,true) 
     local functions=data[key]
     if functions then
      local oldvalue=functions.value
      if functions.frozen then
-      if trace_initialize then
-       setter.report("%s: %a is %s to %a",filename,key,"frozen",oldvalue)
+      if report then
+       report("%s: %a is %s to %a",filename,key,"frozen",oldvalue)
       end
      elseif #functions>0 and not oldvalue then
-      if trace_initialize then
-       setter.report("%s: %a is %s to %a",filename,key,"set",newvalue)
+      if report then
+       report("%s: %a is %s to %a",filename,key,"set",newvalue)
       end
       for i=1,#functions do
        functions[i](newvalue)
@@ -11782,15 +8220,15 @@ local function initialize_setter(filename,name,values)
       functions.value=newvalue
       functions.frozen=functions.frozen or frozen
      else
-      if trace_initialize then
-       setter.report("%s: %a is %s as %a",filename,key,"kept",oldvalue)
+      if report then
+       report("%s: %a is %s as %a",filename,key,"kept",oldvalue)
       end
      end
     else
      functions={ default=newvalue,frozen=frozen }
      data[key]=functions
-     if trace_initialize then
-      setter.report("%s: %a is %s to %a",filename,key,"defaulted",newvalue)
+     if report then
+      report("%s: %a is %s to %a",filename,key,"defaulted",newvalue)
      end
     end
    end
@@ -11912,6 +8350,13 @@ local function reset_setter(t)
  t.done={}
  reset(t)
 end
+local function set_setter(setter,what,value) 
+ if value then
+  enable_setter(setter,what,value)
+ else
+  disable_setter(setter,what,value)
+ end
+end
 local function list_setter(t) 
  local list=table.sortedkeys(t.data)
  local user,system={},{}
@@ -11966,7 +8411,7 @@ local function show_setter(t,pattern)
 end
 function setters.report(setter,fmt,...)
  if fmt then
-  print(formatters["%-15s : %s"](setter.name,formatters[fmt](...)))
+  print(formatted("%-15s : %s",setter.name,formatted(fmt,...)))
  else
   print("")
  end
@@ -11992,6 +8437,7 @@ local function new_setter(name)
   enable=function(...)   enable_setter  (setter,...) end,
   disable=function(...)   disable_setter (setter,...) end,
   reset=function(...)   reset_setter   (setter,...) end,
+  set=function(...)   set_setter  (setter,...) end,
   register=function(...)   register_setter(setter,...) end,
   list=function(...)  return list_setter (setter,...) end,
   show=function(...)   show_setter (setter,...) end,
@@ -12103,7 +8549,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 16046, stripped down to: 11072
+-- original size: 16265, stripped down to: 11248
 
 if not modules then modules={} end modules ['trac-log']={
  version=1.001,
@@ -12144,6 +8590,10 @@ formatters.add (
  formatters,"chruni",
  [[utfchar(%s) .. " (U+" .. format("%%05X",%s) .. ")"]]
 )
+if sequencer then
+ sequencer.extensions.unichr=function(s) return formatters["%U (%C)"](s) end
+ sequencer.extensions.chruni=function(s) return formatters["%C (%U)"](s) end
+end
 local function ignore() end
 setmetatableindex(logs,function(t,k) t[k]=ignore;return ignore end)
 local report,subreport,status,settarget,setformats,settranslations
@@ -12752,7 +9202,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
 
--- original size: 15803, stripped down to: 11733
+-- original size: 15792, stripped down to: 11722
 
 if not modules then modules={} end modules ['trac-inf']={
  version=1.001,
@@ -12762,12 +9212,12 @@ if not modules then modules={} end modules ['trac-inf']={
  license="see context related readme files"
 }
 local type,tonumber,select=type,tonumber,select
-local format,lower,find,gsub,rep=string.format,string.lower,string.find,string.gsub,string.rep
+local lower,find,gsub,rep=string.lower,string.find,string.gsub,string.rep
 local concat,sortedhash=table.concat,table.sortedhash
 local clock=os.gettimeofday
 local setmetatableindex=table.setmetatableindex
 local serialize=table.serialize
-local formatters=string.formatters
+local formatted=string.formatted
 statistics=statistics or {}
 local statistics=statistics
 statistics.enable=true
@@ -12791,11 +9241,11 @@ function statistics.show()
  if statistics.enable then
   local register=statistics.register
   register("used platform",function()
-   return format("%s, type: %s, binary subtree: %s",
+   return formatted("%s, type: %s, binary subtree: %s",
     os.platform or "unknown",os.type or "unknown",environment.texos or "unknown")
   end)
   register("used engine",function()
-   return format("%s version: %s, functionality level: %s, format id: %s, memory mode: %i, compiler: %s, cversion: %i",
+   return formatted("%s version: %s, functionality level: %s, format id: %s, memory mode: %i, compiler: %s, cversion: %i",
     LUATEXENGINE,LUATEXVERBOSE,LUATEXFUNCTIONALITY,LUATEXFORMATID,
     status.tex_memory_mode,
     status.used_compiler,
@@ -12806,13 +9256,13 @@ function statistics.show()
    local t=status.gethashstate()
    local l=status.getlookupstate()
    local m=status.gettexstate()
-   return format("%s eqtb slots used of %s, %s control sequences, %i hash slots, %i misses, approximate memory usage: %i MB",
+   return formatted("%s eqtb slots used of %s, %s control sequences, %i hash slots, %i misses, approximate memory usage: %i MB",
     t.top,t.max,l.ptr,m.hashslots,m.hashmisses,m.approximate//(1024*1024))
   end)
   register("callbacks",statistics.callbacks)
   register("lua properties",function()
    local mask=load([[τεχ = 1]]) and "utf" or "ascii"
-   return format("engine: lua %s, format %s, used memory: %s, symbol mask: %s (%s)",
+   return formatted("engine: lua %s, format %s, used memory: %s, symbol mask: %s (%s)",
     LUAVERSION,LUAFORMAT,statistics.memused(),mask,mask=="utf" and "τεχ" or "tex")
   end)
   register("runtime",statistics.runtime)
@@ -12830,14 +9280,14 @@ end
 function statistics.memused() 
  local round=math.round or math.floor
  local luastate=status.getluastate()
- return format("%s MB, ctx: %s MB, max: %s MB",
+ return formatted("%s MB, ctx: %s MB, max: %s MB",
   round(collectgarbage("count")//1024),
   round(luastate.statebytes//1048576),
   luastate.statebytesmax and round(luastate.statebytesmax//1048576) or "unknown"
  )
 end
 function statistics.formatruntime(runtime) 
- return format("%s seconds",runtime)   
+ return formatted("%s seconds",runtime)   
 end
 function statistics.runtime()
  stoptiming(statistics)
@@ -12866,7 +9316,7 @@ function statistics.tracefunction(base,tag,...)
   local func=base[name]
   setmetatableindex(stat,function(t,k) t[k]=0 return 0 end)
   base[name]=function(n,k,v) stat[k]=stat[k]+1 return func(n,k,v) end
-  statistics.register(formatters["%s.%s"](tag,name),function() return serialize(stat,"calls") end)
+  statistics.register(formatted("%s.%s",tag,name),function() return serialize(stat,"calls") end)
  end
 end
 if tex then
@@ -12890,7 +9340,7 @@ local function show(data,fields)
    local t={}
    for i=1,#list do
     local n=data[list[i].."state"][f]
-    t[i]=n<0 and formatters["%w"](11) or formatters["%11i"](n)
+    t[i]=n<0 and formatted("%w",11) or formatted("%11i",n)
    end
    report("  %3s"..columns,f,unpack(t))
   else
@@ -13290,7 +9740,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lua"] = package.loaded["util-lua"] or true
 
--- original size: 6244, stripped down to: 4822
+-- original size: 6098, stripped down to: 4601
 
 if not modules then modules={} end modules ['util-lua']={
  version=1.001,
@@ -13315,22 +9765,15 @@ luautilities.nofstrippedchunks=0
 luautilities.nofstrippedbytes=0
 local strippedchunks={} 
 luautilities.strippedchunks=strippedchunks
-if not LUATEXENGINE then
- LUATEXENGINE=status.luatex_engine and string.lower(status.luatex_engine)
- JITSUPPORTED=LUATEXENGINE=="luajittex" or jit
- CONTEXTLMTXMODE=CONTEXTLMTXMODE or (LUATEXENGINE=="luametatex" and 1) or 0
-end
+LUATEXENGINE="luametatex"
+JITSUPPORTED=false
+CONTEXTLMTXMODE=CONTEXTLMTXMODE or 1
 luautilities.suffixes={
- tma="tma",
- tmc=(CONTEXTLMTXMODE and CONTEXTLMTXMODE>0 and "tmd") or (jit and "tmb") or "tmc",
- lua="lua",
  lmt="lmt",
- luc=(CONTEXTLMTXMODE and CONTEXTLMTXMODE>0 and "lud") or (jit and "lub") or "luc",
- lui="lui",
- luv="luv",
- luj="luj",
- tua="tua",
- tuc=(CONTEXTLMTXMODE and CONTEXTLMTXMODE>0 and "tud") or (jit and "tub") or "tuc",
+ tma="tma",tmc="tmd",
+ lua="lua",luc="lud",
+ tua="tua",tuc="tud",
+ lui="lui",luv="luv",luj="luj",
 }
 local function register(name) 
  if tracestripping then
@@ -13342,9 +9785,10 @@ end
 local function stupidcompile(luafile,lucfile,strip)
  local code=io.loaddata(luafile)
  if code and code~="" then
-  code=load(code)
+  local strip=strip and luautilities.stripcode or luautilities.alwaysstripcode
+  code=load(code,stripped and "=stripped" or nil)
   if code then
-   code=dump(code,strip and luautilities.stripcode or luautilities.alwaysstripcode)
+   code=dump(code,strip)
    if code and code~="" then
     register(name)
     io.savedata(lucfile,code)
@@ -13381,13 +9825,13 @@ function luautilities.loadedluacode(fullname,forcestrip,name,macros)
   end
   if forcestrip or luautilities.alwaysstripcode then
    register(name)
-   return load(dump(code,true)),0
+   return load(dump(code,true),"=stripped"),0
   else
    return code,0
   end
  elseif luautilities.alwaysstripcode then
   register(name)
-  return load(dump(code,true)),0
+  return load(dump(code,true),"=stripped"),0
  else
   return code,0
  end
@@ -13424,10 +9868,10 @@ function luautilities.compile(luafile,lucfile,cleanup,strip,fallback)
  end
  return done
 end
-function luautilities.loadstripped(...)
- local l=load(...)
+function luautilities.loadstripped(data,name,mode,...) 
+ local l=load(data,name or "=stripped","t",...)
  if l then
-  return load(dump(l,true))
+  return load(dump(l,true),name or "=stripped","b",...)
  end
 end
 function luautilities.checkmemory(previous,threshold,trace) 
@@ -13458,7 +9902,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-deb"] = package.loaded["util-deb"] or true
 
--- original size: 8343, stripped down to: 5143
+-- original size: 8359, stripped down to: 5155
 
 if not modules then modules={} end modules ['util-deb']={
  version=1.001,
@@ -13468,13 +9912,14 @@ if not modules then modules={} end modules ['util-deb']={
  license="see context related readme files"
 }
 local type,next,xpcall,print=type,next,xpcall,print
-local format,sub,gsub=string.format,string.sub,string.gsub
+local sub,gsub=string.sub,string.gsub
 local sort=table.sort
 local setmetatableindex=table.setmetatableindex
 utilities=utilities or {}
 local debugger=utilities.debugger or {}
 utilities.debugger=debugger
 local report=logs.reporter("debugger")
+local formatted=string.formatted
 local ticks=os.gettimeofday 
 local seconds=function(n) return n or 0 end
 local overhead=0
@@ -13587,7 +10032,7 @@ function debugger.showstats(printer,threshold)
  if length>50 then
   length=50
  end
- local fmt=string.formatters["%4.9k s  %3.3k %%  %4.9k s  %3.3k %%  %8i #  %-"..length.."s  %4i  %s"]
+ local fmt="%4.9k s  %3.3k %%  %4.9k s  %3.3k %%  %8i #  %-"..length.."s  %4i  %s"
  for i=1,#dataset do
   local data=dataset[i]
   local real=data[1]
@@ -13602,12 +10047,12 @@ function debugger.showstats(printer,threshold)
   if #name>length then
    name=sub(name,1,length)
   end
-  printer(fmt(seconds(total),100*total/totaltime,seconds(real),100*real/realtime,count,name,line,source))
+  printer(formatted(fmt,seconds(total),100*total/totaltime,seconds(real),100*real/realtime,count,name,line,source))
  end
  printer("")
- printer(format("functions : %i",functions))
- printer(format("calls     : %i",calls))
- printer(format("overhead  : %f",seconds(overhead/1000)))
+ printer(formatted("functions : %i",functions))
+ printer(formatted("calls     : %i",calls))
+ printer(formatted("overhead  : %f",seconds(overhead/1000)))
 end
 local function getdebug()
  if sethook and getinfo then
@@ -13694,6 +10139,158 @@ if luac then
   else
    print(v)
   end
+ end
+end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+package.loaded["util-srv"] = package.loaded["util-srv"] or true
+
+-- original size: 5338, stripped down to: 3802
+
+if not modules then modules={} end modules ["util-srv"]={
+ version=1.002,
+ comment="companion to mtxrun.lmt",
+ author="Hans Hagen",
+ copyright="PRAGMA ADE / ConTeXt Development Team",
+ license="see context related readme files"
+}
+if not server then
+ return
+end
+local rawget,type=rawget,type
+local match,lower=string.match,string.lower
+local report=logs.reporter("server")
+server.report=report
+server.mimetypes={
+ css="text/css",
+ htm="text/html",
+ html="text/html",
+ js="text/javascript",
+ json="application/json",
+ mjs="text/javascript",
+ xml="text/xml",
+ cls="text/x-tex",
+ lmt="text/x-lua",
+ log="text/plain",
+ lua="text/x-lua",
+ mkiv="text/x-tex",
+ mkxl="text/x-tex",
+ mp="text/plain",
+ mpiv="text/plain",
+ mpxl="text/plain",
+ tex="text/x-tex",
+ asc="text/plain",
+ doc="application/msword",
+ dvi="application/x-dvi",
+ markdown="text/markdown",
+ md="text/markdown",
+ pdf="application/pdf",
+ ppt="application/vnd.ms-powerpoint",
+ rtf="application/rtf",
+ txt="text/plain",
+ xls="application/vnd.ms-excel",
+ ai="application/postscript",
+ bmp="image/bmp",
+ eps="application/postscript",
+ gif="image/gif",
+ ico="image/x-icon",
+ jpeg="image/jpeg",
+ jpg="image/jpeg",
+ png="image/png",
+ ps="application/postscript",
+ svg="image/svg+xml",
+ tif="image/tiff",
+ tiff="image/tiff",
+ webp="image/webp",
+ otf="font/otf",
+ ttf="font/ttf",
+ woff="font/woff",
+ woff2="font/woff2",
+ avi="video/x-msvideo",
+ mov="video/quicktime",
+ mp3="audio/mpeg",
+ mp4="video/mp4",
+ mpeg="video/mpeg",
+ mpg="video/mpeg",
+ ogg="audio/ogg",
+ qt="video/quicktime",
+ webm="video/webm",
+ bz2="application/x-bzip2",
+ gz="application/gzip",
+ tar="application/x-tar",
+ tgz="application/x-tar",
+ zip="application/zip",
+ cer="application/pkix-cert",
+ crt="application/x-x509-ca-cert",
+ crl="application/pkix-crl",
+ bin="application/octet-stream",
+ exe="application/octet-stream",
+}
+table.setmetatableindex(server.mimetypes,function(t,k)
+ local suffix=match(match(k,"^([^?#]+)") or k,"%.?([%w_]+)$")
+ return suffix and rawget(t,lower(suffix)) or "application/octet-stream"
+end)
+server.messages={
+ [100]="Continue",
+ [101]="Switching Protocols",
+ [200]="OK",
+ [201]="Created",
+ [202]="Accepted",
+ [203]="Non-Authoritative Information",
+ [204]="No Content",
+ [205]="Reset Content",
+ [206]="Partial Content",
+ [300]="Multiple Choices",
+ [301]="Moved Permanently",
+ [302]="Found",
+ [303]="See Other",
+ [304]="Not Modified",
+ [305]="Use Proxy",
+ [307]="Temporary Redirect",
+ [400]="Bad Request",
+ [401]="Unauthorized",
+ [402]="Payment Required",
+ [403]="Forbidden",
+ [404]="Not Found",
+ [405]="Method Not Allowed",
+ [406]="Not Acceptable",
+ [407]="Proxy Authentication Required",
+ [408]="Request Timeout",
+ [409]="Conflict",
+ [410]="Gone",
+ [411]="Length Required",
+ [412]="Precondition Failed",
+ [413]="Request Entity Too Large",
+ [414]="Request-URI Too Large",
+ [415]="Unsupported Media Type",
+ [416]="Request Range Not Satisfiable",
+ [417]="Expectation Failed",
+ [500]="Internal Server Error",
+ [501]="Not Implemented",
+ [502]="Bad Gateway",
+ [503]="Service Unavailable",
+ [504]="Gateway Timeout",
+ [505]="HTTP Version Not Supported",
+}
+table.setmetatableindex(server.messages,function()
+ return "Internal Server Error"
+end)
+function server.reportstatistics(statistics)
+ if type(statistics)=="table" then
+  report("uptime           : %i seconds",statistics.uptime)
+  report("requests         : %i",statistics.requests)
+  report("errors           : %i",statistics.errors)
+  report("active clients   : %i",statistics.activeclients)
+  report("max nofclients   : %i",statistics.maxnofclients)
+  report("bytes read       : %i",statistics.bytesread)
+  report("bytes sent       : %i",statistics.byteswritten)
+  report("client timeout   : %i seconds",statistics.clienttimeout)
+  report("timedout clients : %i",statistics.timedoutclients)
+ else
  end
 end
 
@@ -20801,7 +17398,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tmp"] = package.loaded["data-tmp"] or true
 
--- original size: 17023, stripped down to: 12085
+-- original size: 17391, stripped down to: 12369
 
 if not modules then modules={} end modules ['data-tmp']={
  version=1.100,
@@ -21095,18 +17692,28 @@ function caches.is_writable(filepath,filename)
  local tmaname,tmcname=setluanames(filepath,filename)
  return is_writable(tmaname)
 end
-local saveoptions={ compact=true,accurate=not JITSUPPORTED }
-function caches.savedata(filepath,filename,data,fast)
- local tmaname,tmcname=setluanames(filepath,filename)
- data.cache_uuid=osuuid()
- if fast or fast_cache then
-  savedata(tmaname,fastserialize(data,true))
- elseif direct_cache then
-  savedata(tmaname,serialize(data,true,saveoptions))
- else
-  serializetofile(tmaname,data,true,saveoptions)
+if sequencer then
+ serialize=sequencer.serialize
+ function caches.savedata(filepath,filename,data,fast)
+  local tmaname,tmcname=setluanames(filepath,filename)
+  data.cache_uuid=osuuid()
+  savedata(tmaname,serialize(data,true))
+  compilelua(tmaname,tmcname)
  end
- compilelua(tmaname,tmcname)
+else
+ local saveoptions={ compact=true,accurate=not JITSUPPORTED }
+ function caches.savedata(filepath,filename,data,fast)
+  local tmaname,tmcname=setluanames(filepath,filename)
+  data.cache_uuid=osuuid()
+  if fast or fast_cache then
+   savedata(tmaname,fastserialize(data,true))
+  elseif direct_cache then
+   savedata(tmaname,serialize(data,true,saveoptions))
+  else
+   serializetofile(tmaname,data,true,saveoptions)
+  end
+  compilelua(tmaname,tmcname)
+ end
 end
 local content_state={}
 function caches.contentstate()
@@ -21350,7 +17957,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 71248, stripped down to: 45449
+-- original size: 71513, stripped down to: 45545
 
 if not modules then modules={} end modules ['data-res']={
  version=1.001,
@@ -22294,37 +18901,40 @@ local function find_analyze(filename,askedformat,allresults)
  local filetype=""
  local filesuffix=suffixonly(filename)
  local wantedfiles={}
- wantedfiles[#wantedfiles+1]=filename
- if askedformat=="" then
-  if filesuffix=="" or not suffixmap[filesuffix] then
-   local defaultsuffixes=resolvers.defaultsuffixes
-   for i=1,#defaultsuffixes do
-    local forcedname=filename.."."..defaultsuffixes[i]
-    wantedfiles[#wantedfiles+1]=forcedname
-    filetype=formatofsuffix(forcedname)
+ if filename and filename~="" and filename~="." then
+  wantedfiles[#wantedfiles+1]=filename
+  if askedformat=="" then
+   if filesuffix=="" or not suffixmap[filesuffix] then
+    local defaultsuffixes=resolvers.defaultsuffixes
+    for i=1,#defaultsuffixes do
+     local forcedname=filename.."."..defaultsuffixes[i]
+     wantedfiles[#wantedfiles+1]=forcedname
+     filetype=formatofsuffix(forcedname)
+     if trace_locating then
+      report_resolving("forcing filetype %a",filetype)
+     end
+    end
+   else
+    filetype=formatofsuffix(filename)
     if trace_locating then
-     report_resolving("forcing filetype %a",filetype)
+     report_resolving("using suffix based filetype %a",filetype)
     end
    end
   else
-   filetype=formatofsuffix(filename)
+   if filesuffix=="" or not suffixmap[filesuffix] then
+    local format_suffixes=suffixes[askedformat]
+    if format_suffixes then
+     for i=1,#format_suffixes do
+      wantedfiles[#wantedfiles+1]=filename.."."..format_suffixes[i]
+     end
+    end
+   end
+   filetype=askedformat
    if trace_locating then
-    report_resolving("using suffix based filetype %a",filetype)
+    report_resolving("using given filetype %a",filetype)
    end
   end
  else
-  if filesuffix=="" or not suffixmap[filesuffix] then
-   local format_suffixes=suffixes[askedformat]
-   if format_suffixes then
-    for i=1,#format_suffixes do
-     wantedfiles[#wantedfiles+1]=filename.."."..format_suffixes[i]
-    end
-   end
-  end
-  filetype=askedformat
-  if trace_locating then
-   report_resolving("using given filetype %a",filetype)
-  end
  end
  return filetype,wantedfiles
 end
@@ -24205,7 +20815,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-sbx"] = package.loaded["luat-sbx"] or true
 
--- original size: 5886, stripped down to: 4164
+-- original size: 7567, stripped down to: 5330
 
 if not modules then modules={} end modules ['luat-sbx']={
  version=1.001,
@@ -24215,6 +20825,7 @@ if not modules then modules={} end modules ['luat-sbx']={
  license="see context related readme files"
 }
 local type=type
+local find=string.find
 local targets=security.gettargets()
 local actions=security.getactions()
 local setchecker=security.setchecker
@@ -24286,12 +20897,13 @@ end
 do
  local disablerunners=sandbox.disablerunners
  local disablelibraries=sandbox.disablelibraries
+ local function block()
+  return false
+ end
  function initializers.binaries()
   if execution_mode=="none" then
-   setchecker(3,function(s,action) 
-    return false
-   end)
-disablerunners()
+   setchecker(3,block)
+   disablerunners()
   elseif execution_mode=="list" then
    if type(execution_list)=="string" then
     execution_list=settingstoarray(execution_list)
@@ -24312,10 +20924,8 @@ disablerunners()
  end
  function initializers.libraries()
   if library_mode=="none" then
-   setchecker(4,function(s,action) 
-    return false
-   end)
-disablelibraries()
+   setchecker(4,block)
+   disablelibraries()
   elseif library_mode=="list" then
    if type(library_list)=="string" then
     library_list=settingstoarray(library_list)
@@ -24332,6 +20942,55 @@ disablelibraries()
      return okay
     end)
    end
+  end
+ end
+ local urlhashed=url.hashed
+ local suffix=file.suffix
+ local validators={
+  http=function(specification)
+   return true
+  end,
+  https=function(specification)
+   return true
+  end,
+  file=function(specification)
+   return suffix(specification.filename)=="pdf"
+  end,
+ }
+ local function check(s,action)
+  local specification=urlhashed(s)
+  local validator=validators[specification.scheme]
+  local okay=validator and validator(specification)
+  if trace then
+   report("%s %s : %s",okay and "+" or "-",actions[action],s)
+  elseif not okay then
+   report("%s : rejecting %a",actions[action],s)
+  end
+  return okay
+ end
+ setchecker(6,check,true)
+ function initializers.launchers()
+  if execution_mode=="none" then
+   setchecker(6,block)
+  else
+   setchecker(6,check)
+  end
+ end
+ local function check(s,action)
+  local okay=find(s,"^https?://")
+  if trace then
+   report("%s %s : %s",okay and "+" or "-",actions[action],s)
+  elseif not okay then
+   report("%s : rejecting %a",actions[action],s)
+  end
+  return okay
+ end
+ setchecker(7,check,true)
+ function initializers.client()
+  if execution_mode=="none" then
+   setchecker(7,block)
+  else
+   setchecker(7,check)
   end
  end
  function initializers.graphics()
@@ -24354,7 +21013,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-sch"] = package.loaded["data-sch"] or true
 
--- original size: 10417, stripped down to: 7826
+-- original size: 6717, stripped down to: 5365
 
 if not modules then modules={} end modules ['data-sch']={
  version=1.001,
@@ -24364,18 +21023,17 @@ if not modules then modules={} end modules ['data-sch']={
  license="see context related readme files"
 }
 local load,tonumber,require=load,tonumber,require
-local gsub,format=string.gsub,string.format
+local gsub=string.gsub
 local savedata=io.savedata
 local sortedhash,concat=table.sortedhash,table.concat
 local finders,openers,loaders=resolvers.finders,resolvers.openers,resolvers.loaders
 local addsuffix,suffix,splitbase=file.addsuffix,file.suffix,file.splitbase
 local md5hex=md5.hex
-local removefile,renamefile,fileexists=os.remove,os.rename,io.exists
+local fileexists=io.exists
+local httprequest=client.httprequest
 local trace_schemes=false  trackers.register("resolvers.schemes",function(v) trace_schemes=v end)
 local report_schemes=logs.reporter("resolvers","schemes")
-local http=require("socket.http")
-local ltn12=require("ltn12")
-if mbox then mbox=nil end 
+local formatted=string.formatted
 local resolvers=resolvers
 local schemes=resolvers.schemes or {}
 resolvers.schemes=schemes
@@ -24383,10 +21041,8 @@ local cleaners={}
 schemes.cleaners=cleaners
 local threshold=24*60*60
 local inmemory=false
-local uselibrary=false
 directives.register("schemes.threshold",function(v) threshold=tonumber(v) or threshold end)
 directives.register("schemes.inmemory",function(v) inmemory=v end)
-directives.register("schemes.uselibrary",function(v) uselibrary=v end)
 function cleaners.none(specification)
  return specification.original
 end
@@ -24414,59 +21070,6 @@ local cached={}
 local loaded={}
 local reused={}
 local thresholds={}
-local handlers={}
-local function fetcher(report)
- if uselibrary then
-  local curl=require("curl") or require("libs-imp-curl") 
-  local fetch=curl and curl.fetch
-  if fetch then
-   return function(str)
-    local data,message=fetch {
-     url=str,
-     followlocation=true,
-     sslverifyhost=false,
-     sslverifypeer=false,
-    }
-    if not data then
-     report("some error: %s",message)
-    end
-    return data
-   end
-  end
- end
-end
-local runner=sandbox.registerrunner {
- name="to file curl resolver",
- method="execute",
- program="curl",
- template='-L --silent --insecure --create-dirs --output "%cachename%" "%original%"',
- internal=function(specification)
-  local fetch=fetcher(specification.reporter)
-  return fetch and function(name,program,template,checkers,defaults,variables,reporter,finalized)
-   local data=fetch(variables.original)
-   savedata(variables.cachename,data or "")
-  end
- end,
- checkers={
-  cachename="cache",
-  original="url",
- }
-}
-local memrunner=sandbox.registerrunner {
- name="in memory curl resolver",
- method="resultof",
- program="curl",
- template='-L --silent --insecure "%original%"',
- internal=function(specification)
-  local fetch=fetcher(specification.reporter)
-  return fetch and function(name,program,template,checkers,defaults,variables,reporter,finalized)
-   return fetch(variables.original) or ""
-  end
- end,
- checkers={
-  original="url",
- }
-}
 local function fetch(specification)
  local original=specification.original
  local scheme=specification.scheme
@@ -24474,23 +21077,20 @@ local function fetch(specification)
  if inmemory then
   statistics.starttiming(schemes)
   local cachename=resolvers.savers.virtualname(cleanname)
-  local handler=handlers[scheme]
-  if handler then 
-   if trace_schemes then
-    report_schemes("fetching %a, protocol %a, method %a",original,scheme,"built-in")
-   end
-   logs.flush()
-   handler(specification,cachename)
-  else
-   if trace_schemes then
-    report_schemes("fetching %a, protocol %a, method %a",original,scheme,"curl")
-   end
-   logs.flush()
-   local result=memrunner {
-    original=original,
-   }
-   resolvers.savers.directvirtual(cachename,result,true) 
+  if trace_schemes then
+   report_schemes("fetching %a, protocol %a",original,scheme)
   end
+  logs.flush()
+  local status,result=httprequest {
+   url=original
+  }
+  if status then
+   report_schemes("fetching %a %s",original,"succeeded")
+  else
+   report_schemes("fetching %a %s",original,"failed")
+   result=""
+  end
+  resolvers.savers.directvirtual(cachename,result,true) 
   loaded[scheme]=loaded[scheme]+1
   statistics.stoptiming(schemes)
   return cachename
@@ -24499,23 +21099,18 @@ local function fetch(specification)
   if not cached[original] or threshold==0 then
    statistics.starttiming(schemes)
    if threshold==0 or not fileexists(cachename) or (os.difftime(os.time(),lfs.attributes(cachename).modification)>(thresholds[protocol] or threshold)) then
-    cached[original]=cachename
-    local handler=handlers[scheme]
-    if handler then
-     if trace_schemes then
-      report_schemes("fetching %a, protocol %a, method %a",original,scheme,"built-in")
-     end
-     logs.flush()
-     handler(specification,cachename)
+    if trace_schemes then
+     report_schemes("fetching %a, protocol %a",original,scheme)
+    end
+    logs.flush()
+    local status,result=httprequest {
+     url=original
+    }
+    if status then
+     report_schemes("fetching %a %s",original,"succeeded")
+     io.savedata(cachename,result)
     else
-     if trace_schemes then
-      report_schemes("fetching %a, protocol %a, method %a",original,scheme,"curl")
-     end
-     logs.flush()
-     runner {
-      original=original,
-      cachename=cachename,
-     }
+     report_schemes("fetching %a %s",original,"failed")
     end
    end
    if fileexists(cachename) then
@@ -24546,7 +21141,6 @@ end
 local opener=openers.file
 local loader=loaders.file
 local function install(scheme,handler,newthreshold)
- handlers  [scheme]=handler
  loaded [scheme]=0
  reused [scheme]=0
  finders   [scheme]=finder
@@ -24554,34 +21148,9 @@ local function install(scheme,handler,newthreshold)
  loaders   [scheme]=loader
  thresholds[scheme]=newthreshold or threshold
 end
-schemes.install=install
-local function http_handler(specification,cachename)
- if inmemory then
-  local result={}
-  local status,message=http.request {
-   url=specification.original,
-   sink=ltn12.sink.table(result)
-  }
-  resolvers.savers.directvirtual(cachename,concat(result),true) 
- else
-  local tempname=cachename..".tmp"
-  local handle=io.open(tempname,"wb")
-  local status,message=http.request {
-   url=specification.original,
-   sink=ltn12.sink.file(handle)
-  }
-  if not status then
-   removefile(tempname)
-  else
-   removefile(cachename)
-   renamefile(tempname,cachename)
-  end
- end
- return cachename
-end
-install('http',http_handler)
-install('https') 
-install('ftp')   
+install("http")
+install("https")
+schemes.install=function() end
 statistics.register("scheme handling time",function()
  local l,r,nl,nr={},{},0,0
  for k,v in sortedhash(loaded) do
@@ -24600,13 +21169,12 @@ statistics.register("scheme handling time",function()
  if n>0 then
   if nl==0 then l={ "none" } end
   if nr==0 then r={ "none" } end
-  return format("%s seconds, %s processed, threshold %s seconds, %s loaded, %s reused",
+  return formatted("%s seconds, %s processed, threshold %s seconds, %s loaded, %s reused",
    statistics.elapsedtime(schemes),n,threshold,concat(l," "),concat(l," "))
  else
   return nil
  end
 end)
-local httprequest=http.request
 local toquery=url.toquery
 local function fetchstring(url,data)
  local q=data and toquery(data)
@@ -25412,7 +21980,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-jsn"] = package.loaded["util-jsn"] or true
 
--- original size: 17297, stripped down to: 8958
+-- original size: 17324, stripped down to: 8984
 
 if not modules then modules={} end modules ['util-jsn']={
  version=1.001,
@@ -25433,6 +22001,7 @@ local concat,sortedkeys=table.concat,table.sortedkeys
 local tonumber,tostring,rawset,type,next=tonumber,tostring,rawset,type,next
 local json=utilities.json or {}
 utilities.json=json
+local formatted=string.formatted
 do
  local lbrace=P("{")
  local rbrace=P("}")
@@ -25478,26 +22047,26 @@ do
 end
 do
  local escaper
- local f_start_hash=formatters[   '%w{' ]
- local f_start_array=formatters[   '%w[' ]
- local f_start_hash_new=formatters[ "\n"..'%w{' ]
- local f_start_array_new=formatters[ "\n"..'%w[' ]
- local f_start_hash_key=formatters[ "\n"..'%w"%s" : {' ]
- local f_start_array_key=formatters[ "\n"..'%w"%s" : [' ]
- local f_stop_hash=formatters[ "\n"..'%w}' ]
- local f_stop_array=formatters[ "\n"..'%w]' ]
- local f_key_val_seq=formatters[ "\n"..'%w"%s" : %s' ]
- local f_key_val_str=formatters[ "\n"..'%w"%s" : "%s"'  ]
+ local f_start_hash='%w{'
+ local f_start_array='%w['
+ local f_start_hash_new="\n"..'%w{'
+ local f_start_array_new="\n"..'%w['
+ local f_start_hash_key="\n"..'%w"%s" : {'
+ local f_start_array_key="\n"..'%w"%s" : ['
+ local f_stop_hash="\n"..'%w}'
+ local f_stop_array="\n"..'%w]'
+ local f_key_val_seq="\n"..'%w"%s" : %s'
+ local f_key_val_str="\n"..'%w"%s" : "%s"'
  local f_key_val_num=f_key_val_seq
- local f_key_val_yes=formatters[ "\n"..'%w"%s" : true'  ]
- local f_key_val_nop=formatters[ "\n"..'%w"%s" : false' ]
- local f_key_val_null=formatters[ "\n"..'%w"%s" : null'  ]
- local f_val_num=formatters[ "\n"..'%w%s' ]
- local f_val_str=formatters[ "\n"..'%w"%s"'  ]
- local f_val_yes=formatters[ "\n"..'%wtrue'  ]
- local f_val_nop=formatters[ "\n"..'%wfalse' ]
- local f_val_null=formatters[ "\n"..'%wnull'  ]
- local f_val_empty=formatters[ "\n"..'%w{ }'  ]
+ local f_key_val_yes="\n"..'%w"%s" : true'
+ local f_key_val_nop="\n"..'%w"%s" : false'
+ local f_key_val_null="\n"..'%w"%s" : null'
+ local f_val_num="\n"..'%w%s'
+ local f_val_str="\n"..'%w"%s"'
+ local f_val_yes="\n"..'%wtrue'
+ local f_val_nop="\n"..'%wfalse'
+ local f_val_null="\n"..'%wnull'
+ local f_val_empty="\n"..'%w{ }'
  local f_val_seq=f_val_num
  local t={}
  local n=0
@@ -25544,9 +22113,9 @@ do
    n=n+1
    if level==0 then
     if indexed then
-     t[n]=f_start_array(depth)
+     t[n]=formatted(f_start_array,depth)
     else
-     t[n]=f_start_hash(depth)
+     t[n]=formatted(f_start_hash,depth)
     end
    elseif name then
     if tn=="string" then
@@ -25555,15 +22124,15 @@ do
      name=tostring(name)
     end
     if indexed then
-     t[n]=f_start_array_key(depth,name)
+     t[n]=formatted(f_start_array_key,depth,name)
     else
-     t[n]=f_start_hash_key(depth,name)
+     t[n]=formatted(f_start_hash_key,depth,name)
     end
    else
     if indexed then
-     t[n]=f_start_array_new(depth)
+     t[n]=formatted(f_start_array_new,depth)
     else
-     t[n]=f_start_hash_new(depth)
+     t[n]=formatted(f_start_hash_new,depth)
     end
    end
    depth=depth+1
@@ -25575,32 +22144,32 @@ do
      local v=root[i]
      local tv=type(v)
      if tv=="number" then
-      n=n+1 t[n]=f_val_num(depth,v)
+      n=n+1 t[n]=formatted(f_val_num,depth,v)
      elseif tv=="string" then
       v=lpegmatch(escaper,v) or v
-      n=n+1 t[n]=f_val_str(depth,v)
+      n=n+1 t[n]=formatted(f_val_str,depth,v)
      elseif tv=="table" then
       if next(v) then
        local st=is_simple_table(v)
        if st then
-        n=n+1 t[n]=f_val_seq(depth,st)
+        n=n+1 t[n]=formatted(f_val_seq,depth,st)
        else
         tojsonpp(v,nil,depth,level+1,#v)
        end
       else
        n=n+1
-       t[n]=f_val_empty(depth)
+       t[n]=formatted(f_val_empty,depth)
       end
      elseif tv=="boolean" then
       n=n+1
       if v then
-       t[n]=f_val_yes(depth,v)
+       t[n]=formatted(f_val_yes,depth,v)
       else
-       t[n]=f_val_nop(depth,v)
+       t[n]=formatted(f_val_nop,depth,v)
       end
      else
       n=n+1
-      t[n]=f_val_null(depth)
+      t[n]=formatted(f_val_null,depth)
      end
     end
    elseif next(root) then
@@ -25615,19 +22184,19 @@ do
      local tk=type(k)
      if tv=="number" then
       if tk=="number" then
-       n=n+1 t[n]=f_key_val_num(depth,k,v)
+       n=n+1 t[n]=formatted(f_key_val_num,depth,k,v)
       elseif tk=="string" then
        k=lpegmatch(escaper,k) or k
-       n=n+1 t[n]=f_key_val_num(depth,k,v)
+       n=n+1 t[n]=formatted(f_key_val_num,depth,k,v)
       end
      elseif tv=="string" then
       if tk=="number" then
        v=lpegmatch(escaper,v) or v
-       n=n+1 t[n]=f_key_val_str(depth,k,v)
+       n=n+1 t[n]=formatted(f_key_val_str,depth,k,v)
       elseif tk=="string" then
        k=lpegmatch(escaper,k) or k
        v=lpegmatch(escaper,v) or v
-       n=n+1 t[n]=f_key_val_str(depth,k,v)
+       n=n+1 t[n]=formatted(f_key_val_str,depth,k,v)
       elseif i>1 then
        n=n-1
       end
@@ -25638,10 +22207,10 @@ do
        if not st then
         tojsonpp(v,k,depth,level+1,l)
        elseif tk=="number" then
-        n=n+1 t[n]=f_key_val_seq(depth,k,st)
+        n=n+1 t[n]=formatted(f_key_val_seq,depth,k,st)
        elseif tk=="string" then
         k=lpegmatch(escaper,k) or k
-        n=n+1 t[n]=f_key_val_seq(depth,k,st)
+        n=n+1 t[n]=formatted(f_key_val_seq,depth,k,st)
        end
       elseif next(v) then
        tojsonpp(v,k,depth,level+1,0)
@@ -25652,17 +22221,17 @@ do
       if tk=="number" then
        n=n+1
        if v then
-        t[n]=f_key_val_yes(depth,k)
+        t[n]=formatted(f_key_val_yes,depth,k)
        else
-        t[n]=f_key_val_nop(depth,k)
+        t[n]=formatted(f_key_val_nop,depth,k)
        end
       elseif tk=="string" then
        k=lpegmatch(escaper,k) or k
        n=n+1
        if v then
-        t[n]=f_key_val_yes(depth,k)
+        t[n]=formatted(f_key_val_yes,depth,k)
        else
-        t[n]=f_key_val_nop(depth,k)
+        t[n]=formatted(f_key_val_nop,depth,k)
        end
       elseif i>1 then
        n=n-1
@@ -25670,11 +22239,11 @@ do
      else
       if tk=="number" then
        n=n+1
-       t[n]=f_key_val_null(depth,k)
+       t[n]=formatted(f_key_val_null,depth,k)
       elseif tk=="string" then
        k=lpegmatch(escaper,k) or k
        n=n+1
-       t[n]=f_key_val_null(depth,k)
+       t[n]=formatted(f_key_val_null,depth,k)
       elseif i>1 then
        n=n-1
       end
@@ -25683,9 +22252,9 @@ do
    end
    n=n+1
    if indexed then
-    t[n]=f_stop_array(depth-1)
+    t[n]=formatted(f_stop_array,depth-1)
    else
-    t[n]=f_stop_hash(depth-1)
+    t[n]=formatted(f_stop_hash,depth-1)
    end
   end
  end
@@ -25784,10 +22353,10 @@ package.loaded.json=json
 
 end -- of closure
 
--- used libraries    : l-bit32.lmt l-lua.lmt l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lmt l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lmt l-math.lua util-str.lua util-tab.lua util-fil.lmt util-sac.lmt util-sto.lua util-prs.lmt util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lmt trac-log.lua util-tmr.lua trac-tmr.lua trac-inf.lmt trac-pro.lua util-lua.lua util-deb.lmt util-tpl.lua util-sbx.lmt util-mrg.lua util-env.lmt luat-env.lua util-zip.lua util-sig.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lmt data-con.lua data-use.lua data-zip.lua data-tre.lua luat-sbx.lmt data-sch.lmt data-lua.lua data-tmf.lua data-lst.lua libs-ini.lmt luat-sta.lua luat-fmt.lua util-jsn.lmt
+-- used libraries    : l-bit32.lmt l-lua.lmt l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lmt l-io.lua l-number.lmt l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lmt l-math.lua util-str.lmt util-for.lmt util-tab.lmt util-fil.lmt util-sac.lmt util-sto.lua util-prs.lmt util-fmt.lua trac-set.lmt trac-log.lua util-tmr.lua trac-tmr.lua trac-inf.lmt trac-pro.lua util-lua.lmt util-deb.lmt util-srv.lmt util-tpl.lua util-sbx.lmt util-mrg.lua util-env.lmt luat-env.lua util-zip.lua util-sig.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lmt data-con.lua data-use.lua data-zip.lua data-tre.lua luat-sbx.lmt data-sch.lmt data-lua.lua data-tmf.lua data-lst.lua libs-ini.lmt luat-sta.lua luat-fmt.lua util-jsn.lmt
 -- skipped libraries : -
--- original bytes    : 1025154
--- stripped bytes    : 399127
+-- original bytes    : 938161
+-- stripped bytes    : 390095
 
 -- end library merge
 
@@ -25820,7 +22389,7 @@ local ownlibs = {
     'l-lpeg.lua',
     'l-function.lua',
     'l-string.lua',
-    'l-table.lua',
+    'l-table.lmt',
     'l-io.lua',
     'l-number.lmt',
     'l-set.lua',
@@ -25835,26 +22404,27 @@ local ownlibs = {
     'l-unicode.lmt',
     'l-math.lua',
 
-    'util-str.lua',   -- code might move to l-string
-    'util-tab.lua',
+    'util-str.lmt', -- will go away once we moved some
+    'util-for.lmt',
+    'util-tab.lmt',
     'util-fil.lmt',
     'util-sac.lmt',
     'util-sto.lua',
     'util-prs.lmt',
     'util-fmt.lua',
 
-    'util-soc-imp-reset.lua',
-    'util-soc-imp-socket.lua',
-    'util-soc-imp-copas.lua',
-    'util-soc-imp-ltn12.lua',
- -- 'util-soc-imp-mbox.lua',
-    'util-soc-imp-mime.lua',
-    'util-soc-imp-url.lua',
-    'util-soc-imp-headers.lua',
-    'util-soc-imp-tp.lua',
-    'util-soc-imp-http.lua',
-    'util-soc-imp-ftp.lua',
-    'util-soc-imp-smtp.lua',
+--     'util-soc-imp-reset.lua',
+--     'util-soc-imp-socket.lua',
+--     'util-soc-imp-copas.lua',
+--     'util-soc-imp-ltn12.lua',
+--  -- 'util-soc-imp-mbox.lua',
+--     'util-soc-imp-mime.lua',
+--     'util-soc-imp-url.lua',
+--     'util-soc-imp-headers.lua',
+--     'util-soc-imp-tp.lua',
+--     'util-soc-imp-http.lua',
+--  -- 'util-soc-imp-ftp.lua',
+--  -- 'util-soc-imp-smtp.lua',
 
     'trac-set.lmt',
     'trac-log.lua',
@@ -25862,8 +22432,10 @@ local ownlibs = {
     'trac-tmr.lua',
     'trac-inf.lmt',
     'trac-pro.lua',   -- not really needed
-    'util-lua.lua',   -- indeed here?
+    'util-lua.lmt',
     'util-deb.lmt',
+
+    'util-srv.lmt',
 
     'util-tpl.lua',
     'util-sbx.lmt',

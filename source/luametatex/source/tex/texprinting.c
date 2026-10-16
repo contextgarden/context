@@ -1476,6 +1476,7 @@ void tex_short_display(halfword p)
 
 void tex_print_token_list(const char *s, halfword p)
 {
+ /* tex_print_format("%l%.%s {",nesting,s) */
     tex_print_levels();
     tex_print_str_len("..", 2);
     if (s) {
@@ -1579,7 +1580,7 @@ static void tex_print_padding(void)
 
 static void tex_print_nesting(int n)
 {
-    static const char periods[32] = "................................";
+    static const char periods[32+1] = "................................";
     while (n > 0) {
         int chunk = (n > 32) ? 32 : n;
         tex_print_str_len(periods, chunk);

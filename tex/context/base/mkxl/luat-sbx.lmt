@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['luat-sbx'] = {
 }
 
 local type = type
+local find = string.find
 
 local targets    = security.gettargets()
 local actions    = security.getactions()
@@ -101,12 +102,14 @@ do
     local disablerunners   = sandbox.disablerunners
     local disablelibraries = sandbox.disablelibraries
 
+    local function block()
+        return false
+    end
+
     function initializers.binaries()
         if execution_mode == "none" then
-            setchecker(3,function(s,action) -- binary
-                return false
-            end)
-disablerunners()
+            setchecker(3,block)
+            disablerunners()
         elseif execution_mode == "list" then
             if type(execution_list) == "string" then
                 execution_list = settingstoarray(execution_list)
@@ -124,16 +127,12 @@ disablerunners()
                 end)
             end
         end
-
     end
 
     function initializers.libraries()
-
         if library_mode == "none" then
-            setchecker(4,function(s,action) -- library
-                return false
-            end)
-disablelibraries()
+            setchecker(4,block)
+            disablelibraries()
         elseif library_mode == "list" then
             if type(library_list) == "string" then
                 library_list = settingstoarray(library_list)
@@ -151,7 +150,68 @@ disablelibraries()
                 end)
             end
         end
+    end
 
+    local urlhashed = url.hashed
+    local suffix    = file.suffix
+
+    local validators = {
+        http = function(specification)
+            return true
+        end,
+        https = function(specification)
+            return true
+        end,
+        file = function(specification)
+            return suffix(specification.filename) == "pdf"
+        end,
+    }
+
+    local function check(s,action)
+        local specification = urlhashed(s)
+        local validator     = validators[specification.scheme]
+        local okay          = validator and validator(specification)
+        if trace then
+            report("%s %s : %s",okay and "+" or "-",actions[action],s)
+        elseif not okay then
+            report("%s : rejecting %a",actions[action],s)
+        end
+        return okay
+    end
+
+    setchecker(6,check,true)
+
+    function initializers.launchers()
+        if execution_mode == "none" then
+            setchecker(6,block)
+         -- disablerunners()
+     -- elseif execution_mode == "list" then
+        else
+            setchecker(6,check)
+        end
+    end
+
+    local function check(s,action) -- client
+        -- is already intercepted in the client too:
+        local okay = find(s,"^https?://")
+        if trace then
+            report("%s %s : %s",okay and "+" or "-",actions[action],s)
+        elseif not okay then
+            report("%s : rejecting %a",actions[action],s)
+        end
+        return okay
+    end
+
+    setchecker(7,check,true)
+
+    function initializers.client()
+        if execution_mode == "none" then
+            setchecker(7,block)
+         -- disablerunners()
+     -- elseif execution_mode == "list" then
+        else
+            setchecker(7,check)
+        end
     end
 
     function initializers.graphics()

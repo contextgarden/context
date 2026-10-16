@@ -19,7 +19,9 @@ local allocate            = utilities.storage.allocate
 local mark                = utilities.storage.mark
 local contextsprint       = context.sprint
 local setmetatableindex   = table.setmetatableindex
-local formatters          = string.formatters
+
+----- formatters          = string.formatters
+local formatted           = string.formatted
 
 ----- prtcatcodes <const> = catcodes.numbers.prtcatcodes
 local vrbcatcodes <const> = catcodes.numbers.vrbcatcodes
@@ -176,7 +178,7 @@ interfaces.getsetupstring = getsetupstring
 local replacer = lpeg.replacer { { "--", "%%a" } }
 
 local function fulltag(category,tag)
-    return formatters["%s:%s"](category,lpegmatch(replacer,tag))
+    return formatted("%s:%s",category,lpegmatch(replacer,tag))
 end
 
 function interfaces.setmessages(category,str)
@@ -352,9 +354,9 @@ local function showassignerror(namespace,key,line)
         end
         -- injected in the stream for timing:
         if instance and instance ~= "" then
-            context.writestatus("setup",formatters["error in line %a, namespace %a, instance %a, key %a"](line,namespace,instance,key))
+            context.writestatus("setup",formatted("error in line %a, namespace %a, instance %a, key %a",line,namespace,instance,key))
         else
-            context.writestatus("setup",formatters["error in line %a, namespace %a, key %a"](line,namespace,key))
+            context.writestatus("setup",formatted("error in line %a, namespace %a, key %a",line,namespace,key))
         end
  -- end
 end

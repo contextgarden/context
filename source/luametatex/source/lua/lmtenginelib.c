@@ -324,7 +324,9 @@ static void enginelib_show_credits(void)
         "  pplib      : Paweł Jackowski (with partial code from libraries)\n"
         "  md5        : Peter Deutsch (with partial code from pplib libraries)\n"
         "  sha2       : Aaron D. Gifford (with partial code from pplib libraries)\n"
+# ifdef LMT_SOCKET_TOO
         "  socket     : Diego Nehab (partial and adapted)\n"
+# endif
         "  libcerf    : Joachim Wuttke (adapted for MSVC)\n"
         "  decnumber  : Mike Cowlishaw from IBM (one of the number models in MP)\n"
         "  avl        : Richard (adapted a bit to fit in)\n"
@@ -445,7 +447,7 @@ static void enginelib_check_option(char **options, int i)
         return;
     } else {
         char *v = strchr(n, '=');
-        size_t l = (int) (v ? (v - n) : strlen(n));
+        size_t l = v ? (size_t)(v - n) : strlen(n);
         lmt_environment_state.flag = lmt_memory_malloc(l + 1);
         if (lmt_environment_state.flag) {
             memcpy(lmt_environment_state.flag, n, l);
@@ -1117,6 +1119,7 @@ static const luaL_Reg lmt_libs_extra_function_list[] = {
     { "sio",       luaopen_sio       },
     { "sparse",    luaopen_sparse    },
     { "bitset",    luaopen_bitset    },
+    { "sequencer", luaopen_sequencer },
     { "xzip",      luaopen_xzip      },
     { "xmath",     luaopen_xmath     },
     { "xcomplex",  luaopen_xcomplex  },
@@ -1137,14 +1140,19 @@ static const luaL_Reg lmt_libs_extra_function_list[] = {
     { "security",  luaopen_security  },
  // { "specific",  luaopen_specific  },
     { "client",    luaopen_client    },
+    { "server",    luaopen_server    },
     { NULL,        NULL              },
 };
 
-static const luaL_Reg lmt_libs_socket_function_list[] = {
-    { "socket",   luaopen_socket_core },
-    { "mime",     luaopen_mime_core   },
-    { NULL,       NULL                },
-};
+# ifdef LMT_SOCKET_TOO
+
+    static const luaL_Reg lmt_libs_socket_function_list[] = {
+        { "socket",   luaopen_socket_core },
+        { "mime",     luaopen_mime_core   },
+        { NULL,       NULL                },
+    };
+
+# endif
 
 static const luaL_Reg lmt_libs_more_function_list[] = {
     { "lua",      luaopen_lua    },
@@ -1268,8 +1276,10 @@ void lmt_initialize(void)
         luaextend_os(L);
         luaextend_io(L);
         luaextend_string(L);
+# ifdef LMT_SOCKET_TOO
         /*tex Loading the socket library is a bit odd (old stuff). */
         enginelib_luaopen_liblist(L, lmt_libs_socket_function_list);
+# endif
         /*tex This initializes the 'tex' related libraries that have some luaonly functionality */
         enginelib_luaopen_liblist(L, lmt_libs_more_function_list);
         /*tex This initializes the 'tex' related libraries. */

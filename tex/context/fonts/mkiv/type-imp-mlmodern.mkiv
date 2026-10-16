@@ -1,0 +1,246 @@
+%D \module
+%D   [       file=type-imp-mlmodern,
+%D        version=2026.10.14,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=MLModern,
+%D         author={Hans Hagen \& Mikael Sundqvist},
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D MLModern is a somewhat darker variant of Latin Modern, and this file is derived
+%D from \type {type-imp-latinmodern.mkiv}. The text goodies, including the design
+%D sizes, are in \type {mlmodern-text.lfg} and the math goodies are in \type
+%D {mlmodern-math.lfg}.
+%D
+%D The \type {mlmodern} typeface is found automatically. For the other ones the file
+%D has to be loaded first:
+%D
+%D \starttyping
+%D \usetypescriptfile[mlmodern]
+%D \setupbodyfont[mlmodern-designsize]
+%D \stoptyping
+%D
+%D In compact font mode (as in \LMTX) the design sizes are only used when you also
+%D say:
+%D
+%D \starttyping
+%D \enableexperiments[fonts.compact.obeydesignsize]
+%D \stoptyping
+%D
+%D When you only switch to \type {mlmodern-designsize} locally, preload it with
+%D \type {\usebodyfont[mlmodern-designsize]}.
+
+\starttypescriptcollection[mlmodern]
+
+    \pushglobalsetups
+
+        \startsetups[\s!math:mlmodern]
+            \fencemuskip\zeromuskip
+        \stopsetups
+
+        \startsetups[\s!math:mlmodern-designsize]\fastsetup{\s!math:mlmodern}\stopsetups
+        \startsetups[\s!math:mlmodern-nt]        \fastsetup{\s!math:mlmodern}\stopsetups
+        \startsetups[\s!math:mlmodern-variable]  \fastsetup{\s!math:mlmodern}\stopsetups
+        \startsetups[\s!math:mlmodern-mono]      \fastsetup{\s!math:mlmodern}\stopsetups
+
+    \popglobalsetups
+
+    \doifunknownfontfeature {mlm-math-bold} {\definefontfeature[mlm-math-bold][boldened]}
+
+    % The four main serif styles get the goodies here so that the design size variant
+    % also gets the extra kerns.
+
+    \starttypescript [\s!serif] [mlmodern,mlmodern-designsize] [\s!name]
+        \loadfontgoodies[mlmodern-text]
+        \definefontsynonym [\s!Serif]            [MLMRoman-Regular]     [\s!features=\s!default,\s!goodies=mlmodern-text]
+        \definefontsynonym [\s!SerifBold]        [MLMRoman-Bold]        [\s!features=\s!default,\s!goodies=mlmodern-text]
+        \definefontsynonym [\s!SerifItalic]      [MLMRoman-Italic]      [\s!features=\s!default,\s!goodies=mlmodern-text]
+        \definefontsynonym [\s!SerifSlanted]     [MLMRoman-Oblique]     [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBoldItalic]  [MLMRoman-BoldItalic]  [\s!features=\s!default,\s!goodies=mlmodern-text]
+        \definefontsynonym [\s!SerifBoldSlanted] [MLMRoman-BoldOblique] [\s!features=\s!default]
+        \definefontsynonym [\s!SerifCaps]        [MLMRoman-CapsRegular] [\s!features=\s!default]
+        \definefontsynonym [SerifCapsSlanted]    [MLMRoman-CapsOblique] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [mlmodern,mlmodern-designsize] [\s!name]
+        \loadfontgoodies[mlmodern-text]
+        \definefontsynonym [\s!Sans]            [MLMSans-Regular]     [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]        [MLMSans-Bold]        [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]      [MLMSans-Oblique]     [\s!features=\s!default]
+        \definefontsynonym [\s!SansSlanted]     [MLMSans-Oblique]     [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic]  [MLMSans-BoldOblique] [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldSlanted] [MLMSans-BoldOblique] [\s!features=\s!default]
+        \definefontsynonym [\s!SansCaps]        [MLMSans-Regular]     [\s!features=\s!default]
+        \definefontsynonym [SansCapsSlanted]    [MLMSans-Oblique]     [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [\s!mono] [mlmodern,mlmodern-designsize,mlmodern-variable] [\s!name]
+        \loadfontgoodies[mlmodern-text]
+        \definefontsynonym [\s!Mono]            [MLMTypewriter-Regular]      [\s!features=\s!none]
+        \definefontsynonym [\s!MonoBold]        [MLMTypewriter-Dark]         [\s!features=\s!none]
+        \definefontsynonym [\s!MonoItalic]      [MLMTypewriter-Italic]       [\s!features=\s!none]
+        \definefontsynonym [\s!MonoSlanted]     [MLMTypewriter-Oblique]      [\s!features=\s!none]
+        \definefontsynonym [\s!MonoBoldItalic]  [MLMTypewriter-DarkOblique]  [\s!features=\s!none]
+        \definefontsynonym [\s!MonoBoldSlanted] [MLMTypewriter-DarkOblique]  [\s!features=\s!none]
+        \definefontsynonym [\s!MonoCaps]        [MLMTypewriter-CapsRegular]  [\s!features=\s!none]
+        \definefontsynonym [MonoCapsSlanted]    [MLMTypewriter-CapsOblique]  [\s!features=\s!none]
+        \definefontsynonym [MonoVariable]       [MLMTypewriterVarWd-Regular] [\s!features=\s!none]
+    \stoptypescript
+
+    \starttypescript [\s!math] [mlmodern,mlmodern-designsize,mlmodern-nt] [\s!name]
+        \definefontsynonym [\s!MathRoman]     [MLMMathRoman-Regular]
+        \definefontsynonym [\s!MathRomanBold] [MLMMathRoman-Bold]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [mlmodern-variable] [\s!name]
+        \loadfontgoodies[mlmodern-text]
+        \definefontsynonym [\s!Serif]            [MLMTypewriterVarWd-Regular]     [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBold]        [MLMTypewriterVarWd-Dark]        [\s!features=\s!default]
+        \definefontsynonym [\s!SerifItalic]      [MLMTypewriterVarWd-Oblique]     [\s!features=\s!default]
+        \definefontsynonym [\s!SerifSlanted]     [MLMTypewriterVarWd-Oblique]     [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBoldItalic]  [MLMTypewriterVarWd-DarkOblique] [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBoldSlanted] [MLMTypewriterVarWd-DarkOblique] [\s!features=\s!default]
+        \definefontsynonym [\s!SerifCaps]        [MLMTypewriterVarWd-Regular]     [\s!features=\s!default]
+        \definefontsynonym [SerifCapsSlanted]    [MLMTypewriterVarWd-Oblique]     [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [\s!mono] [mlmodern-condensed,mlmodern-light-condensed] [\s!name]
+        \loadfontgoodies[mlmodern-text]
+        \definefontsynonym [\s!Mono]            [MLMTypewriter-LightCondensed]        [\s!features=\s!none]
+        \definefontsynonym [\s!MonoBold]        [MLMTypewriter-LightCondensed]        [\s!features=\s!none]
+        \definefontsynonym [\s!MonoItalic]      [MLMTypewriter-LightCondensedOblique] [\s!features=\s!none]
+        \definefontsynonym [\s!MonoSlanted]     [MLMTypewriter-LightCondensedOblique] [\s!features=\s!none]
+        \definefontsynonym [\s!MonoBoldItalic]  [MLMTypewriter-LightCondensed]        [\s!features=\s!none]
+        \definefontsynonym [\s!MonoBoldSlanted] [MLMTypewriter-LightCondensed]        [\s!features=\s!none]
+        \definefontsynonym [\s!MonoCaps]        [MLMTypewriter-LightCondensed]        [\s!features=\s!none]
+        \definefontsynonym [MonoCapsSlanted]    [MLMTypewriter-LightCondensed]        [\s!features=\s!none]
+    \stoptypescript
+
+    \starttypescript [\s!mono] [mlmodern-light] [\s!name]
+        \loadfontgoodies[mlmodern-text]
+        \definefontsynonym [\s!Mono]            [MLMTypewriter-Light]        [\s!features=\s!none]
+        \definefontsynonym [\s!MonoBold]        [MLMTypewriter-Light]        [\s!features=\s!none]
+        \definefontsynonym [\s!MonoItalic]      [MLMTypewriter-LightOblique] [\s!features=\s!none]
+        \definefontsynonym [\s!MonoSlanted]     [MLMTypewriter-LightOblique] [\s!features=\s!none]
+        \definefontsynonym [\s!MonoBoldItalic]  [MLMTypewriter-Light]        [\s!features=\s!none]
+        \definefontsynonym [\s!MonoBoldSlanted] [MLMTypewriter-Light]        [\s!features=\s!none]
+        \definefontsynonym [\s!MonoCaps]        [MLMTypewriter-Light]        [\s!features=\s!none]
+        \definefontsynonym [MonoCapsSlanted]    [MLMTypewriter-Light]        [\s!features=\s!none]
+    \stoptypescript
+
+    % The design size variant is not listed below, so there the names above are
+    % resolved by the designsizes in mlmodern-text.lfg.
+
+    \starttypescript [\s!serif] [mlmodern]
+        \loadfontgoodies[mlmodern-text]
+        \definefontsynonym [MLMRoman-Regular]        [\s!file:mlmroman10-regular]      [\s!features=\s!default,\s!goodies=mlmodern-text]
+        \definefontsynonym [MLMRoman-Bold]           [\s!file:mlmroman10-bold]         [\s!features=\s!default,\s!goodies=mlmodern-text]
+        \definefontsynonym [MLMRoman-Demi]           [\s!file:mlmromandemi10-regular]  [\s!features=\s!default]
+        \definefontsynonym [MLMRoman-Italic]         [\s!file:mlmroman10-italic]       [\s!features=\s!default,\s!goodies=mlmodern-text]
+        \definefontsynonym [MLMRoman-Oblique]        [\s!file:mlmromanslant10-regular] [\s!features=\s!default]
+        \definefontsynonym [MLMRoman-BoldItalic]     [\s!file:mlmroman10-bolditalic]   [\s!features=\s!default,\s!goodies=mlmodern-text]
+        \definefontsynonym [MLMRoman-BoldOblique]    [\s!file:mlmromanslant10-bold]    [\s!features=\s!default]
+        \definefontsynonym [MLMRoman-DemiOblique]    [\s!file:mlmromandemi10-oblique]  [\s!features=\s!default]
+        \definefontsynonym [MLMRoman-CapsRegular]    [\s!file:mlmromancaps10-regular]  [\s!features=\s!default]
+        \definefontsynonym [MLMRoman-CapsOblique]    [\s!file:mlmromancaps10-oblique]  [\s!features=\s!default]
+        \definefontsynonym [MLMRoman-Dunhill]        [\s!file:mlmromandunh10-regular]  [\s!features=\s!default]
+        \definefontsynonym [MLMRoman-DunhillOblique] [\s!file:mlmromandunh10-oblique]  [\s!features=\s!default]
+        \definefontsynonym [MLMRoman-Unslanted]      [\s!file:mlmromanunsl10-regular]  [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [mlmodern]
+        \loadfontgoodies[mlmodern-text]
+        \definefontsynonym [MLMSans-Regular]               [\s!file:mlmsans10-regular]           [\s!features=\s!default]
+        \definefontsynonym [MLMSans-Bold]                  [\s!file:mlmsans10-bold]              [\s!features=\s!default]
+        \definefontsynonym [MLMSans-Oblique]               [\s!file:mlmsans10-oblique]           [\s!features=\s!default]
+        \definefontsynonym [MLMSans-BoldOblique]           [\s!file:mlmsans10-boldoblique]       [\s!features=\s!default]
+        \definefontsynonym [MLMSans-DemiCondensed]         [\s!file:mlmsansdemicond10-regular]   [\s!features=\s!default]
+        \definefontsynonym [MLMSans-DemiCondensedOblique]  [\s!file:mlmsansdemicond10-oblique]   [\s!features=\s!default]
+        \definefontsynonym [MLMSansQuotation-Regular]      [\s!file:mlmsansquot8-regular]        [\s!features=\s!default]
+        \definefontsynonym [MLMSansQuotation-Bold]         [\s!file:mlmsansquot8-bold]           [\s!features=\s!default]
+        \definefontsynonym [MLMSansQuotation-Oblique]      [\s!file:mlmsansquot8-oblique]        [\s!features=\s!default]
+        \definefontsynonym [MLMSansQuotation-BoldOblique]  [\s!file:mlmsansquot8-boldoblique]    [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [\s!mono] [mlmodern,mlmodern-variable,mlmodern-condensed,mlmodern-light-condensed,mlmodern-light]
+        \definefontsynonym [MLMTypewriter-Regular]               [\s!file:mlmmono10-regular]           [\s!features=\s!none]
+        \definefontsynonym [MLMTypewriter-Italic]                [\s!file:mlmmono10-italic]            [\s!features=\s!none]
+        \definefontsynonym [MLMTypewriter-Oblique]               [\s!file:mlmmonoslant10-regular]      [\s!features=\s!none]
+        \definefontsynonym [MLMTypewriter-CapsRegular]           [\s!file:mlmmonocaps10-regular]       [\s!features=\s!none]
+        \definefontsynonym [MLMTypewriter-CapsOblique]           [\s!file:mlmmonocaps10-oblique]       [\s!features=\s!none]
+        \definefontsynonym [MLMTypewriter-Light]                 [\s!file:mlmmonolt10-regular]         [\s!features=\s!none]
+        \definefontsynonym [MLMTypewriter-LightOblique]          [\s!file:mlmmonolt10-oblique]         [\s!features=\s!none]
+        \definefontsynonym [MLMTypewriter-LightCondensed]        [\s!file:mlmmonoltcond10-regular]     [\s!features=\s!none]
+        \definefontsynonym [MLMTypewriter-LightCondensedOblique] [\s!file:mlmmonoltcond10-oblique]     [\s!features=\s!none]
+        \definefontsynonym [MLMTypewriter-Dark]                  [\s!file:mlmmonolt10-bold]            [\s!features=\s!none]
+        \definefontsynonym [MLMTypewriter-DarkOblique]           [\s!file:mlmmonolt10-boldoblique]     [\s!features=\s!none]
+        \definefontsynonym [MLMTypewriterVarWd-Regular]          [\s!file:mlmmonoproplt10-regular]     [\s!features=\s!default]
+        \definefontsynonym [MLMTypewriterVarWd-Oblique]          [\s!file:mlmmonoproplt10-oblique]     [\s!features=\s!default]
+        \definefontsynonym [MLMTypewriterVarWd-Light]            [\s!file:mlmmonoprop10-regular]       [\s!features=\s!default]
+        \definefontsynonym [MLMTypewriterVarWd-LightOblique]     [\s!file:mlmmonoprop10-oblique]       [\s!features=\s!default]
+        \definefontsynonym [MLMTypewriterVarWd-Dark]             [\s!file:mlmmonoproplt10-bold]        [\s!features=\s!default]
+        \definefontsynonym [MLMTypewriterVarWd-DarkOblique]      [\s!file:mlmmonoproplt10-boldoblique] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [\s!math] [mlmodern,mlmodern-nt,mlmodern-designsize,mlmodern-variable,mlmodern-mono]
+        \checkedmapfontsize[\typescripttwo][\s!script]      [.70]
+        \checkedmapfontsize[\typescripttwo][\s!scriptscript][.50]
+    \stoptypescript
+
+    \starttypescript [\s!math] [mlmodern,mlmodern-designsize]
+        \definefontsynonym [MLMMathRoman-Regular] [\v!file:mlmodern-math.otf] [\s!features={\s!math\mathsizesuffix,mathextra},\s!goodies=mlmodern-math]
+        \definefontsynonym [MLMMathRoman-Bold]    [\v!file:mlmodern-math.otf] [\s!features={\s!math\mathsizesuffix,mlm-math-bold,mathextra},\s!goodies=mlmodern-math]
+    \stoptypescript
+
+    \starttypescript [\s!math] [mlmodern-nt]
+        \definefontsynonym [MLMMathRoman-Regular] [\v!file:mlmodern-math.otf] [\s!features={\s!math\mathsizesuffix,mathextra}]
+        \definefontsynonym [MLMMathRoman-Bold]    [\v!file:mlmodern-math.otf] [\s!features={\s!math\mathsizesuffix,mlm-math-bold,mathextra}]
+    \stoptypescript
+
+    \starttypescript [mlmodern-designsize]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [mlmodern-designsize] [\s!default] [\s!designsize=\s!auto]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [mlmodern-designsize] [\s!default] [\s!designsize=\s!auto]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [mlmodern-designsize] [\s!default] [\s!designsize=\s!auto]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [mlmodern]            [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [mlmodern]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [mlmodern] [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [mlmodern] [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [mlmodern] [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [mlmodern] [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [mlmodern-nt]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [mlmodern]    [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [mlmodern]    [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [mlmodern]    [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [mlmodern-nt] [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [mlmodern-variable]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [mlmodern-variable] [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [mlmodern]          [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [mlmodern-variable] [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [mlmodern]          [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+
+    \starttypescript [mlmodern-mono]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [mlmodern]       [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [mlmodern]       [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [mlmodern-light] [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [mlmodern]       [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+
+\stoptypescriptcollection
+
+\endinput

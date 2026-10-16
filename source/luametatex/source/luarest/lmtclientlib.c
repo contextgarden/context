@@ -59,6 +59,34 @@
 # define default_timeout_receive     0
 # define default_maxsize          (512 * 1024 * 1024)
 
+typedef struct {
+    const char  *url;
+    const char  *method;
+    const char **headers;
+    size_t       length;
+    const char  *body;
+    long         timeout;
+    size_t       maxsize;
+    int          tolerant;
+} http_request_data;
+
+static inline void clientlib_aux_preset(http_request_data *data)
+{
+    data->url      = NULL;
+    data->method   = "GET";
+    data->headers  = NULL;
+    data->length   = 0;
+    data->body     = NULL;
+    data->timeout  = default_timeout_receive;
+    data->maxsize  = default_maxsize;
+    data->tolerant = 0;
+}
+
+static inline void clientlib_aux_reset(http_request_data *data)
+{
+    lmt_memory_free(data->headers);
+}
+
 # if _WIN32
 
     # include <stdint.h>
@@ -82,6 +110,7 @@
         DWORD     dwStatusInformationLength
     )
     {
+        (void) dwStatusInformationLength;
         if (dwInternetStatus == WINHTTP_CALLBACK_STATUS_REDIRECT) {
             LPCWSTR redirect_url = (LPCWSTR) lpvStatusInformation;
             winhttp_redirect_ctx *ctx = (winhttp_redirect_ctx *) dwContext;
@@ -99,14 +128,14 @@
                         _wcsnicmp(target_comp.lpszHostName, ctx->host, target_comp.dwHostNameLength) != 0))
                 {
                     // strip default sensitive headers
-                    WinHttpAddRequestHeaders(hInternet, L"Authorization:", -1L, WINHTTP_ADDREQ_FLAG_REPLACE);
-                    WinHttpAddRequestHeaders(hInternet, L"Cookie:", -1L, WINHTTP_ADDREQ_FLAG_REPLACE);
+                    WinHttpAddRequestHeaders(hInternet, L"Authorization:", (DWORD) -1, WINHTTP_ADDREQ_FLAG_REPLACE);
+                    WinHttpAddRequestHeaders(hInternet, L"Cookie:", (DWORD) -1, WINHTTP_ADDREQ_FLAG_REPLACE);
                     // strip all user-defined custom headers
                     if (ctx->headers) {
                         for (int i = 0; ctx->headers[i] != NULL; i++) {
                             const char *hdr = ctx->headers[i];
                             const char *colon = strchr(hdr, ':');
-                            size_t name_len = colon ? (size_t)(colon - hdr) : strlen(hdr);
+                            size_t name_len = colon ? (size_t) (colon - hdr) : strlen(hdr);
                             if (name_len > 0) {
                                 if (name_len <= SIZE_MAX - 2) {
                                     char *buf = (char *) lmt_memory_malloc(name_len + 2);
@@ -116,7 +145,7 @@
                                         buf[name_len + 1] = '\0';
                                         LPWSTR wname = aux_utf8_to_wide(buf);
                                         if (wname) {
-                                            WinHttpAddRequestHeaders(hInternet, wname, -1L, WINHTTP_ADDREQ_FLAG_REPLACE);
+                                            WinHttpAddRequestHeaders(hInternet, wname, (DWORD) -1, WINHTTP_ADDREQ_FLAG_REPLACE);
                                             lmt_memory_free(wname);
                                         }
                                         lmt_memory_free(buf);
@@ -131,22 +160,14 @@
     }
 
     static int clientlib_aux_http_request(
-        lua_State   *L,
-        luaL_Buffer *b,
-        const char  *method,
-        const char  *url,
-        const char **headers,
-        const char  *body,
-        size_t       length,
-        long         timeout,
-        size_t       maxsize,
-        int          tolerant,
-        int         *status_code,
-        char       **errormessage
+        http_request_data  *data,
+        luaL_Buffer        *b,
+        int                *status_code,
+        char              **errormessage
     )
     {
-        LPWSTR         wurl    = aux_utf8_to_wide(url);
-        LPWSTR         wmethod = aux_utf8_to_wide(method);
+        LPWSTR wurl    = aux_utf8_to_wide(data->url);
+        LPWSTR wmethod = aux_utf8_to_wide(data->method);
 
         URL_COMPONENTS components;
 
@@ -165,12 +186,12 @@
             return 0;
         }
 
-        if (components.nScheme != INTERNET_SCHEME_HTTP && components.nScheme != INTERNET_SCHEME_HTTPS) {
-            *errormessage = lmt_memory_strdup("only http and https protocols are allowed");
-            lmt_memory_free(wurl);
-            lmt_memory_free(wmethod);
-            return 0;
-        }
+     // if (components.nScheme != INTERNET_SCHEME_HTTP && components.nScheme != INTERNET_SCHEME_HTTPS) {
+     //     *errormessage = lmt_memory_strdup("only http and https protocols are allowed");
+     //     lmt_memory_free(wurl);
+     //     lmt_memory_free(wmethod);
+     //     return 0;
+     // }
 
         DWORD host_len = components.dwHostNameLength;
         WCHAR *host = (WCHAR *) lmt_memory_malloc((host_len + 1) * sizeof(WCHAR));
@@ -209,7 +230,7 @@
         int       success    = 0;
 
         if (! request) {
-            *errormessage = lmt_memory_strdup("HTTP connection failed");
+            *errormessage = lmt_memory_strdup("http(s) connection failed");
             if (connection) {
                 WinHttpCloseHandle(connection);
             }
@@ -223,7 +244,7 @@
             return 0;
         }
 
-        if (tolerant) {
+        if (data->tolerant) {
             DWORD security_flags = SECURITY_FLAG_IGNORE_UNKNOWN_CA
                                  | SECURITY_FLAG_IGNORE_CERT_CN_INVALID
                                  | SECURITY_FLAG_IGNORE_CERT_DATE_INVALID
@@ -236,10 +257,10 @@
             );
         }
 
-        if (headers) {
-            for (int i = 0; headers[i] != NULL; i++) {
-                LPWSTR wheader = aux_utf8_to_wide(headers[i]);
-                WinHttpAddRequestHeaders(request, wheader, -1L, WINHTTP_ADDREQ_FLAG_ADD | WINHTTP_ADDREQ_FLAG_REPLACE);
+        if (data->headers) {
+            for (int i = 0; data->headers[i] != NULL; i++) {
+                LPWSTR wheader = aux_utf8_to_wide(data->headers[i]);
+                WinHttpAddRequestHeaders(request, wheader, (DWORD) -1, WINHTTP_ADDREQ_FLAG_ADD | WINHTTP_ADDREQ_FLAG_REPLACE);
                 lmt_memory_free(wheader);
             }
         }
@@ -248,7 +269,7 @@
             .host    = host,
             .scheme  = (DWORD) components.nScheme,
             .port    = (DWORD) components.nPort,
-            .headers = headers
+            .headers = data->headers
         };
 
         DWORD_PTR redirect_context = (DWORD_PTR) &redirect_ctx;
@@ -258,7 +279,7 @@
                 &redirect_context,
                 sizeof(redirect_context)))
         {
-            *errormessage = lmt_memory_strdup("HTTP redirect context setup failed");
+            *errormessage = lmt_memory_strdup("http(s) redirect context setup failed");
             goto winhttp_cleanup;
         }
 
@@ -268,32 +289,32 @@
             WINHTTP_CALLBACK_FLAG_REDIRECT,
             0
         ) == WINHTTP_INVALID_STATUS_CALLBACK) {
-            *errormessage = lmt_memory_strdup("HTTP redirect callback setup failed");
+            *errormessage = lmt_memory_strdup("https(s) redirect callback setup failed");
             goto winhttp_cleanup;
         }
 
-        if (timeout > 0) {
-            if (timeout > (long) (INT_MAX / 1000) || ! WinHttpSetTimeouts(
+        if (data->timeout > 0) {
+            if (data->timeout > (long) (INT_MAX / 1000) || ! WinHttpSetTimeouts(
                     request,                        // times ln ms:
                     1000 * default_timeout_connect, // resolveTimeout
                     1000 * default_timeout_connect, // connectTimeout
                     1000 * default_timeout_connect, // sendTimeout
-                    1000 * timeout                  // receiveTimeout
+                    1000 * data->timeout            // receiveTimeout
                 ))
             {
-                *errormessage = lmt_memory_strdup("HTTP timeout setup failed");
+                *errormessage = lmt_memory_strdup("https(s) timeout setup failed");
                 goto winhttp_cleanup;
             }
         }
 
-        if (length > (size_t) ((DWORD) -1)) {
-            *errormessage = lmt_memory_strdup("HTTP request body is too large");
+        if (data->length > (size_t) ((DWORD) -1)) {
+            *errormessage = lmt_memory_strdup("https(s) request body is too large");
             goto winhttp_cleanup;
         }
 
-        if (WinHttpSendRequest(request, WINHTTP_NO_ADDITIONAL_HEADERS, 0, (LPVOID) (uintptr_t) body, (DWORD) length, (DWORD) length, 0)) {
+        if (WinHttpSendRequest(request, WINHTTP_NO_ADDITIONAL_HEADERS, 0, (LPVOID) (uintptr_t) data->body, (DWORD) data->length, (DWORD) data->length, 0)) {
             if (! WinHttpReceiveResponse(request, NULL)) {
-                *errormessage = lmt_memory_strdup("HTTP receive response failed");
+                *errormessage = lmt_memory_strdup("https(s) receive response failed");
             } else {
                 DWORD status     = 0;
                 DWORD statussize = sizeof(status);
@@ -324,7 +345,7 @@
                         &cl_size,
                         WINHTTP_NO_HEADER_INDEX)
                 ) {
-                    if (content_length > maxsize) {
+                    if (content_length > data->maxsize) {
                         read_ok = 0;
                         *errormessage = lmt_memory_strdup("content length exceeded size limit");
                     } else {
@@ -334,21 +355,21 @@
 
                 while (read_ok) {
                     if (! WinHttpQueryDataAvailable(request, &available)) {
-                        *errormessage = lmt_memory_strdup("HTTP query data available failed");
+                        *errormessage = lmt_memory_strdup("https(s) query data available failed");
                         read_ok = 0;
                         break;
                     }
                     if (available == 0) {
                         break; /* end of response */
                     }
-                    if (totalread > maxsize || (size_t) available > maxsize - totalread) {
+                    if (totalread > data->maxsize || (size_t) available > data->maxsize - totalread) {
                         *errormessage = lmt_memory_strdup("response body exceeded size limit");
                         read_ok = 0;
                         break;
                     }
                     char *dest = luaL_prepbuffsize(b, available);
                     if (! WinHttpReadData(request, dest, available, &downloaded) || downloaded == 0) {
-                        *errormessage = lmt_memory_strdup("HTTP read data failed");
+                        *errormessage = lmt_memory_strdup("https(s) read data failed");
                         read_ok = 0;
                         break;
                     }
@@ -360,7 +381,7 @@
                 }
             }
         } else {
-            *errormessage = lmt_memory_strdup("HTTP request failed");
+            *errormessage = lmt_memory_strdup("https(s) request failed");
         }
 
       winhttp_cleanup:
@@ -572,25 +593,12 @@
     }
 
     static int clientlib_aux_http_request(
-        lua_State   *L,
-        luaL_Buffer *buffer,
-        const char  *method,
-        const char  *url,
-        const char **headers,
-        const char  *body,
-        size_t       length,
-        long         timeout,
-        size_t       maxsize,
-        int          tolerant,
-        int         *status_code,
-        char       **errormessage
+        http_request_data  *data,
+        luaL_Buffer        *buffer,
+        int                *status_code,
+        char              **errormessage
     )
     {
-        if (strncasecmp(url, "http://", 7) != 0 && strncasecmp(url, "https://", 8) != 0) {
-            *errormessage = lmt_memory_strdup("only http and https protocols are allowed");
-            return 0;
-        }
-
         if (! clientlib_aux_curl_loaded()) {
             *errormessage = lmt_memory_strdup("libcurl is not available on this system");
             return 0;
@@ -603,11 +611,11 @@
         }
 
         void *slist = NULL;
-        if (headers) {
-            for (int i = 0; headers[i] != NULL; i++) {
-                void *next = curl_slist_append(slist, headers[i]);
+        if (data->headers) {
+            for (int i = 0; data->headers[i] != NULL; i++) {
+                void *next = curl_slist_append(slist, data->headers[i]);
                 if (! next) {
-                    *errormessage = lmt_memory_strdup("adding HTTP request header failed");
+                    *errormessage = lmt_memory_strdup("adding https(s) request header failed");
                     if (slist) {
                         curl_slist_free_all(slist);
                     }
@@ -620,7 +628,7 @@
 
         curl_stream_context ctx = {
             .buffer    = buffer,
-            .maxsize   = maxsize,
+            .maxsize   = data->maxsize,
             .bytesread = 0,
             .exceeded  = 0
         };
@@ -641,35 +649,35 @@
         curl_setopt_checked(curl, curl_integer_base + curl_option_followlocation, 1L);
         curl_setopt_checked(curl, curl_integer_base + curl_option_maxredirs, 10L); /* plenty */
 
-        if (timeout > 0) {
+        if (data->timeout > 0) {
             curl_setopt_checked(curl, curl_integer_base + curl_option_connecttimeout, (long) default_timeout_connect);
-            curl_setopt_checked(curl, curl_integer_base + curl_option_timeout, timeout);
+            curl_setopt_checked(curl, curl_integer_base + curl_option_timeout, data->timeout);
         }
 
-        curl_setopt_checked(curl, curl_string_base + curl_option_url, (const void*) url);
+        curl_setopt_checked(curl, curl_string_base + curl_option_url, (const void*) data->url);
 
-        if (strcasecmp(method, "GET") == 0) {
+        if (strcasecmp(data->method, "GET") == 0) {
             curl_setopt_checked(curl, curl_integer_base + curl_option_httpget, 1L);
-        } else if (strcasecmp(method, "POST") == 0) {
+        } else if (strcasecmp(data->method, "POST") == 0) {
             curl_setopt_checked(curl, curl_integer_base + curl_option_post, 1L);
         } else {
-            curl_setopt_checked(curl, curl_string_base + curl_option_customrequest, (const void*) method);
+            curl_setopt_checked(curl, curl_string_base + curl_option_customrequest, (const void*) data->method);
         }
 
         if (slist) {
             curl_setopt_checked(curl, curl_object_base + curl_option_httpheader, (const void*) slist);
         }
 
-        if (body && length > 0) {
-            if (length > (size_t) LONG_MAX) {
-                *errormessage = lmt_memory_strdup("HTTP request body is too large");
+        if (data->body && data->length > 0) {
+            if (data->length > (size_t) LONG_MAX) {
+                *errormessage = lmt_memory_strdup("https(s) request body is too large");
                 goto curl_cleanup;
             }
-            curl_setopt_checked(curl, curl_string_base + curl_option_postfields, (const void*) body);
-            curl_setopt_checked(curl, curl_integer_base + curl_option_postfieldsize, (long) length);
+            curl_setopt_checked(curl, curl_string_base + curl_option_postfields, (const void*) data->body);
+            curl_setopt_checked(curl, curl_integer_base + curl_option_postfieldsize, (long) data->length);
         }
 
-        if (tolerant) {
+        if (data->tolerant) {
             curl_setopt_checked(curl, curl_integer_base + curl_option_ssl_verifypeer, 0L);
             curl_setopt_checked(curl, curl_integer_base + curl_option_ssl_verifyhost, 0L);
         }
@@ -687,7 +695,7 @@
         if (code == 0) {
             long status = 0;
             if (curl_easy_getinfo(curl, curl_info_long + curl_responsecode, &status) != 0) {
-                *errormessage = lmt_memory_strdup("getting HTTP response status failed");
+                *errormessage = lmt_memory_strdup("getting https(s) response status failed");
                 code = 1;
             } else {
                 *status_code = (int) status;
@@ -740,62 +748,105 @@
 
 */
 
-static int clientlib_httprequest(lua_State *L)
-{
-    const char  *url     = luaL_checkstring(L, 1);
-    const char  *method  = luaL_optstring(L, 2, "GET");
-    const char **headers = NULL;
+/*tex
+    When we want to be more efficient we can use keys and/ur userdata with defaults
+    but for now we are okay.
+*/
 
-    if (lua_istable(L, 3)) {
-        size_t len = lua_rawlen(L, 3);
-        headers = (const char**) lmt_memory_calloc(len + 1, sizeof(char*));
+/*tex
+    Watch out: these string have to live till we return from the caller!
+*/
+
+static const char** lmt_tostrings(lua_State *L, int index)
+{
+    if (lua_istable(L, index)) {
+        size_t len = lua_rawlen(L, index);
+        const char **list = (const char**) lmt_memory_calloc(len + 1, sizeof(char*));
         for (size_t i = 1; i <= len; i++) {
-            lua_rawgeti(L, 3, i);
-            headers[i - 1] = lua_tostring(L, -1);
+            lua_rawgeti(L, index, i);
+            list[i - 1] = lua_tostring(L, -1);
             lua_pop(L, 1);
         }
+        return list;
     } else {
-        /* we could handle this */
+        return NULL;
+    }
+}
+
+# if defined(_WIN32) || defined(_MSC_VER)
+    # include <string.h>
+    # define strcasecmp  _stricmp
+    # define strncasecmp _strnicmp
+# else
+    # include <strings.h>
+# endif
+
+static int clientlib_httprequest(lua_State *L)
+{
+    http_request_data data;
+    clientlib_aux_preset(&data);
+
+    if (lua_type(L, 1) == LUA_TTABLE) {
+        if (lua_getfield(L, 1, "url")      == LUA_TSTRING)  { data.url      = lua_tostring (L, -1); } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "method")   == LUA_TSTRING)  { data.method   = lua_tostring (L, -1); } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "body")     == LUA_TSTRING)  { data.body     = lua_tolstring(L, -1, &data.length); } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "timeout")  == LUA_TNUMBER)  { data.timeout  = lmt_toulong  (L, -1); } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "maxsize")  == LUA_TNUMBER)  { data.maxsize  = lmt_tosizet  (L, -1); } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "tolerant") == LUA_TBOOLEAN) { data.tolerant = lua_toboolean(L, -1); } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "headers")  == LUA_TTABLE)   { data.headers  = lmt_tostrings(L, -1); } lua_pop(L, 1);
+    } else {
+        data.url      = luaL_checkstring(L, 1);
+        /* We keep this for now. */
+        data.method   = luaL_optstring  (L, 2, data.method);
+        data.headers  = lmt_tostrings   (L, 3);
+        data.body     = lua_tolstring   (L, 4, &data.length);
+        data.timeout  = lmt_optulong    (L, 5, data.timeout);
+        data.maxsize  = lmt_optsizet    (L, 6, data.maxsize);
+        data.tolerant = lua_toboolean   (L, 7);
+    }
+    if (data.timeout < 0) {
+        data.timeout = 0;
     }
 
-    size_t      length   = 0;
-    const char *body     = lua_tolstring(L, 4, &length);
-    long        timeout  = lmt_optlong  (L, 5, default_timeout_receive); // lmt_optulong
-    size_t      maxsize  = lmt_optsizet (L, 6, default_maxsize);
-    int         tolerant = lua_toboolean(L, 7); /* when not there false */
+    if (strncasecmp(data.url, "http://", 7) != 0 && strncasecmp(data.url, "https://", 8) != 0) {
 
-    if (timeout < 0) {
-        timeout = 0;
-    }
-
-    luaL_Buffer buffer;
-    luaL_buffinit(L, &buffer);
-
-    int   status       = 0;
-    char *errormessage = NULL;
-
-    int success = clientlib_aux_http_request(L,
-        &buffer,
-        method, url, headers, body, length, timeout, maxsize, tolerant,
-        &status, &errormessage
-    );
-
-    lmt_memory_free(headers);
-
-    if (! success || errormessage) {
         lua_pushboolean(L, 0);
-        lua_pushstring(L, errormessage ? errormessage : "the HTTP(S) request failed");
-        lmt_memory_free(errormessage);
+        lua_pushstring(L, "only http and https protocols are allowed");
+
+    } else if (! lmt_valid_target(L, security_client, data.url, security_http_request)) {
+
+        lua_pushboolean(L, 0);
+        lua_pushstring(L, "the http(s) request is blocked");
+
     } else {
-        /*tex
-            We need to finish the buffer first, and as that can involve pushing stuff on the stack
-            we need to keep the order right. Which in turn means pushing the status after that is
-            done and then move it up (swap places).
-        */
-        luaL_pushresult(&buffer);
-        lua_pushinteger(L, status);
-        lua_insert(L, -2);
+
+        luaL_Buffer buffer;
+        luaL_buffinit(L, &buffer);
+
+        int   status       = 0;
+        char *errormessage = NULL;
+
+        int success = clientlib_aux_http_request(
+            &data, &buffer, &status, &errormessage
+        );
+
+        if (! success || errormessage) {
+            lua_pushboolean(L, 0);
+            lua_pushstring(L, errormessage ? errormessage : "the http(s) request failed");
+            lmt_memory_free(errormessage);
+        } else {
+            /*tex
+                We need to finish the buffer first, and as that can involve pushing stuff on the stack
+                we need to keep the order right. Which in turn means pushing the status after that is
+                done and then move it up (swap places).
+            */
+            luaL_pushresult(&buffer);
+            lua_pushinteger(L, status);
+            lua_insert(L, -2);
+        }
     }
+
+    clientlib_aux_reset(&data);
     return 2;
 }
 

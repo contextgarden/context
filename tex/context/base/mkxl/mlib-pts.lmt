@@ -6,10 +6,10 @@ if not modules then modules = { } end modules ['mlib-pts'] = {
     license   = "see context related readme files",
 }
 
-local concat     = table.concat
-local newtable   = lua.newtable
-local formatters = string.formatters
-local div        = math.div
+local concat         = table.concat
+local newtable       = lua.newtable
+local formatted      = string.formatted
+local div            = math.div
 
 local injectpath     = mp.inject.path
 local scanstring     = mp.scan.string -- whatever
@@ -18,7 +18,7 @@ local registerscript = metapost.registerscript
 local getxy          = vector.points.getxy
 local getbounds      = vector.points.getbounds
 
-local points = { }
+local points         = { }
 
 function mp.points_register(specification)
     points[specification.name] = specification
@@ -48,11 +48,11 @@ local function points_convert(current,kind)
 
      -- local k = { draw = "S", fill = "f", both = "B" }
 
-     -- local f_shape_3 = formatters["%N %N m %N %N l %N %N l %N %N l"]
-        local f_shape_0 = formatters["%N %N m"]
-        local f_shape_1 = formatters["%N %N l"]
-        local f_shape_3 = formatters["%N %N m %N %N l %N %N l h"]
-        local f_cm      = formatters["%N %N %N %N %N %N cm"]
+     -- local f_shape_3 = "%N %N m %N %N l %N %N l %N %N l"
+        local f_shape_0 = "%N %N m"
+        local f_shape_1 = "%N %N l"
+        local f_shape_3 = "%N %N m %N %N l %N %N l h"
+        local f_cm      = "%N %N %N %N %N %N cm"
 
         if current.method == "triangles" then
 
@@ -61,14 +61,14 @@ local function points_convert(current,kind)
             t = newtable(count//3 + 2 + 2,0)
 
             n = n + 1 ; t[n] = "q"
-            n = n + 1 ; t[n] = f_cm(rx,0,0,ry,tx,ty)
+            n = n + 1 ; t[n] = formatted(f_cm,rx,0,0,ry,tx,ty)
 
             for i=1,count,3 do
                 local x1, y1 = getxy(points,i)
                 local x2, y2 = getxy(points,i+1)
                 local x3, y3 = getxy(points,i+2)
-             -- n = n + 1 ; t[n] = f_shape_3(x1,y1,x2,y2,x3,y3,x1,y1)
-                n = n + 1 ; t[n] = f_shape_3(x1,y1,x2,y2,x3,y3)
+             -- n = n + 1 ; t[n] = formatted(f_shape_3,x1,y1,x2,y2,x3,y3,x1,y1)
+                n = n + 1 ; t[n] = formatted(f_shape_3,x1,y1,x2,y2,x3,y3)
             end
 
         else -- just lines
@@ -76,12 +76,12 @@ local function points_convert(current,kind)
             t = newtable(count + 2 + 2,0)
 
             n = n + 1 ; t[n] = "q"
-            n = n + 1 ; t[n] = f_cm(rx,0,0,ry,tx,ty)
+            n = n + 1 ; t[n] = formatted(f_cm,rx,0,0,ry,tx,ty)
 
-            n = n + 1 ; t[n] = f_shape_0(getxy(points,1))
+            n = n + 1 ; t[n] = formatted(f_shape_0,getxy(points,1))
 
             for i=2,count do
-                n = n + 1 ; t[n] = f_shape_1(getxy(points,i))
+                n = n + 1 ; t[n] = formatted(f_shape_1,getxy(points,i))
             end
 
         end

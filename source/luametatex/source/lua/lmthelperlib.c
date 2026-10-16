@@ -32,6 +32,26 @@ typedef struct profiling_specification {
     halfword  parent;
 } profiling_specification;
 
+static inline scaled tex_aux_discretize_position(scaled num, scaled step)
+{
+    if (step <= 0) return 0;
+    /* Round to nearest step: (num + step/2) / step */
+    long long n = (long long) num;
+    long long s = (long long) step;
+    long long q = (n >= 0) ? (n + s / 2LL) / s : (n - s / 2LL) / s;
+    return (scaled) (q < 0 ? 0 : q);
+}
+
+static inline scaled tex_aux_discretize_width(scaled num, scaled step)
+{
+    if (step <= 0) return 0;
+    /* Round down / inward: (num - step/2) / step */
+    long long n = (long long) num;
+    long long s = (long long) step;
+    long long q = (n >= 0) ? (n - s / 2LL) / s : (n + s / 2LL) / s;
+    return (scaled) (q < 0 ? 0 : q);
+}
+
 static void helperlib_aux_resetprofile(profiling_specification *profile)
 {
     memset(profile, 0, sizeof(profiling_specification));
@@ -142,16 +162,8 @@ static void helperlib_aux_getprofile(lua_State *L, profiling_specification *prof
         profile->position = profile->width;
         profile->width = profile->position + profile->whd.wd;
         {
-         // scaled p = lround((double) (profile->position - profile->margin) / profile->step);
-         // scaled w = lround((double) (profile->width + profile->margin) / profile->step);
-            scaled p = (scaled) lfloor((double) (profile->position - profile->margin)/profile->step + 0.5);
-            scaled w = (scaled) lfloor((double) (profile->width    + profile->margin)/profile->step - 0.5);
-            if (p < 0) {
-                p = 0;
-            }
-            if (w < 0) {
-                w = 0;
-            } 
+            scaled p = tex_aux_discretize_position(profile->position - profile->margin, profile->step);
+            scaled w = tex_aux_discretize_width(profile->width + profile->margin, profile->step);
             if (p > w) {
                 scaled t = w; 
                 w = p; 
@@ -1026,7 +1038,8 @@ static struct luaL_Reg helperlib_function_list[] = {
     { NULL,                  NULL                          },
 };
 
-int luaopen_helper(lua_State *L) {
+int luaopen_helper(lua_State *L)
+{
     lua_newtable(L);
     luaL_setfuncs(L, helperlib_function_list, 0);
     return 1;

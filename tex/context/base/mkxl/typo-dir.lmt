@@ -26,9 +26,6 @@ if not modules then modules = { } end modules ['typo-dir'] = {
 -- = half tagging (the current implementation)
 -- = unicode version x interpretation (several depending on the evolution)
 
-local next, type = next, type
-local format, insert, sub, find, match = string.format, table.insert, string.sub, string.find, string.match
-
 local nodes, node = nodes, node
 
 local trace_textdirections  = false  trackers.register("typesetters.directions.text", function(v) trace_textdirections = v end)

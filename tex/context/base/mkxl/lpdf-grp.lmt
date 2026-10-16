@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['lpdf-grp'] = {
 }
 
 local type, tonumber = type, tonumber
-local formatters, gsub, char = string.formatters, string.gsub, string.char
+local gsub, char = string.gsub, string.char
 local sort = table.sort
 local round = math.round
 
@@ -19,6 +19,9 @@ local pdfbackend           = backends.registered.pdf
 local nodeinjections       = pdfbackend.nodeinjections
 local codeinjections       = pdfbackend.codeinjections
 local registrations        = pdfbackend.registrations
+
+local formatting           = string.formatting
+local formatted            = string.formatted
 
 local lpdf                 = lpdf
 local pdfdictionary        = lpdf.dictionary
@@ -220,7 +223,7 @@ do
             BBox = pdfarray { 0, 0, round(urx * basepoints), round(ury * basepoints) }
         }
         local image = createimage {
-            stream = formatters[template](d(),t.data),
+            stream = formatted(template,d(),t.data),
             width  = width,
             height = height,
             bbox   = { 0, 0, round(urx), round(ury) },
@@ -464,7 +467,7 @@ end
 
 local saveboxresource = tex.boxresources.save
 local nofpatterns     = 0
-local f_pattern       = formatters["q /Pattern cs /%s scn 0 0 %.6N %.6N re f Q"]
+local f_pattern       = formatting("q /Pattern cs /%s scn 0 0 %.6N %.6N re f Q")
 
 function lpdf.registerpattern(specification)
     nofpatterns = nofpatterns + 1
@@ -492,7 +495,7 @@ function lpdf.registerpattern(specification)
 end
 
 function lpdf.patternstream(n,width,height)
-    return f_pattern("Pt" .. n,width*basepoints,height*basepoints)
+    return formatted(f_pattern,"Pt" .. n,width*basepoints,height*basepoints)
 end
 
 codeinjections.registerpattern = lpdf.registerpattern

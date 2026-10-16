@@ -5,9 +5,17 @@
 
 # Don't use -ffast-math as we depend on sign bit nilling in mp.
 
+# -fno-fast-math -ffp-contract=off -fno-associative-math -fno-reciprocal-math
+
+# /fp:strict
+
 cmake_minimum_required(VERSION 3.10..3.28)
 
 project(luametatex VERSION 2.11 LANGUAGES C)
+
+if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
+endif()
 
 # I need to check with Mojca of the compile farm can handle this. It currently is not that
 # critical because CMake will use a lower version if needed. But we do need to enable the
@@ -39,8 +47,9 @@ include(GNUInstallDirs)
 # possible to Lua. We will *not* add interfaces with many bindings because that will introduce
 # dependencies (and looking at e.g. LuaTeX build updates shows that clearly: a no-go).
 
-set(LMT_KPSE_TOO 1) # In case we want to manage MKII scripts (etc) with mtxrun.
-set(LMT_HB_TOO   1) # Maybe handy for Idris' font development (old converted ffi stuff)
+set(LMT_KPSE_TOO   1) # In case we want to manage MKII scripts (etc) with mtxrun.
+set(LMT_HB_TOO     1) # Maybe handy for Idris' font development (old converted ffi stuff).
+set(LMT_SOCKET_TOO 0) # Only when we transition.
 
 # Options:
 
@@ -190,18 +199,20 @@ endif ()
 
 if (MSVC)
 
+    # Apply universally to all MSVC toolchains to suppress unsafe function warnings
+
+    add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+
     if (CMAKE_C_COMPILER_ID MATCHES "Clang")
 
         if (LMT_DEBUG)
             add_compile_options(
-                -Wall
                 -g
                 -O0
             )
         else()
             add_compile_options(
-                -Wall
-                -O2
+                -O3
             )
         endif()
 
@@ -218,56 +229,12 @@ if (MSVC)
             -Wno-shadow
         )
 
-        add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
-
         add_compile_definitions(LMT_COMPILER_USED="clang")
 
     else()
 
         add_compile_options(
-            /Wall
-
-            /wd4127 # constant conditional expression
-            /wd4131 # old style declarator
-            /wd4152 # function pointer cast
-            /wd4201 # nonstandard extension used: nameless struct/union
-            /wd4244 # assignment in conditional expression
-            /wd4456 # local vars with same name as outer variable
-            /wd4457 # local vars with same function parameter
-            /wd4464 # relative include path
-            /wd4668 # missing defines
-            /wd4702 # unreachable code
-            /wd4710 # inlining
-            /wd4711 # inlining
-            /wd4774 # sprint argument 2 warning
-            /wd4777 # format argument 2 warning
-            /wd4820 # local vars with same name as outer variable
-            /wd4996 # strdup etc warnings
-            /wd5045 # spectre
-
-          # /GL     # whole program link optimization
-          # /Gw     # whole program data optimization (a little smaller bin)
-
-          # /Ob3    # more agressive inline, much larger bin, no gain
-
-            /wd4061 # enumerator * in switch * is not explicitly handled (mp)
-            /wd4701 # potentially unitialized local variable (lua)
-            /wd4255 # no function prototype given
-
-            /wd5105 # macro expansion producing 'defined' has undefined behavior
-
-            /wd4548 # expression before comma has no effect; expected expression with side-effect
-
-            # indeed a bit faster but also a much larger binary:
-
-            # /fp:fast
-
-            # okay for amd processors too but no difference in size so probably no gain:
-
-          # /favor:INTEL64
-          # /fsanitize:address
-          # /std:c17
-
+            /W4
         )
 
         # We always optimize ... symbols are not in the binary anyway so there is no advantage
@@ -277,20 +244,35 @@ if (MSVC)
 
         if (NOT LMT_DEBUG)
             add_compile_options(
-                /GL # whole program link optimization
-                /Gw # whole program data optimization (a little smaller bin)
+                /O2  # maximize speed
+                /Oi  # enable intrinsic functions
+                /Ot  # favor fast code over small size
+                /Ob2 # aggressive inlining
+                /GL  # whole program link optimization
+                /Gw  # whole program data optimization (a little smaller bin)
             )
         endif()
 
         add_compile_definitions(LMT_COMPILER_USED="msvc")
 
         add_compile_options(
+            /W4
             /utf-8
+            /wd4201 # Nonstandard extension: nameless struct/union
+            /wd4310 # Cast truncates constant value
+            /wd4100 # Unreferenced formal parameter
+            /wd4244 # Conversion loss of data (e.g. int to short)
+            /wd4267 # Conversion loss of data (size_t to int)
+            /wd4018 # Signed/unsigned mismatch
+            /wd4127 # Conditional expression is constant
+            /wd4706 # Assignment within conditional expression
+            /wd4456 # Declaration hides previous local declaration
+            /wd4709 # Comma operator within a subscript expression
         )
 
     endif()
 
- else()
+else()
 
     if (CMAKE_C_COMPILER_ID MATCHES "Clang")
 
@@ -301,7 +283,7 @@ if (MSVC)
             )
         else()
             add_compile_options(
-                -O2
+                -O3
             )
         endif()
 
@@ -317,8 +299,6 @@ if (MSVC)
         else()
             add_compile_options(
                 -O3
-              # -g0
-              # -mtune=nocona # fails on arm so more testing needed
             )
         endif()
 
@@ -347,12 +327,6 @@ if (MSVC)
         -Wcast-align
         -Wcast-qual
 
-        # we need to check for zeros anyway as not all compiles have this
-
-      # -fno-signed-zeros
-      # -fno-trapping-math
-      # -fno-math-errno
-
         -Wno-unknown-pragmas
         -Wno-unused-result
         -fno-strict-aliasing
@@ -377,41 +351,75 @@ endif()
 if (CMAKE_C_COMPILER_ID MATCHES "Clang")
 
     add_compile_options(
+        # prevent unknown flag errors across different Clang compiler versions
         -Wno-unknown-warning-option
-        -Wno-nonportable-include-path
-        -Wno-nonportable-system-include-path
-        -Wno-newline-eof
-        -Wno-extra-semi-stmt
-        -Wno-sign-conversion
-        -Wno-unused-macros
-        -Wno-reserved-id-macro
-        -Wno-comma
-        -Wno-switch-enum
-        -Wno-shadow
-        -Wno-missing-noreturn
-        -Wno-implicit-fallthrough
-      # -Wno-format
+
+        # silence pedantic checks on standard C headers and pointer math
         -Wno-reserved-identifier
-        -Wno-date-time
+        -Wno-reserved-id-macro
+        -Wno-unsafe-buffer-usage # Clang 16+ pointer arithmetic warnings
+
+        # cross-platform header inclusion & format flexibility
+        -Wno-nonportable-include-path
         -Wno-format-nonliteral
-        -Wno-float-equal
-      # too noisy, we just look at what gcc reports
-        -Wno-unsafe-buffer-usage
-        -Wno-macro-redefined
-        -Wno-undef
-        -Wno-switch-default
-        -Wno-class-varargs
+
+        # noisy type conversions & shadow suppressions
+        -Wno-sign-conversion
+        -Wno-shadow
+        -Wno-implicit-fallthrough
     )
 
 endif()
 
+if (MSVC)
+    # Remove runtime checks (/RTC1) which conflict with optimizations (/O2)
+    foreach(flag_var
+        CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+        CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
+        if(${flag_var} MATCHES "/RTC1")
+            string(REGEX REPLACE "/RTC1" "" ${flag_var} "${${flag_var}}")
+        endif()
+    endforeach()
+endif()
+
+if (MSVC)
+    # Remove runtime checks (/RTC1) and clean up conflicting default flags to avoid D9025 warnings
+    foreach(flag_var
+        CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+        CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
+
+        if(${flag_var} MATCHES "/W3")
+            string(REGEX REPLACE "/W3" "/W4" ${flag_var} "${${flag_var}}")
+        endif()
+
+        if(${flag_var} MATCHES "/Od")
+            string(REGEX REPLACE "/Od" "/O2" ${flag_var} "${${flag_var}}")
+        endif()
+
+        # Strip out /Ob0 so it doesn't clash with your /Ob2
+        if(${flag_var} MATCHES "/Ob0")
+            string(REGEX REPLACE "/Ob0" "" ${flag_var} "${${flag_var}}")
+        endif()
+
+        if(${flag_var} MATCHES "/MDd")
+            string(REGEX REPLACE "/MDd" "/MD" ${flag_var} "${${flag_var}}")
+        endif()
+
+        string(REGEX REPLACE "/RTC1" "" ${flag_var} "${${flag_var}}")
+    endforeach()
+endif()
+
+
 # Not that tested (converted ffi originals):
 
-if ((DEFINED LMT_KPSE_TOO))
+if (LMT_KPSE_TOO)
     add_compile_definitions(LMT_KPSE_TOO=1)
 endif()
-if ((DEFINED LMT_HB_TOO))
+if (LMT_HB_TOO)
     add_compile_definitions(LMT_HB_TOO=1)
+endif()
+if (LMT_SOCKET_TOO)
+    add_compile_definitions(LMT_SOCKET_TOO=1)
 endif()
 
 # This needs cmake >= 3.9 and produces a 60K smaller mingw binary but it take quite a bit of
@@ -496,19 +504,24 @@ endif()
 include_directories(${CMAKE_ROOT}/source)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/source)
 
-if ((DEFINED luametatex_use_mimalloc))
+if (DEFINED luametatex_use_mimalloc)
     add_compile_definitions(LUAMETATEX_USE_MIMALLOC=1)
   # add_compile_definitions(MIMALLOC_RESET_DELAY=250)
   # set(luametatex_use_mimalloc 1)
     include(cmake/mimalloc.cmake)
 endif()
 
+include(cmake/utilities.cmake)
 include(cmake/tex.cmake)
 include(cmake/lua.cmake)
 include(cmake/mp.cmake)
 
 include(cmake/luarest.cmake)
-include(cmake/luasocket.cmake)
+
+if (LMT_SOCKET_TOO)
+    include(cmake/luasocket.cmake)
+endif()
+
 include(cmake/luaoptional.cmake)
 
 include(cmake/pplib.cmake)

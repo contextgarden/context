@@ -46,7 +46,7 @@ local function initializer()
     tobesaved = pagestates.tobesaved
 end
 
-job.register("job.pagestates.collected", tobesaved, initializer, nil)
+job.register("job.pagestates.collected", tobesaved, initializer)
 
 table.setmetatableindex(tobesaved, "table")
 

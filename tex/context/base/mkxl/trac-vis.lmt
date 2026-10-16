@@ -12,8 +12,11 @@ if not modules then modules = { } end modules ['trac-vis'] = {
 local node, nodes, attributes, tex = node, nodes, attributes, tex
 local type, tonumber, next, rawget = type, tonumber, next, rawget
 local gmatch = string.gmatch
-local formatters = string.formatters
 local round = math.round
+
+----- formatters = string.formatters
+local formatting = string.formatting
+local formatted  = string.formatted
 
 -- This module started out in the early days of mkiv and luatex with visualizing
 -- kerns related to fonts. In the process of cleaning up the visual debugger code it
@@ -117,7 +120,7 @@ local enableaction        = nodes.tasks.enableaction
 
 local report_visualize = logs.reporter("visualize")
 
-local f_amount = formatters["%s:%0.3f"]
+local f_amount = formatting("%s:%.3N")
 
 local modes = {
     hbox          = 0x0000001,
@@ -234,10 +237,10 @@ local use_layers = true  directives.register("visualizers.layers", function(v) u
 visualizers.getusedfont = getusedfont
 
 function visualizers.definelayer(name)
-    local tag = formatters["v_%s"](name)
+    local tag = formatted("v_%s",name)
     attributes.viewerlayers.define {
         tag       = tag,
-        title     = formatters["visualizer %s"](name),
+        title     = formatted("visualizer %s",name),
         visible   = "start",
         editable  = "yes",
         printable = "yes",
@@ -497,7 +500,7 @@ local fraction = 10  do
     end
 
     for mode, value in next, modes do
-        trackers.register(formatters["visualizers.%s"](mode), function(v) set(mode,v) end)
+        trackers.register(formatted("visualizers.%s",mode), function(v) set(mode,v) end)
     end
 
     trackers  .register("visualizers.reset",    function(v) set("reset", v) end)
@@ -592,13 +595,15 @@ local fontkern, italiccorrection, marginkern, mathkern, mathshapekern do
     local m_cache = caches["marginkern"]
     local l_cache = caches["mathkern"]
 
+    local f_kern  = formatting(" %.3N")
+
     local function somekern(head,current,cache,color,layer)
         local width = getkern(current)
         local extra = getexpansion(current)
         local kern  = width + extra
         local info  = cache[kern]
         if not info then
-            local text = hpack_string(formatters[" %0.3f"](kern*ptfactor),usedfont)
+            local text = hpack_string(formatted(f_kern,kern*ptfactor),usedfont)
             local rule = new_rule(emwidth/fraction,6*exheight,2*exheight)
             local list = getlist(text)
             local colr
@@ -736,13 +741,16 @@ local ruledmark do
     local sm_cache = caches["setmark"]
     local rm_cache = caches["resetmark"]
 
+    local f_mark   = formatting("SM:%i")
+    local f_rule   = formatting("RM:%i")
+
     ruledmark = function(head,current,subtype)
         local index = getindex(current)
         local info
         if subtype == set_code then
             info = sm_cache[index]
             if not info then
-                info = sometext(formatters["SM:%i"](index),usedfont,nil,"trace:w") -- whatsit
+                info = sometext(formatted(f_mark,index),usedfont,nil,"trace:w") -- whatsit
                 if use_layers then
                     setattr(info,a_layer,l_mark)
                 end
@@ -754,7 +762,7 @@ local ruledmark do
         else
             info = rm_cache[index]
             if not info then
-                info = sometext(formatters["RM:%i"](index),usedfont,nil,"trace:w") -- whatsit
+                info = sometext(formatted(f_rule,index),usedfont,nil,"trace:w") -- whatsit
                 if use_layers then
                     setattr(info,a_layer,l_mark)
                 end
@@ -774,11 +782,13 @@ local ruledinsert do
 
     local si_cache = caches["insert"]
 
+    local f_insert = formatting("SI:%i")
+
     ruledinsert = function(head,current)
         local index = getindex(current)
         local info  = si_cache[index]
         if not info then
-            info = sometext(formatters["SI:%i"](index),usedfont,nil,"trace:w") -- whatsit
+            info = sometext(formatted(f_insert,index),usedfont,nil,"trace:w") -- whatsit
             if use_layers then
                 setattr(info,a_layer,l_insert)
             end
@@ -797,6 +807,7 @@ local ruledwhatsit do
 
     local whatsitcodes = nodes.whatsitcodes
     local w_cache      = caches["whatsit"]
+    local f_whatsit    = formatting("W:%s")
 
     local tags         = {
         [whatsitcodes.open]           =  "OPN",
@@ -823,10 +834,11 @@ local ruledwhatsit do
         [whatsitcodes.setstate]       =  "SET", -- can't happen because these are added after visualizing
     }
 
+
     ruledwhatsit = function(head,current,subtype)
         local info = w_cache[subtype]
         if not info then
-            info = sometext(formatters["W:%s"](tags[subtype] or subtype),usedfont,nil,"trace:w")
+            info = sometext(formatted(f_whatsit,tags[subtype] or subtype),usedfont,nil,"trace:w")
             if use_layers then
                 setattr(info,a_layer,l_whatsit)
             end
@@ -846,6 +858,8 @@ local ruledboundary do
     local boundarycodes = nodes.boundarycodes
     local b_cache       = caches["boundary"]
 
+    local f_boundary    = formatting("B:%s")
+
     local tags          = {
         [boundarycodes.cancel]     = "CAN",
         [boundarycodes.user]       = "USR",
@@ -856,7 +870,7 @@ local ruledboundary do
     ruledboundary = function(head,current,subtype)
         local info = b_cache[subtype]
         if not info then
-            info = sometext(formatters["B:%s"](tags[subtype] or subtype),usedfont,nil,"trace:w")
+            info = sometext(formatted(f_boundary,tags[subtype] or subtype),usedfont,nil,"trace:w")
             if use_layers then
                 setattr(info,a_layer,l_boundary)
             end
@@ -969,10 +983,12 @@ end
 --
 --     local u_cache = caches["user"]
 --
+--     local f_used  = formatting("U:%s")
+--
 --     ruleduser = function(head,current,subtype)
 --         local info = u_cache[subtype]
 --         if not info then
---             info = sometext(formatters["U:%s"](subtype),usedfont)
+--             info = sometext(formatted(f_used,subtype),usedfont)
 --             if use_layers then
 --                 setattr(info,a_layer,l_user)
 --             end
@@ -1114,16 +1130,16 @@ local ruledbox do
                     depth  = dp,
                     line   = 5*linewidth,
                     type   = "box",
-            --                 dashed = 3*size,
+                 -- dashed = 3*size,
                 }
-                local what = formatters[" %0.1f"](100 * (s < 0 and -s or s) / wd)
+                local what = formatted(" %.1N",100 * (s < 0 and -s or s) / wd)
                 oeps = s_cache[what]
                 if not oeps then
---                         local text = hpack_string(what,usedfont)
+                 -- local text = hpack_string(what,usedfont)
                     oeps = hpack_string(what,usedfont)
---                         oeps = setlink(new_kern(-getwidth(text)),text)
+                 -- oeps = setlink(new_kern(-getwidth(text)),text)
                     setlisttransparency(oeps,"trace:s")
---                         oeps = new_hlist(oeps)
+                 -- oeps = new_hlist(oeps)
                     if crappytaggingmode then
                         setattr(oeps,a_tagged,0)
                     end
@@ -1388,7 +1404,7 @@ local ruledglue, ruledmathglue, ruledspace do
                      or g_caches[subtype]
                      or (vertical and g_cache_v)
                      or g_cache_h
-        local amount  = f_amount(nobreak and "NB" or tags[subtype] or (vertical and "VS") or "HS",width*ptfactor)
+        local amount  = formatted(f_amount,nobreak and "NB" or tags[subtype] or (vertical and "VS") or "HS",width*ptfactor)
         local penalty = getpenalty(current)
         if penalty then
             amount = amount .. " " .. penalty
@@ -1503,9 +1519,11 @@ local ruledglue, ruledmathglue, ruledspace do
 
     local gsub, sub = string.gsub, string.sub
 
+    local f_hack = formatting("0x%02X")
+
     local morehack = setmetatableindex(function(t,k)
         local v = mathematics.classnames[k] -- yet unknown
-        v = v and sub(v,1,3) or formatters["x%02x"](k)
+        v = v and sub(v,1,3) or formatted(f_hack,"0x%02X",k)
         t[k] = v
         return v
     end)
@@ -1545,8 +1563,8 @@ local ruledglue, ruledmathglue, ruledspace do
             end
         end
         if not info then
-            local amount = quad and f_amount("QUAD",width*ptfactor) or temphack[name]
-         -- local amount = quad and f_amount("QD",width*ptfactor) or temphack[name]
+            local amount = quad and formatted(f_amount,"QUAD",width*ptfactor) or temphack[name]
+         -- local amount = quad and formatted(f_amount,"QD",width*ptfactor) or temphack[name]
             local text   = hpack_string(amount,usedfont)
             local rule   = new_rule(emwidth/fraction,2*exheight,(zero and 4.25 or 2.75)*exheight)
             local list   = getlist(text)
@@ -1583,7 +1601,7 @@ local ruledkern do
         local cache = vertical and v_cache or h_cache
         local info  = cache[kern]
         if not info then
-            local amount = f_amount(vertical and "VK" or "HK",kern*ptfactor)
+            local amount = formatted(f_amount,vertical and "VK" or "HK",kern*ptfactor)
             local l_kern = vertical and l_v_kern or l_h_kern
             if kern > 0 then
                 info = sometext(amount,l_kern,"trace:b")
@@ -1676,7 +1694,7 @@ local ruleditalic do
         local kern = getkern(current)
         local info = i_cache[kern]
         if not info then
-            local amount = f_amount("IC",kern*ptfactor)
+            local amount = formatted(f_amount,"IC",kern*ptfactor)
             if kern > 0 then
                 info = sometext(amount,l_kern,"trace:b")
             elseif kern < 0 then
@@ -1710,7 +1728,7 @@ local ruledmarginkern do
         local cache = left and l_cache or r_cache
         local info  = cache[kern]
         if not info then
-            local amount = f_amount(left and "ML" or "MR",kern*ptfactor)
+            local amount = formatted(f_amount,left and "ML" or "MR",kern*ptfactor)
             if kern > 0 then
                 info = sometext(amount,l_marginkern,"trace:b")
             elseif kern < 0 then
@@ -1740,7 +1758,7 @@ local ruledmathkern do
         local cache = vertical and v_cache or h_cache
         local info  = cache[kern]
         if not info then
-            local amount = f_amount(vertical and "MV" or "MH",kern*ptfactor)
+            local amount = formatted(f_amount,vertical and "MV" or "MH",kern*ptfactor)
             if kern > 0 then
                 info = sometext(amount,l_mathkern,"trace:b")
             elseif kern < 0 then
@@ -1881,7 +1899,7 @@ local ruledpenalty do
         if info then
             -- print("penalty hit")
         else
-            amount = formatters[amount](penalty)
+            amount = formatted(amount,penalty)
             local l_penalty = vertical and l_v_penalty or l_h_penalty
             if ismath then
                 info = sometext(amount,l_penalty,"trace:s")
@@ -2012,14 +2030,14 @@ do
     ----- userkern_code           <const> = kerncodes.userkern
 
  -- local skipcodes               = nodes.skipcodes
---     local spaceskip_code          <const> = nodes.skipcodes.spaceskip
---     local xspaceskip_code         <const> = nodes.skipcodes.xspaceskip
---     local zerospaceskip_code      <const> = nodes.skipcodes.zerospaceskip
---     local intermathskip_code      <const> = nodes.skipcodes.intermathskip
+ -- local spaceskip_code          <const> = skipcodes.spaceskip
+ -- local xspaceskip_code         <const> = skipcodes.xspaceskip
+ -- local zerospaceskip_code      <const> = skipcodes.zerospaceskip
+ -- local intermathskip_code      <const> = skipcodes.intermathskip
 
  -- local listcodes               = nodes.listcodes
-    local linelist_code           <const> = nodes.listcodes.line
-    local rowlist_code            <const> = nodes.listcodes.alignment
+ -- local linelist_code           <const> = nodes.listcodes.line
+ -- local rowlist_code            <const> = nodes.listcodes.alignment
 
  -- local vtop_package_state      = 3 -- todo: symbolic
  -- local dbox_package_state      = 4 -- todo: symbolic
@@ -2092,6 +2110,10 @@ do
         local intermathskip_code      <const> = skipcodes.intermathskip
         local intercharacterskip_code <const> = skipcodes.intercharacterskip
         local discretionaryskip_code  <const> = skipcodes.discretionaryskip
+
+        local listcodes                       = nodes.listcodes
+        local linelist_code           <const> = nodes.listcodes.line
+        local rowlist_code            <const> = nodes.listcodes.alignment
 
         while current do
             local id, subtype = getidsubtype(current)
@@ -2514,7 +2536,7 @@ end
 statistics.register("visualization time",function()
     if enabled then
      -- cleanup() -- in case we don't don't do it each time
-        return formatters["%s seconds"](statistics.elapsedtime(visualizers))
+        return formatted("%s seconds",statistics.elapsedtime(visualizers))
     end
 end)
 

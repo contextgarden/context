@@ -3093,7 +3093,7 @@ void tex_run_convert_tokens(halfword code)
             {
                 int saved_selector;
                 int grouped = 0;
-                halfword v = tex_scan_dimension(0, 0, 0, 0, NULL, &grouped);
+                scaled v = tex_scan_dimension(0, 0, 0, 0, NULL, &grouped);
                 if (! grouped) {
                     tex_get_x_token(); /* maybe not x here */
                     if (cur_cmd != relax_cmd) {
@@ -3928,7 +3928,7 @@ char *tex_tokenlist_to_tstring(int pp, int inhibit_par, int *siz, int skippreamb
 
 /* The bin gets 1.2K smaller if we inline these. */
 
-halfword tex_get_tex_dimension_register (int j, int internal) { return internal ? dimension_parameter(j) : dimension_register(j) ; }
+scaled   tex_get_tex_dimension_register (int j, int internal) { return internal ? dimension_parameter(j) : dimension_register(j) ; }
 halfword tex_get_tex_skip_register      (int j, int internal) { return internal ? glue_parameter(j) : skip_register(j) ; }
 halfword tex_get_tex_muskip_register    (int j, int internal) { return internal ? muglue_parameter(j) : muskip_register(j); }
 halfword tex_get_tex_count_register     (int j, int internal) { return internal ? count_parameter(j) : count_register(j)  ; }
@@ -3940,7 +3940,7 @@ halfword tex_get_tex_box_register       (int j, int internal) { return internal 
  //     flags = add_global_flag(flags);
  // }
 
-int tex_set_tex_dimension_register(int j, halfword v, int flags, int internal)
+int tex_set_tex_dimension_register(int j, scaled v, int flags, int internal)
 {
     halfword p = internal ? internal_dimension_location(j) : register_dimension_location(j);
     if (tex_mutation_permitted(p)) {

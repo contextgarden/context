@@ -19,7 +19,7 @@ if not modules then modules = { } end modules ["page-cst"] = {
 
 local next, type, tonumber, tostring, rawget = next, type, tonumber, tostring, rawget
 local ceil, odd, round, abs = math.ceil, math.odd, math.round, math.abs
-local format, lower, splitstring = string.format, string.lower, string.split
+local lower, splitstring = string.lower, string.split
 local copy, concat = table.copy, table.concat
 local stepper = utilities.parsers.stepper
 local settings_to_array = utilities.parsers.settings_to_array
@@ -32,6 +32,8 @@ local trace_flush   = false  trackers.register("columnsets.flush",   function(v)
 local report            = logs.reporter("column sets")
 
 local setmetatableindex = table.setmetatableindex
+
+local formatted         = string.formatted
 
 local properties        = nodes.properties.data
 
@@ -2781,7 +2783,7 @@ do
             cells = dataset.cells
         end
         for r=1,nofrows do
-            row[0] = format("% 3i",r)
+            row[0] = formatted("% 3i",r)
             for c=1,nofcolumns do
                 local v = cells[c][r]
                 -- if type(v) is a rule that we added

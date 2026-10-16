@@ -64,7 +64,3 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         LUASOCKET_INET_PTON
     )
 endif()
-
-
-
-

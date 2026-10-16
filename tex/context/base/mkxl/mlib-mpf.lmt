@@ -12,7 +12,10 @@ local type, tostring, tonumber, select, loadstring = type, tostring, tonumber, s
 local find, gsub = string.find, string.gsub
 local concat = table.concat
 
-local formatters   = string.formatters
+----- formatters   = string.formatters
+local formatting   = string.formatting
+local formatted    = string.formatted
+
 local lpegmatch    = lpeg.match
 local lpegpatterns = lpeg.patterns
 
@@ -34,28 +37,23 @@ local scan = mp.scan
 
 do
 
-    -- serializers
-
-    local f_integer      = formatters["%i"]
-    local f_numeric      = formatters["%F"]
-
     -- no %n as that can produce -e notation and that is not so nice for scaled but maybe we
     -- should then switch between ... i.e. make a push/pop for the formatters here ... not now.
 
-    local f_integer      = formatters["%i"]
-    local f_numeric      = formatters["%F"]
-    local f_pair         = formatters["(%F,%F)"]
-    local f_ctrl         = formatters["(%F,%F) .. controls (%F,%F) and (%F,%F)"]
-    local f_triplet      = formatters["(%F,%F,%F)"]
-    local f_quadruple    = formatters["(%F,%F,%F,%F)"]
-    local f_transform    = formatters["totransform(%F,%F,%F,%F,%F,%F)"]
-    local f_pen          = formatters["(pencircle transformed totransform(%F,%F,%F,%F,%F,%F))"]
+    local f_integer      = formatting("%i")
+    local f_numeric      = formatting("%N")
+    local f_pair         = formatting("(%N,%N)")
+    local f_ctrl         = formatting("(%N,%N) .. controls (%N,%N) and (%N,%N)")
+    local f_triplet      = formatting("(%N,%N,%N)")
+    local f_quadruple    = formatting("(%N,%N,%N,%N)")
+    local f_transform    = formatting("totransform(%N,%N,%N,%N,%N,%N)")
+    local f_pen          = formatting("(pencircle transformed totransform(%N,%N,%N,%N,%N,%N))")
 
-    local f_points       = formatters["%p"]
-    local f_pair_pt      = formatters["(%p,%p)"]
-    local f_ctrl_pt      = formatters["(%p,%p) .. controls (%p,%p) and (%p,%p)"]
-    local f_triplet_pt   = formatters["(%p,%p,%p)"]
-    local f_quadruple_pt = formatters["(%p,%p,%p,%p)"]
+    local f_points       = formatting("%p")
+    local f_pair_pt      = formatting("(%p,%p)")
+    local f_ctrl_pt      = formatting("(%p,%p) .. controls (%p,%p) and (%p,%p)")
+    local f_triplet_pt   = formatting("(%p,%p,%p)")
+    local f_quadruple_pt = formatting("(%p,%p,%p,%p")
 
     local r = P('%')  / "percent"
             + P('"')  / "dquote"
@@ -302,9 +300,11 @@ do
         return result
     end
 
+    local getcallbackstate = mplib.getcallbackstate
+
     function metapost.nofscriptruns()
-        local c = mplib.getcallbackstate()
-        return c.count, string.format(
+        local c = getcallbackstate()
+        return c.count, formatted(
             "%s (file: %s, text: %s, script: %s, log: %s)",
             c.count, c.file, c.text, c.script, c.log
         )
@@ -316,7 +316,7 @@ do
         n = n + 1
         local t = type(value)
         if t == "number" then
-            buffer[n] = f_numeric(value)
+            buffer[n] = formatted(f_numeric,value)
         elseif t == "string" then
             buffer[n] = value
         elseif t == "table" then
@@ -349,7 +349,7 @@ do
         n = n + 1
         local t = type(value)
         if t == "number" then
-            buffer[n] = f_numeric(value)
+            buffer[n] = formatted(f_numeric,value)
         elseif t == "string" then
             buffer[n] = lpegmatch(p,value)
         elseif t == "table" then
@@ -393,13 +393,12 @@ do
         if not f or f == 0 then
             buffer[n] = "0"
         else
-            buffer[n] = f_numeric(f)
+            buffer[n] = formatted(f_numeric,f)
         end
     end
 
     local function mpinteger(i)
         n = n + 1
-     -- buffer[n] = i and f_integer(i) or "0"
         buffer[n] = i or "0"
     end
 
@@ -408,70 +407,70 @@ do
         if not i or i == 0 then
             buffer[n] = "0pt"
         else
-            buffer[n] = f_points(i)
+            buffer[n] = formatted(f_points,i)
         end
     end
 
     local function mppair(x,y)
         n = n + 1
         if type(x) == "table" then
-            buffer[n] = f_pair(x[1],x[2])
+            buffer[n] = formatted(f_pair,x[1],x[2])
         else
-            buffer[n] = f_pair(x,y or x)
+            buffer[n] = formatted(f_pair,x,y or x)
         end
     end
 
     local function mppairpoints(x,y)
         n = n + 1
         if type(x) == "table" then
-            buffer[n] = f_pair_pt(x[1],x[2])
+            buffer[n] = formatted(f_pair_pt,x[1],x[2])
         else
-            buffer[n] = f_pair_pt(x,y or x)
+            buffer[n] = formatted(f_pair_pt,x,y or x)
         end
     end
 
     local function mptriplet(x,y,z)
         n = n + 1
         if type(x) == "table" then
-            buffer[n] = f_triplet(x[1],x[2],x[3])
+            buffer[n] = formatted(f_triplet,x[1],x[2],x[3])
         else
-            buffer[n] = f_triplet(x,y,z)
+            buffer[n] = formatted(f_triplet,x,y,z)
         end
     end
 
     local function mptripletpoints(x,y,z)
         n = n + 1
         if type(x) == "table" then
-            buffer[n] = f_triplet_pt(x[1],x[2],x[3])
+            buffer[n] = formatted(f_triplet_pt,x[1],x[2],x[3])
         else
-            buffer[n] = f_triplet_pt(x,y,z)
+            buffer[n] = formatted(f_triplet_pt,x,y,z)
         end
     end
 
     local function mpquadruple(w,x,y,z)
         n = n + 1
         if type(w) == "table" then
-            buffer[n] = f_quadruple(w[1],w[2],w[3],w[4])
+            buffer[n] = formatted(f_quadruple,w[1],w[2],w[3],w[4])
         else
-            buffer[n] = f_quadruple(w,x,y,z)
+            buffer[n] = formatted(f_quadruple,w,x,y,z)
         end
     end
 
     local function mpquadruplepoints(w,x,y,z)
         n = n + 1
         if type(w) == "table" then
-            buffer[n] = f_quadruple_pt(w[1],w[2],w[3],w[4])
+            buffer[n] = formatted(f_quadruple_pt,w[1],w[2],w[3],w[4])
         else
-            buffer[n] = f_quadruple_pt(w,x,y,z)
+            buffer[n] = formatted(f_quadruple_pt,w,x,y,z)
         end
     end
 
     local function mptransform(x,y,xx,xy,yx,yy)
         n = n + 1
         if type(x) == "table" then
-            buffer[n] = f_transform(x[1],x[2],x[3],x[4],x[5],x[6])
+            buffer[n] = formatted(f_transform,x[1],x[2],x[3],x[4],x[5],x[6])
         else
-            buffer[n] = f_transform(x,y,xx,xy,yx,yy)
+            buffer[n] = formatted(f_transform,x,y,xx,xy,yx,yy)
         end
     end
 
@@ -480,19 +479,19 @@ do
         if type(c) == "table" then
             local l = #c
             if l == 4 then
-                buffer[n] = f_quadruple(c[1],c[2],c[3],c[4])
+                buffer[n] = formatted(f_quadruple,c[1],c[2],c[3],c[4])
             elseif l == 3 then
-                buffer[n] = f_triplet(c[1],c[2],c[3])
+                buffer[n] = formatted(f_triplet,c[1],c[2],c[3])
             else
-                buffer[n] = f_numeric(c[1])
+                buffer[n] = formatted(f_numeric,c[1])
             end
         else
             if k then
-                buffer[n] = f_quadruple(c,m,y,k)
+                buffer[n] = formatted(f_quadruple,c,m,y,k)
             elseif y then
-                buffer[n] = f_triplet(c,m,y)
+                buffer[n] = formatted(f_triplet,c,m,y)
             else
-                buffer[n] = f_numeric(c)
+                buffer[n] = formatted(f_numeric,c)
             end
         end
     end
@@ -508,9 +507,9 @@ do
                 local t1 = t[1]
                 n = n + 1
                 if t.pen then
-                    buffer[n] = f_pen(unpack(t1))
+                    buffer[n] = formatted(f_pen,unpack(t1))
                 else
-                    buffer[n] = f2(t1[1],t1[2])
+                    buffer[n] = formatted(f2,t1[1],t1[2])
                 end
             elseif tn > 0 then
                 if connector == true or connector == nil then
@@ -532,10 +531,10 @@ do
                 buffer[n] = "("
                 n = n + 1
                 if six and #a == 6 and #b == 6 then
-                    buffer[n] = f6(a[1],a[2],a[5],a[6],b[3],b[4])
+                    buffer[n] = formatted(f6,a[1],a[2],a[5],a[6],b[3],b[4])
                     controls  = ".."
                 else
-                    buffer[n] = f2(a[1],a[2])
+                    buffer[n] = formatted(f2,a[1],a[2])
                     controls  = connector
                 end
                 for i=2,tn-1 do
@@ -545,10 +544,10 @@ do
                     buffer[n] = connector
                     n = n + 1
                     if six and #a == 6 and #b == 6 then
-                        buffer[n] = f6(a[1],a[2],a[5],a[6],b[3],b[4])
+                        buffer[n] = formatted(f6,a[1],a[2],a[5],a[6],b[3],b[4])
                         controls  = ".."
                     else
-                        buffer[n] = f2(a[1],a[2])
+                        buffer[n] = formatted(f2,a[1],a[2])
                         controls  = connector
                     end
                 end
@@ -559,10 +558,10 @@ do
                 n = n + 1
                 if cycle then
                     if six and #a == 6 and #b == 6 then
-                        buffer[n] = f6(a[1],a[2],a[5],a[6],b[3],b[4])
+                        buffer[n] = formatted(f6,a[1],a[2],a[5],a[6],b[3],b[4])
                         controls  = ".."
                     else
-                        buffer[n] = f2(a[1],a[2])
+                        buffer[n] = formatted(f2,a[1],a[2])
                         controls  = connector
                     end
                     n = n + 1
@@ -570,7 +569,7 @@ do
                     n = n + 1
                     buffer[n] = "cycle"
                 else
-                    buffer[n] = f2(a[1],a[2])
+                    buffer[n] = formatted(f2,a[1],a[2])
                 end
                 n = n + 1
                 buffer[n] = ")"
@@ -588,7 +587,7 @@ do
 
     local function mpsize(t)
         n = n + 1
-        buffer[n] = type(t) == "table" and f_numeric(#t) or "0"
+        buffer[n] = type(t) == "table" and formatted(f_numeric,#t) or "0"
     end
 
     local replacer = lpeg.replacer("@","%%")
@@ -598,7 +597,7 @@ do
         if not find(fmt,"%",1,true) then
             fmt = lpegmatch(replacer,fmt)
         end
-        buffer[n] = formatters[fmt](...)
+        buffer[n] = formatted(fmt,...)
     end
 
     local function mpquoted(fmt,s,...)
@@ -607,8 +606,7 @@ do
             if not find(fmt,"%",1,true) then
                 fmt = lpegmatch(replacer,fmt)
             end
-         -- buffer[n] = '"' .. formatters[fmt](s,...) .. '"'
-            buffer[n] = lpegmatch(p,formatters[fmt](s,...))
+            buffer[n] = lpegmatch(p,formatted(fmt,s,...))
         elseif fmt then
             n = n + 1
          -- buffer[n] = '"' .. fmt .. '"'
@@ -846,7 +844,7 @@ end
 
 function mp.report(a,b,c,...)
     if c then
-        report_message("%s : %s",a,formatters[(gsub(b,"@","%%"))](c,...))
+        report_message("%s : %s",a,formatted((gsub(b,"@","%%")),c,...))
     elseif b then
         report_message("%s : %s",a,b)
     elseif a then

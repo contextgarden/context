@@ -85,7 +85,7 @@ extern halfword    tex_scan_scale                     (int optional_equal);
 extern halfword    tex_scan_scale_factor              (int optional_equal);
 extern halfword    tex_scan_clipped_scale_factor      (int optional_equal);
 extern halfword    tex_scan_posit                     (int optional_equal);
-extern halfword    tex_scan_dimension                 (int mu, int inf, int shortcut, int optional_equal, halfword *order, int *grouped);
+extern scaled      tex_scan_dimension                 (int mu, int inf, int shortcut, int optional_equal, halfword *order, int *grouped);
 extern void        tex_scan_dimension_validate        (void);
 extern halfword    tex_scan_glue                      (int level, int optional_equal, int options_too, halfword *penalty);
 extern halfword    tex_scan_font                      (int optional_equal);
@@ -150,9 +150,9 @@ extern void        tex_detokenize_list                (halfword head);
 extern strnumber   tex_the_scanned_result             (void);
 
 extern void        tex_set_font_dimension             (void);
-extern halfword    tex_get_font_dimension             (void);
+extern scaled      tex_get_font_dimension             (void);
 extern void        tex_set_scaled_font_dimension      (int n);
-extern halfword    tex_get_scaled_font_dimension      (int n);
+extern scaled      tex_get_scaled_font_dimension      (int n);
 
 extern int         tex_get_unit_class                 (halfword index);
 

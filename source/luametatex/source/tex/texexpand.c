@@ -883,9 +883,8 @@ static int tex_aux_collect_cs_tokens(halfword *p, int *n, int *count)
                         *p = tex_store_new_token(*p, token_val(cur_cmd, cur_chr));
                     }
                     break;
-                } else {
-                    /* fall through */
                 }
+                FALLTHROUGH
             default:
                 if (cur_cmd > max_command_cmd && cur_cmd < first_call_cmd) {
                     tex_expand_current_token();
@@ -1572,7 +1571,7 @@ case dimension_match_token:
         if (last) {
             tex_back_input(cur_tok);
         }
-        halfword v = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
+        scaled v = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
         halfword p ;
         if (node_token_overflow(v)) {
             p = tex_store_new_token(null, token_val(dimension_reference_cmd, node_token_msb(v)));

@@ -37,7 +37,7 @@ local report_error    = logs.reporter("metapost","error")
 local starttiming     = statistics.starttiming
 local stoptiming      = statistics.stoptiming
 
-local formatters      = string.formatters
+local formatted       = string.formatted
 
 local mplib           = mplib
 metapost              = metapost or { }
@@ -143,12 +143,12 @@ function metapost.reporterror(result)
     end
 end
 
-local f_preamble = formatters [ [[
+local f_preamble = [[
     boolean mplib ; mplib := true ;
     let dump = endinput ;
     input "%s" ;
     randomseed:=%s;
-]] ]
+]]
 
 local methods = {
     double   = "double",
@@ -235,7 +235,7 @@ function metapost.load(name,method)
         mpxterminals[mpx] = terminal
         -- pushing permits advanced features
         metapost.pushscriptrunner(mpx)
-        result = executempx(mpx,f_preamble(file.addsuffix(name,"mp"),seed))
+        result = executempx(mpx,formatted(f_preamble,file.addsuffix(name,"mp"),seed))
         metapost.popscriptrunner()
     end
     stoptiming(mplib)
@@ -411,7 +411,7 @@ end
 do
 
     local function makebeginbanner(specification)
-        return formatters["%% begin graphic: n=%s\n\n"](metapost.n)
+        return formatted("%% begin graphic: n=%s\n\n",metapost.n)
     end
 
     local function makeendbanner(specification)
@@ -511,8 +511,8 @@ do
                     mp_tag = mp_tag + 1
                     local jobname = tex.jobname
                     tra = {
-                        inp = io.open(formatters["%s-mplib-run-%03i.mp"] (jobname,mp_tag),"w"),
-                        log = io.open(formatters["%s-mplib-run-%03i.log"](jobname,mp_tag),"w"),
+                        inp = io.open(formatted("%s-mplib-run-%03i.mp", jobname,mp_tag),"w"),
+                        log = io.open(formatted("%s-mplib-run-%03i.log",jobname,mp_tag),"w"),
                     }
                     mp_tra[mpx] = tra
                 end

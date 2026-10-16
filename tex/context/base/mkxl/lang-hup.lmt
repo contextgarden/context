@@ -52,6 +52,8 @@ local hash          = table.setmetatableindex("number")
 local report        = logs.reporter("hyphenated")
 local trace_detail  = false
 
+local formatted     = string.formatted
+
 local characters    = fonts.hashes.characters
 
 local word = { }
@@ -202,7 +204,7 @@ local initialize  initialize = function()
             n = n + 1
             m = m + v
         end
-        return string.format("%i hyphenated words, %i unique words",m,n)
+        return formatted("%i hyphenated words, %i unique words",m,n)
     end)
     initialize = false
 end

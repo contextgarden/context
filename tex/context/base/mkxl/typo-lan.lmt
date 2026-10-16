@@ -20,7 +20,7 @@ local frequencies       = languages.frequencies or { }
 languages.frequencies   = frequencies
 
 local frequencydata     = { }
-local frequencyfile     = string.formatters["lang-frq-%s.lua"]
+local frequencyfile     = string.formatters["lang-frq-%s.lua"] -- keep formatters
 local frequencycache    = { }
 
 setmetatableindex(frequencydata, function(t,language)

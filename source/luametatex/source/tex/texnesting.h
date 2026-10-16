@@ -27,7 +27,7 @@ typedef struct list_state_record {
     halfword tail;                 
     int      prev_graf;            
     int      mode_line;            
-    halfword prev_depth;           // scaled
+    scaled   prev_depth;
     halfword space_factor;         
     halfword space_penalty;
     halfword direction_stack;

@@ -41,4 +41,12 @@
 \aliased\let\automigrateinserts\donothing
 \aliased\let\automigratemarks  \donothing
 
+\automigrationmode \numexpr
+    \markautomigrationcode
+   +\insertautomigrationcode
+   +\adjustautomigrationcode
+   +\preautomigrationcode
+   +\postautomigrationcode
+\relax
+
 \protect

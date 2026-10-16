@@ -11,7 +11,9 @@ local splitup = string.splitup
 
 -- see compactors-preset.lua for details
 
-local report = logs.reporter("graphics","compactors")
+local report    = logs.reporter("graphics","compactors")
+
+local formatted = string.formatted
 
 do
 
@@ -140,7 +142,7 @@ do
 
     statistics.register("pdf compacting", function()
         if count > 0 then
-            return string.format("%s seconds for %s inclusions",statistics.elapsedtime(pdfpagemanipulators),count)
+            return formatted("%s seconds for %s inclusions",statistics.elapsedtime(pdfpagemanipulators),count)
         end
     end)
 

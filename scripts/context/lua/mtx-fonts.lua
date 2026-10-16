@@ -17,7 +17,7 @@ local concat = table.concat
 local write_nl = (logs and logs.writer) or (texio and texio.write_nl) or print
 
 local versions = {
-    otl = 3.156,
+    otl = 3.158,
     one = 1.541,
     afm = 1.541,
     pfb = 1.003,
@@ -110,10 +110,6 @@ local application = logs.application {
 }
 
 local report = application.report
-
--- todo: fc-cache -v en check dirs, or better is: fc-cat -v | grep Directory
-
-if not fontloader then fontloader = fontforge end
 
 local suffixes = { "lmt", "lua" }
 

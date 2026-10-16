@@ -89,6 +89,37 @@ unsigned char *aux_uni2str(unsigned unic)
     return buf;
 }
 
+int aux_uni2strlen(unsigned unic, char *buf)
+{
+    unic = aux_normalize_unicode(unic);
+    if (unic < 0x80) {
+        buf[0] = (unsigned char) unic;
+        buf[1] = '\0';
+        return 1;
+    } else if (unic < 0x800) {
+        buf[0] = (unsigned char) (0xC0 | (unic >> 6));
+        buf[1] = (unsigned char) (0x80 | (unic & 0x3F));
+        buf[2] = '\0';
+        return 2;
+    } else if (unic < 0x10000) {
+        buf[0] = (unsigned char) (0xE0 |  (unic >> 12));
+        buf[1] = (unsigned char) (0x80 | ((unic >>  6) & 0x3F));
+        buf[2] = (unsigned char) (0x80 |  (unic        & 0x3F));
+        buf[3] = '\0';
+        return 3;
+    } else if (unic < 0x110000) {
+        buf[0] = (unsigned char) (0xF0 |  (unic >> 18));
+        buf[1] = (unsigned char) (0x80 | ((unic >> 12) & 0x3F));
+        buf[2] = (unsigned char) (0x80 | ((unic >>  6) & 0x3F));
+        buf[3] = (unsigned char) (0x80 |  (unic        & 0x3F));
+        buf[4] = '\0';
+        return 4;
+    } else { 
+        buf[0] = '\0';
+        return 0;
+    }
+}
+
 void aux_uni2str_callback(unsigned unic, void (*handle) (int))
 {
     unic = aux_normalize_unicode(unic);

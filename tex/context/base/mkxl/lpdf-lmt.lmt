@@ -35,10 +35,13 @@ if not modules then modules = { } end modules ['lpdf-lmt'] = {
 
 local type, next, unpack, tonumber, rawget = type, next, unpack, tonumber, rawget
 local char, rep, find, gsub = string.char, string.rep, string.find, string.gsub
-local formatters = string.formatters
 local concat, sortedhash = table.concat, table.sortedhash
 local setmetatableindex = table.setmetatableindex
 local loaddata = io.loaddata
+
+----- formatters = string.formatters
+local formatting = string.formatting
+local formatted  = string.formatted
 
 local bpfactor     <const> = number.dimenfactors.bp
 local objectmargin <const> = 1 -- bp here but sp lpdf-wid / todo: check elsewhere
@@ -342,41 +345,41 @@ function flushers.updatefontstate(font)
     scalefactor      = (designsize/size) * tjfactor
 end
 
-local f_cm = formatters["%.6N %.6N %.6N %.6N %.6N %.6N cm"]
-local f_cz = formatters["%.6N 0 0 %.6N %.6N %.6N cm"]
------ f_tm = formatters["%.6N %.6N %.6N %.6N %.6N %.6N Tm"]
-local f_tm = formatters["%.6N 0 %.6N %.6N %.6N %.6N Tm"]
+local f_cm = formatting("%.6N %.6N %.6N %.6N %.6N %.6N cm")
+local f_cz = formatting("%.6N 0 0 %.6N %.6N %.6N cm")
+----- f_tm = formatting("%.6N %.6N %.6N %.6N %.6N %.6N Tm")
+local f_tm = formatting("%.6N 0 %.6N %.6N %.6N %.6N Tm")
 
-do
-    local t = { true, "0", true, true, true, true, "Tm" }
-    local f = string.f6
-    local h = setmetatableindex(function(t,k) local v = f(k) t[k] = v return v end)
-    f_tm = function(rx, sy, ry, tx, ty)
-        if rx == ry then
-            rx = h[rx]
-            t[1] = rx
-            t[4] = rx
-        else
-            t[1] = h[rx]
-            t[4] = h[ry]
-        end
-        if sy == 0 then
-            t[3] = "0"
-        else
-         -- t[3] = f(sy)
-            t[3] = h[sy]
-        end
-        t[5] = f(tx)
-        t[6] = f(ty)
-        return concat(t," ")
-    end
-end
+-- do
+--     local t = { true, "0", true, true, true, true, "Tm" }
+--     local f = string.fd6
+--     local h = setmetatableindex(function(t,k) local v = f(k) t[k] = v return v end)
+--     f_tm = function(rx, sy, ry, tx, ty)
+--         if rx == ry then
+--             rx = h[rx]
+--             t[1] = rx
+--             t[4] = rx
+--         else
+--             t[1] = h[rx]
+--             t[4] = h[ry]
+--         end
+--         if sy == 0 then
+--             t[3] = "0"
+--         else
+--          -- t[3] = f(sy)
+--             t[3] = h[sy]
+--         end
+--         t[5] = f(tx)
+--         t[6] = f(ty)
+--         return concat(t," ")
+--     end
+-- end
 
-directives.register("backend.pdf.accurate", function()
-    f_cm = formatters["%.9N %.9N %.9N %.9N %.9N %.9N cm"]
-    f_cz = formatters["%.9N 0 0 %.9N %.9N %.9N cm"]
- -- f_tm = formatters["%.9N %.9N %.9N %.9N %.9N %.9N Tm"]
-    f_tm = formatters["%.9N 0 %.9N %.9N %.9N %.9N Tm"]
+directives.register("backend.pdf.accurate", function() -- .9N is default
+    f_cm = formatting("%N %N %N %N %N %N cm")
+    f_cz = formatting("%N 0 0 %N %N %N cm")
+ -- f_tm = formatting("%N %N %N %N %N %N Tm")
+    f_tm = formatting("%N 0 %N %N %N %N Tm")
 end)
 
 local saved_text_pos_v = 0
@@ -473,8 +476,8 @@ end
 local function pdf_set_pos(h,v)
     local move = calc_pdfpos(h,v)
     if move then
-     -- b = b + 1 ; buffer[b] = f_cm(cmrx, cmsx, cmsy, cmry, cmtx*bpfactor, cmty*bpfactor)
-        b = b + 1 ; buffer[b] = f_cz(cmrx, cmry,             cmtx*bpfactor, cmty*bpfactor)
+     -- b = b + 1 ; buffer[b] = formatted(f_cm,cmrx, cmsx, cmsy, cmry, cmtx*bpfactor, cmty*bpfactor)
+        b = b + 1 ; buffer[b] = formatted(f_cz,cmrx, cmry,             cmtx*bpfactor, cmty*bpfactor)
         pdf_h = pdf_h + cmtx
         pdf_v = pdf_v + cmty
     end
@@ -506,8 +509,8 @@ local function pdf_reset_pos()
             return
         end
     end
- -- b = b + 1 ; buffer[b] = f_cm(cmrx, cmsx, cmsy, cmry, cmtx*bpfactor, cmty*bpfactor)
-    b = b + 1 ; buffer[b] = f_cz(cmrx,             cmry, cmtx*bpfactor, cmty*bpfactor)
+ -- b = b + 1 ; buffer[b] = formatted(f_cm,cmrx, cmsx, cmsy, cmry, cmtx*bpfactor, cmty*bpfactor)
+    b = b + 1 ; buffer[b] = formatted(f_cz,cmrx,             cmry, cmtx*bpfactor, cmty*bpfactor)
     pdf_h = pdf_h + cmtx
     pdf_v = pdf_v + cmty
 end
@@ -515,8 +518,8 @@ end
 local function pdf_set_pos_temp(h,v)
     local move = calc_pdfpos(h,v)
     if move then
-     -- b = b + 1 ; buffer[b] = f_cm(cmrx, cmsx, cmsy, cmry, cmtx*bpfactor, cmty*bpfactor)
-        b = b + 1 ; buffer[b] = f_cz(cmrx,             cmry, cmtx*bpfactor, cmty*bpfactor)
+     -- b = b + 1 ; buffer[b] = formatted(f_cm,cmrx, cmsx, cmsy, cmry, cmtx*bpfactor, cmty*bpfactor)
+        b = b + 1 ; buffer[b] = formatted(f_cz,cmrx,             cmry, cmtx*bpfactor, cmty*bpfactor)
     end
 end
 
@@ -784,13 +787,13 @@ tmry             = 1
 
     end
 
-    local f_width = formatters["%.6N w"]
-    local f_mode  = formatters["%i Tr"]        -- can be hash
-    local f_font  = formatters["/F%i 10 Tf"]
-    local f_skip  = formatters["%.2N"]
+    local f_width = formatting("%.6N w")
+    local f_mode  = formatting("%i Tr")
+    local f_font  = formatting("/F%i 10 Tf")
+    local f_skip  = formatting("%.2N")
 
-    local h_font = setmetatableindex(function(t,k) local v = f_font(k) t[k] = v return v end)
-    local h_skip = setmetatableindex(function(t,k) local v = f_skip(k) t[k] = v return v end)
+    local h_font = setmetatableindex(function(t,k) local v = formatted(f_font,k) t[k] = v return v end)
+    local h_skip = setmetatableindex(function(t,k) local v = formatted(f_skip,k) t[k] = v return v end)
 
     local s_width <const> = "0 w"
     local s_mode  <const> = "0 Tr"
@@ -802,7 +805,7 @@ tmry             = 1
     local function set_font()
      -- if need_width and need_width ~= 0 then
         if need_width ~= 0 then
-            b = b + 1 ; buffer[b] = f_width(width_factor*need_width)
+            b = b + 1 ; buffer[b] = formatted(f_width,width_factor*need_width)
             done_width = true
         elseif done_width then
             b = b + 1 ; buffer[b] = s_width
@@ -810,7 +813,7 @@ tmry             = 1
         end
      -- if need_mode and need_mode ~= 0 then
         if need_mode ~= 0 then
-            b = b + 1 ; buffer[b] = f_mode(need_mode)
+            b = b + 1 ; buffer[b] = formatted(f_mode,need_mode)
             done_mode = true
         elseif done_mode then
             b = b + 1 ; buffer[b] = s_mode
@@ -818,7 +821,7 @@ tmry             = 1
         end
         -- no need when the same
         if need_font or last_pdf ~= current_pdf then
---             b = b + 1 ; buffer[b] = f_font(current_pdf)
+         -- b = b + 1 ; buffer[b] = formatted(f_font,current_pdf)
             b = b + 1 ; buffer[b] = h_font[current_pdf]
             last_pdf  = current_pdf
             need_font = false
@@ -831,8 +834,8 @@ tmry             = 1
     local function set_textmatrix(h,v)
        local move = calc_pdfpos(h,v)
        if need_tm or move then
-         -- b = b + 1 ; buffer[b] = f_tm(tmrx, tmsx, tmsy, tmry, tmtx*bpfactor, tmty*bpfactor)
-            b = b + 1 ; buffer[b] = f_tm(tmrx,       tmsy, tmry, tmtx*bpfactor, tmty*bpfactor)
+         -- b = b + 1 ; buffer[b] = formatted(f_tm,tmrx, tmsx, tmsy, tmry, tmtx*bpfactor, tmty*bpfactor)
+            b = b + 1 ; buffer[b] = formatted(f_tm,tmrx,       tmsy, tmry, tmtx*bpfactor, tmty*bpfactor)
             pdf_h = saved_text_pos_h + tmtx
             pdf_v = saved_text_pos_v + tmty
             need_tm = false
@@ -929,7 +932,7 @@ tmry             = 1
                     -- ok for text with not too long words where spaces synchronize
                  -- b = b + 1 ; buffer[b] = round(d) -- or f_skip(d)
                     -- better for extensibles and incredible long words
---                     b = b + 1 ; buffer[b] = f_skip(d)
+                 -- b = b + 1 ; buffer[b] = f_skip(d)
                     b = b + 1 ; buffer[b] = h_skip[d]
                 end
                 tj_position = tj_position - tj_delta
@@ -1114,8 +1117,8 @@ do
     local nodeproperties = nodes.properties.data
 
     local s_matrix_0 <const> = "1 0 0 1 0 0 cm"
-    local f_matrix_2         = formatters["%.6N 0 0 %.6N 0 0 cm"]
-    local f_matrix_4         = formatters["%.6N %.6N %.6N %.6N 0 0 cm"]
+    local f_matrix_2         = formatting("%.6N 0 0 %.6N 0 0 cm")
+    local f_matrix_4         = formatting("%.6N %.6N %.6N %.6N 0 0 cm")
 
     local flushsetmatrix = function(current,pos_h,pos_v)
         local p = nodeproperties[current]
@@ -1145,10 +1148,10 @@ do
                     if rx == 1 and ry == 1 then
                         s = s_matrix_0
                     else
-                        s = f_matrix_2(rx,ry)
+                        s = formatted(f_matrix_2,rx,ry)
                     end
                 else
-                    s = f_matrix_4(rx,sx,sy,ry)
+                    s = formatted(f_matrix_4,rx,sx,sy,ry)
                 end
                 --
                 if shippingmode == "page" then
@@ -1268,9 +1271,8 @@ do
 
     flushers.startclipping = function(current,pos_h,pos_v)
         flushsave(current,pos_h,pos_v)
-     -- lpdf.print("origin",formatters["0 w %s W n"](nodeproperties[current].path))
         pdf_goto_pagemode()
-        b = b + 1 ; buffer[b] = formatters["0 w %s W n"](nodeproperties[current].path)
+        b = b + 1 ; buffer[b] = formatted("0 w %s W n",nodeproperties[current].path)
     end
 
     flushers.stopclipping = function(current,pos_h,pos_v)
@@ -1340,30 +1342,30 @@ do
 
     local processrule       = nodes.rules.process
 
-    local f_fm = formatters["/Fm%d Do"]
-    local f_im = formatters["/Im%d Do"]
-    local f_gr = formatters["/Gp%d Do"]
-    local f_st = formatters["/Gs%d gs"]
+    local f_fm = "/Fm%d Do"
+    local f_im = "/Im%d Do"
+    local f_gr = "/Gp%d Do"
+    local f_st = "/Gs%d gs"
 
     local s_b <const> = "q"
     local s_e <const> = "Q"
 
-    local f_v   = formatters["[] 0 d 0 J %.6N w 0 0 m %.6N 0 l S"]
-    local f_h   = formatters["[] 0 d 0 J %.6N w 0 0 m 0 %.6N l S"]
+    local f_v   = formatting("[] 0 d 0 J %.6N w 0 0 m %.6N 0 l S")
+    local f_h   = formatting("[] 0 d 0 J %.6N w 0 0 m 0 %.6N l S")
 
-    local f_f   = formatters["0 0 %.6N %.6N re f"]
-    local f_o   = formatters["[] 0 d 0 J 0 0 %.6N %.6N re S"]
-    local f_w   = formatters["[] 0 d 0 J %.6N w 0 0 %.6N %.6N re S"]
+    local f_f   = formatting("0 0 %.6N %.6N re f")
+    local f_o   = formatting("[] 0 d 0 J 0 0 %.6N %.6N re S")
+    local f_w   = formatting("[] 0 d 0 J %.6N w 0 0 %.6N %.6N re S")
 
-    local f_b   = formatters["%.6N w 0 %.6N %.6N %.6N re f"]
-    local f_x   = formatters["[] 0 d 0 J %.6N w %.6N %.6N %.6N %.6N re S"]
-    local f_y   = formatters["[] 0 d 0 J %.6N w %.6N %.6N %.6N %.6N re S %.6N 0 m %.6N 0 l S"]
+    local f_b   = formatting("%.6N w 0 %.6N %.6N %.6N re f")
+    local f_x   = formatting("[] 0 d 0 J %.6N w %.6N %.6N %.6N %.6N re S")
+    local f_y   = formatting("[] 0 d 0 J %.6N w %.6N %.6N %.6N %.6N re S %.6N 0 m %.6N 0 l S")
 
- -- local f_v_d = formatters["[%.6N %.6N] 0 d 0 J %.6N w 0 0 m %.6N 0 l S"]
- -- local f_h_d = formatters["[%.6N %.6N] 0 d 0 J %.6N w 0 0 m 0 %.6N l S"]
+ -- local f_v_d = formatting("[%.6N %.6N] 0 d 0 J %.6N w 0 0 m %.6N 0 l S")
+ -- local f_h_d = formatting("[%.6N %.6N] 0 d 0 J %.6N w 0 0 m 0 %.6N l S")
 
-    local f_d_h = formatters["[%.6N %.6N] 0 d 0 J %.6N w 0 %.6N m %.6N %.6N l S"]
-    local f_d_v = formatters["[%.6N %.6N] 0 d 0 J %.6N w %.6N 0 m %.6N %.6N l S"]
+    local f_d_h = formatting("[%.6N %.6N] 0 d 0 J %.6N w 0 %.6N m %.6N %.6N l S")
+    local f_d_v = formatting("[%.6N %.6N] 0 d 0 J %.6N w %.6N 0 m %.6N %.6N l S")
 
     -- Historically the index is an object which is kind of bad.
 
@@ -1492,9 +1494,9 @@ do
         local tx = cmtx * bpfactor
         local ty = cmty * bpfactor
         b = b + 1 ; buffer[b] = s_b
-     -- b = b + 1 ; buffer[b] = f_cm(rx,0,0,ry,tx,ty)
-        b = b + 1 ; buffer[b] = f_cz(rx,    ry,tx,ty)
-        b = b + 1 ; buffer[b] = f_fm(name)
+     -- b = b + 1 ; buffer[b] = formatted(f_cm,rx,0,0,ry,tx,ty)
+        b = b + 1 ; buffer[b] = formatted(f_cz,rx,    ry,tx,ty)
+        b = b + 1 ; buffer[b] = formatted(f_fm,name)
         b = b + 1 ; buffer[b] = s_e
     end
 
@@ -1552,7 +1554,7 @@ do
             groups = groups + 1
             usedxgroups[groups] = objnum
             local kind = detail and detail.type == "luminosity"
-            local result = f_gr(groups)
+            local result = formatted(f_gr,groups)
             if not detail then
                 -- nothing special
             elseif detail.type == "luminosity" then
@@ -1571,7 +1573,7 @@ do
                     }
                     states = states + 1
                     lpdf.adddocumentextgstate("Gs" .. states,pdfreference(pdfflushobject(state)))
-                    names[detail.name or "default"] = f_st(states)
+                    names[detail.name or "default"] = formatted(f_st,states)
                     return
                 elseif action == "apply" then
                     local name  = detail.name or "default"
@@ -1694,8 +1696,8 @@ do
         ty = cmty * bpfactor
 
         b = b + 1 ; buffer[b] = s_b
-        b = b + 1 ; buffer[b] = f_cm(rx,sx,sy,ry,tx,ty)
-        b = b + 1 ; buffer[b] = f_im(index)
+        b = b + 1 ; buffer[b] = formatted(f_cm,rx,sx,sy,ry,tx,ty)
+        b = b + 1 ; buffer[b] = formatted(f_im,index)
         b = b + 1 ; buffer[b] = s_e
     end
 
@@ -1729,8 +1731,8 @@ do
         ty = cmty * bpfactor
 
         b = b + 1 ; buffer[b] = s_b
-        b = b + 1 ; buffer[b] = f_cm(rx,sx,sy,ry,tx,ty)
-        b = b + 1 ; buffer[b] = f_im(index)
+        b = b + 1 ; buffer[b] = formatted(f_cm,rx,sx,sy,ry,tx,ty)
+        b = b + 1 ; buffer[b] = formatted(f_im,index)
         b = b + 1 ; buffer[b] = s_e
     end
 
@@ -1786,9 +1788,9 @@ do
             local linewidth = getdata(current)
             pdf_set_pos_temp(pos_h,pos_v)
             if linewidth > 0 then
-                rule = f_w(linewidth * bpfactor,dim_h,dim_v)
+                rule = formatted(f_w,linewidth * bpfactor,dim_h,dim_v)
             else
-                rule = f_o(dim_h,dim_v)
+                rule = formatted(f_o,dim_h,dim_v)
             end
         elseif on ~= 0 and off ~= 0 then -- and subtype ~= strutrule_code
             local options    = getoptions(current)
@@ -1805,22 +1807,22 @@ do
                 local offset = dim_v/2
                 on, off = onoff(on,off,dim_h)
                 pdf_set_pos_temp(pos_h,pos_v)
-                rule = f_d_h(on,off,dim_v,offset,dim_h,offset)
+                rule = formatted(f_d_h,on,off,dim_v,offset,dim_h,offset)
             else
                 local offset = dim_h/2
                 on, off = onoff(on,off,dim_v)
                 pdf_set_pos_temp(pos_h,pos_v)
-                rule = f_d_v(on,off,dim_h,offset,offset,dim_v)
+                rule = formatted(f_d_v,on,off,dim_h,offset,offset,dim_v)
             end
         elseif dim_v <= one_bp then
             pdf_set_pos_temp(pos_h,pos_v + 0.5 * size_v)
-            rule = f_v(dim_v,dim_h)
+            rule = formatted(f_v,dim_v,dim_h)
         elseif dim_h <= one_bp then
             pdf_set_pos_temp(pos_h + 0.5 * size_h,pos_v)
-            rule = f_h(dim_h,dim_v)
+            rule = formatted(f_h,dim_h,dim_v)
         else
             pdf_set_pos_temp(pos_h,pos_v)
-            rule = f_f(dim_h,dim_v)
+            rule = formatted(f_f,dim_h,dim_v)
         end
 
         b = b + 1 ; buffer[b] = rule
@@ -1839,13 +1841,13 @@ do
 
         if dim_v <= one_bp then
             pdf_set_pos_temp(pos_h,pos_v + 0.5 * size_v)
-            rule = f_v(dim_v,dim_h)
+            rule = formatted(f_v,dim_v,dim_h)
         elseif dim_h <= one_bp then
             pdf_set_pos_temp(pos_h + 0.5 * size_h,pos_v)
-            rule = f_h(dim_h,dim_v)
+            rule = formatted(f_h,dim_h,dim_v)
         else
             pdf_set_pos_temp(pos_h,pos_v)
-            rule = f_f(dim_h,dim_v)
+            rule = formatted(f_f,dim_h,dim_v)
         end
 
         b = b + 1 ; buffer[b] = rule
@@ -1870,12 +1872,12 @@ do
             local w =  width - line
             local t =  total - line
             if baseline and w > 0 then
-                rule = f_y(line,half,d,w,t,half,w)
+                rule = formatted(f_y,line,half,d,w,t,half,w)
             else
-                rule = f_x(line,half,d,w,t)
+                rule = formatted(f_x,line,half,d,w,t)
             end
         else
-            rule = f_b(line,-depth,width,total)
+            rule = formatted(f_b,line,-depth,width,total)
         end
         pdf_set_pos_temp(pos_h,pos_v)
 
@@ -2388,7 +2390,7 @@ do
 
     statistics.register("pdf pagestream",function()
         if oldsize ~= newsize then
-            return string.format("old size: %i, new size %i",oldsize,newsize)
+            return formatted("old size: %i, new size %i",oldsize,newsize)
         end
     end)
 
@@ -2408,12 +2410,11 @@ local finalize  do
     local ceil  = math.ceil
     local floor = math.floor
 
-    local f_font  = formatters["F%d"]
-
-    local f_form  = formatters["Fm%d"]
-    local f_group = formatters["Gp%d"]
-    local f_image = formatters["Im%d"]
-    local f_state = formatters["Gs%d"]
+    local f_font  = "F%d"
+    local f_form  = "Fm%d"
+    local f_group = "Gp%d"
+    local f_image = "Im%d"
+    local f_state = "Gs%d"
 
     local function checkedbox(mediabox,otherbox,what)
         if otherbox and #mediabox == 4 and #otherbox == 4 then
@@ -2482,7 +2483,7 @@ local finalize  do
         if next(usedfonts) then
             fonts = pdfdictionary { }
             for k, v in next, usedfonts do
-                fonts[f_font(v)] = pdfreference(usedfontobjects[k]) -- we can overload for testing
+                fonts[formatted(f_font,v)] = pdfreference(usedfontobjects[k]) -- we can overload for testing
             end
         end
 
@@ -2492,13 +2493,13 @@ local finalize  do
         if next(usedxforms) or next(usedximages) or next(usedxgroups) then
             xforms = pdfdictionary { }
             for k in sortedhash(usedxforms) do
-                xforms[f_form(getxformname(k))] = pdfreference(k)
+                xforms[formatted(f_form,getxformname(k))] = pdfreference(k)
             end
             for k, v in sortedhash(usedximages) do
-                xforms[f_image(k)] = pdfreference(v)
+                xforms[formatted(f_image,k)] = pdfreference(v)
             end
             for k, v in sortedhash(usedxgroups) do
-                xforms[f_group(k)] = pdfreference(v)
+                xforms[formatted(f_group,k)] = pdfreference(v)
             end
         end
 
@@ -2680,19 +2681,19 @@ local info          = ""
 local catalog       = ""
 local lastdeferred  = false
 
-local f_object       = formatters["%i 0 obj\010%s\010endobj\010"]
-local f_stream_n_u   = formatters["%i 0 obj\010<< /Length %i >>\010stream\010%s\010endstream\010endobj\010"]
-local f_stream_n_c   = formatters["%i 0 obj\010<< /Filter /FlateDecode /Length %i >>\010stream\010%s\010endstream\010endobj\010"]
-local f_stream_d_u   = formatters["%i 0 obj\010<< %s /Length %i >>\010stream\010%s\010endstream\010endobj\010"]
-local f_stream_d_c   = formatters["%i 0 obj\010<< %s /Filter /FlateDecode /Length %i >>\010stream\010%s\010endstream\010endobj\010"]
-local f_stream_d_r   = formatters["%i 0 obj\010<< %s >>\010stream\010%s\010endstream\010endobj\010"]
+local f_object       = formatting("%i 0 obj\010%s\010endobj\010")
+local f_stream_n_u   = formatting("%i 0 obj\010<< /Length %i >>\010stream\010%s\010endstream\010endobj\010")
+local f_stream_n_c   = formatting("%i 0 obj\010<< /Filter /FlateDecode /Length %i >>\010stream\010%s\010endstream\010endobj\010")
+local f_stream_d_u   = formatting("%i 0 obj\010<< %s /Length %i >>\010stream\010%s\010endstream\010endobj\010")
+local f_stream_d_c   = formatting("%i 0 obj\010<< %s /Filter /FlateDecode /Length %i >>\010stream\010%s\010endstream\010endobj\010")
+local f_stream_d_r   = formatting("%i 0 obj\010<< %s >>\010stream\010%s\010endstream\010endobj\010")
 
------ f_object_b     = formatters["%i 0 obj\010"]
-local f_stream_b_n_u = formatters["%i 0 obj\010<< /Length %i >>\010stream\010"]
-local f_stream_b_n_c = formatters["%i 0 obj\010<< /Filter /FlateDecode /Length %i >>\010stream\010"]
-local f_stream_b_d_u = formatters["%i 0 obj\010<< %s /Length %i >>\010stream\010"]
-local f_stream_b_d_c = formatters["%i 0 obj\010<< %s /Filter /FlateDecode /Length %i >>\010stream\010"]
-local f_stream_b_d_r = formatters["%i 0 obj\010<< %s >>\010stream\010"]
+----- f_object_b     = formatting("%i 0 obj\010")
+local f_stream_b_n_u = formatting("%i 0 obj\010<< /Length %i >>\010stream\010")
+local f_stream_b_n_c = formatting("%i 0 obj\010<< /Filter /FlateDecode /Length %i >>\010stream\010")
+local f_stream_b_d_u = formatting("%i 0 obj\010<< %s /Length %i >>\010stream\010")
+local f_stream_b_d_c = formatting("%i 0 obj\010<< %s /Filter /FlateDecode /Length %i >>\010stream\010")
+local f_stream_b_d_r = formatting("%i 0 obj\010<< %s >>\010stream\010")
 
 ----- s_object_e <const> = "\010endobj\010"
 local s_stream_e <const> = "\010endstream\010endobj\010"
@@ -2832,7 +2833,7 @@ local addtocache, flushcache, cache do
                 data = encryptstream(data)
                 size = #data
             end
-            local b = fb(cache,strobj(),size)
+            local b = formatted(fb,cache,strobj(),size)
             local e = s_stream_e
             flush(f,b)
             flush(f,data)
@@ -2946,7 +2947,6 @@ do
         if compressed == "raw" then
             compressed = false
             nolength   = true
-         -- data       = string.formatters["<< %s >>stream\n%s\nendstream"](attr,data)
         end
 
         return pdfdeferredobject {
@@ -3056,7 +3056,7 @@ local function flushnormalobj(data,n)
     if encryptobject then
         data = encryptobject(data)
     end
-    data = f_object(n,data)
+    data = formatted(f_object,n,data)
     if level == 0 then
         objects[n] = offset
         offset = offset + #data
@@ -3133,7 +3133,7 @@ local flushstreamobj, streamstatus do
             local b = nil
             local e = s_stream_e
             if nolength then
-                b = f_stream_b_d_r(n,dict) -- raw object, already treated
+                b = formatted(f_stream_b_d_r,n,dict) -- raw object, already treated
                 if encryptstream then
                  -- print("check length, case 2")
                     data = encryptstream(data)
@@ -3161,10 +3161,10 @@ local flushstreamobj, streamstatus do
                     size = #data
                 end
                 if comp then
-                    b = dict and f_stream_b_d_c(n,dict,size) or f_stream_b_n_c(n,size)
+                    b = dict and formatted(f_stream_b_d_c,n,dict,size) or formatted(f_stream_b_n_c,n,size)
                     compressed = compressed + 1
                 else
-                    b = dict and f_stream_b_d_u(n,dict,size) or f_stream_b_n_u(n,size)
+                    b = dict and formatted(f_stream_b_d_u,n,dict,size) or formatted(f_stream_b_n_u,n,size)
                     notcompressed = notcompressed + 1
                 end
             end
@@ -3181,7 +3181,7 @@ local flushstreamobj, streamstatus do
                     size = #data
                 end
                 dict = updatelength(dict,size)
-                data = f_stream_d_r(n,dict,data) -- raw object, already treated
+                data = formatted(f_stream_d_r,n,dict,data) -- raw object, already treated
                 uncompressed = uncompressed + 1
             else
                 if comp then
@@ -3203,10 +3203,10 @@ local flushstreamobj, streamstatus do
                     size = #data
                 end
                 if comp then
-                    data = dict and f_stream_d_c(n,dict,size,data) or f_stream_n_c(n,size,data)
+                    data = dict and formatted(f_stream_d_c,n,dict,size,data) or formatted(f_stream_n_c,n,size,data)
                     compressed = compressed + 1
                 else
-                    data = dict and f_stream_d_u(n,dict,size,data) or f_stream_n_u(n,size,data)
+                    data = dict and formatted(f_stream_d_u,n,dict,size,data) or formatted(f_stream_n_u,n,size,data)
                     notcompressed = notcompressed + 1
                 end
             end
@@ -3335,15 +3335,15 @@ local openfile, closefile  do
     -- (say xml) would be even larger let alone memory consumption for the internal data structures
     -- and processing power needed for dealing with rendering and editing and such.
 
-    local f_used       = formatters["%010i 00000 n\013\010"]
-    local f_link       = formatters["%010i 00000 f\013\010"]
-    local f_first      = formatters["%010i 65535 f\013\010"]
+    local f_used       = formatting("%010i 00000 n\013\010")
+    local f_link       = formatting("%010i 00000 f\013\010")
+    local f_first      = formatting("%010i 65535 f\013\010")
 
-    local f_pdf_tag    = formatters["%%PDF-%i.%i\010"]
-    local f_xref       = formatters["xref\0100 %i\010"]
-    local f_trailer_id = formatters["trailer\010<< %s /ID [ <%s> <%s> ] >>\010startxref\010%i\010%%%%EOF"]
-    local f_trailer_no = formatters["trailer\010<< %s >>\010startxref\010%i\010%%%%EOF"]
-    local f_startxref  = formatters["startxref\010%i\010%%%%EOF"]
+    local f_pdf_tag    = formatting("%%PDF-%i.%i\010")
+    local f_xref       = formatting("xref\0100 %i\010")
+    local f_trailer_id = formatting("trailer\010<< %s /ID [ <%s> <%s> ] >>\010startxref\010%i\010%%%%EOF")
+    local f_trailer_no = formatting("trailer\010<< %s >>\010startxref\010%i\010%%%%EOF")
+    local f_startxref  = formatting("startxref\010%i\010%%%%EOF")
 
     local inmemory = false
     local close    = false
@@ -3422,7 +3422,7 @@ local openfile, closefile  do
                 return f:seek("end")
             end
         end
-        local version = f_pdf_tag(majorversion,minorversion)
+        local version = formatted(f_pdf_tag,majorversion,minorversion)
         flush(f,version)
         flush(f,banner)
         offset   = offset + #version + #banner
@@ -3674,6 +3674,7 @@ local openfile, closefile  do
              --     else
              --         xref.Filter = pdfconstant("Crypt") -- identity
              --     end
+             --    -- wrong: overloads previous
              --     fb = f_stream_b_d_u
              -- else
                     if compress then
@@ -3690,10 +3691,10 @@ local openfile, closefile  do
                     end
              -- end
                 -- no encryption of data here
-                flush(f,fb(nofobjects,xref(),size))
+                flush(f,formatted(fb,nofobjects,xref(),size))
                 flush(f,data)
                 flush(f,s_stream_e)
-                flush(f,f_startxref(xrefoffset))
+                flush(f,formatted(f_startxref,xrefoffset))
             else
                 flushdeferred()
                 --
@@ -3708,7 +3709,7 @@ local openfile, closefile  do
              -- end
                 --
                 xrefoffset = offset
-                flush(f,f_xref(nofobjects+1))
+                flush(f,formatted(f_xref,nofobjects+1))
                 local trailer = pdfdictionary {
                     Size    = nofobjects + 1,
                     Root    = catalog,
@@ -3721,26 +3722,26 @@ local openfile, closefile  do
 -- if o < 0 then
 --     o = -o
 -- end
-                       objects[i] = f_used(o)
+                       objects[i] = formatted(f_used,o)
                     end
                 end
                 for i=nofobjects,1,-1 do
                     local o = objects[i]
                     if not o then
-                        objects[i] = f_link(lastfree)
+                        objects[i] = formatted(f_link,lastfree)
                         lastfree   = i
                     end
                 end
-                objects[0] = f_first(lastfree)
+                objects[0] = formatted(f_first,lastfree)
                 flush(f,concat(objects,"",0,nofobjects))
                 trailer.Size = nofobjects + 1
                 if trailerid then
-                    flush(f,f_trailer_id(trailer(),trailerid,trailerid,xrefoffset))
+                    flush(f,formatted(f_trailer_id,trailer(),trailerid,trailerid,xrefoffset))
                 else
-                    flush(f,f_trailer_no(trailer(),xrefoffset))
+                    flush(f,formatted(f_trailer_no,trailer(),xrefoffset))
                 end
             end
-            update(f,f_pdf_tag(majorversion,minorversion)) -- check this
+            update(f,formatted(f_pdf_tag,majorversion,minorversion)) -- check this
             usedsize = getsize(f)
             close(f)
             io.flush()
@@ -3961,7 +3962,7 @@ do
                 local status = streamstatus()
                 local outputfilename = environment.outputfilename or environment.jobname or tex.jobname or "<unset>"
                 outputfilename = gsub(outputfilename,"^%./+","") -- todo: make/use a helper
-                return string.format(
+                return formatted(
                     "%s.pdf, compresslevel %s, objectcompresslevel %s, %i streams, %i uncompressed, %i compressed, %i not compressed, threshold %i",
                     outputfilename,
                     status.compresslevel,

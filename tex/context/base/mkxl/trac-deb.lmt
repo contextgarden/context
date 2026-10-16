@@ -12,7 +12,7 @@ if not modules then modules = { } end modules ['trac-deb'] = {
 local status = status
 
 local tonumber, tostring, type = tonumber, tostring, type
-local format, concat, match, find, gsub = string.format, table.concat, string.match, string.find, string.gsub
+local concat, match, find, gsub = table.concat, string.match, string.find, string.gsub
 
 local report_nl    = logs.newline
 local report_str   = logs.writer
@@ -21,6 +21,8 @@ tracers            = tracers or { }
 local tracers      = tracers
 
 local implement    = interfaces.implement
+
+local formatted    = string.formatted
 
 local ioflush      = io.flush
 local ioread       = io.read
@@ -115,9 +117,10 @@ function tracers.showlines(filename,linenumber,offset,luaerrorline)
             if stop > #lines then
                 return "<linenumber past end of file>"
             else
-                local result, fmt = { }, "%" .. #tostring(stop) .. "d %s  %s"
+                local result = { }
+                local fmt    = "%" .. #tostring(stop) .. "d %s  %s"
                 for n=start,stop do
-                    result[#result+1] = format(fmt,n,n == linenumber and ">>" or "  ",lines[n])
+                    result[#result+1] = formatted(fmt,n,n == linenumber and ">>" or "  ",lines[n])
                 end
                 return concat(result,"\n")
             end

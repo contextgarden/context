@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['mlib-ptr'] = {
 
 -- too: use string.packrowsandcolumns
 
-local formatters, gsub, sub = string.formatters, string.gsub, string.sub
+local gsub, sub = string.gsub, string.sub
 local concat, setmetatableindex = table.concat, table.setmetatableindex
 
 local trace_result = false  trackers.register("potrace.results", function(v) trace_result = v end)
@@ -100,9 +100,12 @@ local potraceflush, potracechecked, potraceconvert do
     ----- setparameter    = metapost.setparameter
     local mpprint         = mp.print
 
-    local f_moveto  = formatters["(%N,%N)"]
-    local f_lineto  = formatters["--(%N,%N)"]
-    local f_curveto = formatters["..controls(%N,%N)and(%N,%N)..(%N,%N)"]
+    local formatting      = string.formatting
+    local formatted       = string.formatted
+
+    local f_moveto  = formatting("(%N,%N)")
+    local f_lineto  = formatting("--(%N,%N)")
+    local f_curveto = formatting("..controls(%N,%N)and(%N,%N)..(%N,%N)")
 
     potraceflush = function(t,alternative,polygon)
         local result, r, add
@@ -116,23 +119,23 @@ local potraceflush, potracechecked, potraceconvert do
             if polygon then
                 add = function(before,ti,after)
                     r = r + 1 ; result[r] = before
-                    r = r + 1 ; result[r] = f_moveto(ti[1],ti[2])
+                    r = r + 1 ; result[r] = formatted(f_moveto,ti[1],ti[2])
                     for i=3,#ti,2 do
-                        r = r + 1 ; result[r] = f_lineto(ti[i],ti[i+1])
+                        r = r + 1 ; result[r] = formatted(f_lineto,ti[i],ti[i+1])
                     end
                     r = r + 1 ; result[r] = after
                 end
             else
                 add = function(before,ti,after)
                     r = r + 1 ; result[r] = before
-                    r = r + 1 ; result[r] = f_moveto(ti[1][1],ti[1][2])
+                    r = r + 1 ; result[r] = formatted(f_moveto,ti[1][1],ti[1][2])
                     for i=2,#ti do
                         local ti = ti[i]
                         local ni = #ti
                         if ni == 2 then
-                            r = r + 1 ; result[r] = f_lineto(ti[1],ti[2])
+                            r = r + 1 ; result[r] = formatted(f_lineto,ti[1],ti[2])
                         elseif ni == 6 then
-                            r = r + 1 ; result[r] = f_curveto(ti[3],ti[4],ti[5],ti[6],ti[1],ti[2])
+                            r = r + 1 ; result[r] = formatted(f_curveto,ti[3],ti[4],ti[5],ti[6],ti[1],ti[2])
                         end
                     end
                     r = r + 1 ; result[r] = after

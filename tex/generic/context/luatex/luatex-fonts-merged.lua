@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2026-10-01 18:37
+-- merge date  : 2026-10-16 09:37
 
 do -- begin closure to overcome local limits and interference
 
@@ -3150,7 +3150,7 @@ if not modules then modules={} end modules ['util-str']={
 utilities=utilities or {}
 utilities.strings=utilities.strings or {}
 local strings=utilities.strings
-local format,gsub,rep,sub,find,char,byte=string.format,string.gsub,string.rep,string.sub,string.find,string.char,string.byte
+local format,gsub,match,rep,sub,find,char,byte=string.format,string.gsub,string.match,string.rep,string.sub,string.find,string.char,string.byte
 local load,dump=load,string.dump
 local tonumber,type,tostring,next,setmetatable,rawset=tonumber,type,tostring,next,setmetatable,rawset
 local unpack,concat=table.unpack,table.concat
@@ -3602,6 +3602,10 @@ local environment={
  stripzeros=patterns.stripzeros,
  escapedquotes=string.escapedquotes,
  FORMAT=string.f6,
+ FD=string.fd,
+ FD3=string.fd3,
+ FD6=string.fd6,
+ FD9=string.fd9,
  nspaces=hashes.spaces,
  X00=hashes.X00,
  X02=false,
@@ -3876,7 +3880,30 @@ local format_n=function()
  n=n+1
  return format("((a%s %% 1 == 0) and format('%%i',a%s) or tostring(a%s))",n,n,n)
 end
-local format_N  if environment.FORMAT then
+local format_N
+if environment.FD then
+ format_N=function(f)
+  n=n+1
+  if not f or f=="" then
+   return format("FD(a%s,9)",n)
+  end
+  if type(f)=="string" then
+   f=tonumber(match(f,"[^%d]*([%d+])f?"))
+  end
+  if type(f)=="number" then
+   if f==3 then
+    return format("FD3(a%s)",n)
+   elseif f==6 then
+    return format("FD6(a%s)",n)
+   elseif f==9 then
+    return format("FD9(a%s)",n)
+   elseif f>=1 and f<=20 then
+    return format("FD(a%s,%i)",n,f//1)
+   end
+  end
+  return format("FD(a%s)",n)
+ end
+elseif environment.FORMAT then
  format_N=function(f)
   n=n+1
   if not f or f=="" then
@@ -13126,11 +13153,12 @@ local function loadfont(specification,n,instance)
   return result
  end
 end
-function readers.loadshapes(filename,n,instance,streams)
+function readers.loadshapes(filename,n,instance,streams,keephints)
  local fontdata=loadfont {
   filename=filename,
   shapes=true,
   streams=streams,
+  keephints=keephints,
   variable=true,
   subfont=n,
   instance=instance,
@@ -13160,6 +13188,7 @@ function readers.loadshapes(filename,n,instance,streams)
   maximumprofile=fontdata.maximumprofile,
   names=fontdata.names,
   postscript=fontdata.postscript,
+  hinttables=fontdata.hinttables,
  } or {
   filename=filename,
   format="unknown",
@@ -21603,7 +21632,7 @@ local trace_defining=false  registertracker("fonts.defining",function(v) trace_d
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.156 
+otf.version=3.158 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pngcache=containers.define("fonts","png",otf.version,true)
@@ -35921,8 +35950,8 @@ local function enhance_add_extra_kerns(rawdata)
     if kerns then
      local extrakerns
      for complex,simple in next,what do
-      complex=unicodes[complex]
-      simple=unicodes[simple]
+      local complex=unicodes[complex]
+      local simple=unicodes[simple]
       if complex and simple then
        local ks=kerns[simple]
        if ks and not kerns[complex] then
@@ -35944,8 +35973,8 @@ local function enhance_add_extra_kerns(rawdata)
  local function do_it_copy(what)
   if what then
    for complex,simple in next,what do
-    complex=unicodes[complex]
-    simple=unicodes[simple]
+    local complex=unicodes[complex]
+    local simple=unicodes[simple]
     if complex and simple then
      local complexdescription=descriptions[complex]
      if complexdescription then 

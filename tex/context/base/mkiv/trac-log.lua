@@ -55,6 +55,13 @@ formatters.add (
     [[utfchar(%s) .. " (U+" .. format("%%05X",%s) .. ")"]]
 )
 
+-- todo: make lmt file instead
+
+if sequencer then
+    sequencer.extensions.unichr = function(s) return formatters["%U (%C)"](s) end
+    sequencer.extensions.chruni = function(s) return formatters["%C (%U)"](s) end
+end
+
 -- basic loggers
 
 local function ignore() end

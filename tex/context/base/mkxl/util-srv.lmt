@@ -1,0 +1,187 @@
+if not modules then modules = { } end modules ["util-srv"] = {
+    version   = 1.002,
+    comment   = "companion to mtxrun.lmt",
+    author    = "Hans Hagen",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+if not server then
+    return
+end
+
+local rawget, type = rawget, type
+local match, lower = string.match, string.lower
+
+local report = logs.reporter("server")
+
+server.report = report
+
+server.mimetypes = {
+
+    -- web & scripting
+
+    css      = "text/css",
+    htm      = "text/html",
+    html     = "text/html",
+    js       = "text/javascript",
+    json     = "application/json",
+    mjs      = "text/javascript",
+    xml      = "text/xml",
+
+    -- tex, metapost, lua & context
+
+    cls      = "text/x-tex",
+    lmt      = "text/x-lua",
+    log      = "text/plain",
+ -- ltx      = "text/x-tex",
+    lua      = "text/x-lua",
+    mkiv     = "text/x-tex",
+    mkxl     = "text/x-tex",
+    mp       = "text/plain",
+    mpiv     = "text/plain",
+    mpxl     = "text/plain",
+ -- sty      = "text/x-tex",
+    tex      = "text/x-tex",
+
+    -- documents & office
+
+    asc      = "text/plain",
+    doc      = "application/msword",
+    dvi      = "application/x-dvi",
+    markdown = "text/markdown",
+    md       = "text/markdown",
+    pdf      = "application/pdf",
+    ppt      = "application/vnd.ms-powerpoint",
+    rtf      = "application/rtf",
+    txt      = "text/plain",
+    xls      = "application/vnd.ms-excel",
+
+    -- images & vector graphics
+
+    ai       = "application/postscript",
+    bmp      = "image/bmp",
+    eps      = "application/postscript",
+    gif      = "image/gif",
+    ico      = "image/x-icon",
+    jpeg     = "image/jpeg",
+    jpg      = "image/jpeg",
+    png      = "image/png",
+    ps       = "application/postscript",
+    svg      = "image/svg+xml",
+    tif      = "image/tiff",
+    tiff     = "image/tiff",
+    webp     = "image/webp",
+
+    -- web fonts
+
+    otf      = "font/otf",
+    ttf      = "font/ttf",
+    woff     = "font/woff",
+    woff2    = "font/woff2",
+
+    -- audio & video
+
+    avi      = "video/x-msvideo",
+    mov      = "video/quicktime",
+    mp3      = "audio/mpeg",
+    mp4      = "video/mp4",
+    mpeg     = "video/mpeg",
+    mpg      = "video/mpeg",
+    ogg      = "audio/ogg",
+    qt       = "video/quicktime",
+    webm     = "video/webm",
+
+    -- archives & compression
+
+    bz2      = "application/x-bzip2",
+    gz       = "application/gzip",
+    tar      = "application/x-tar",
+    tgz      = "application/x-tar",
+    zip      = "application/zip",
+
+    -- security & certificates
+
+    cer      = "application/pkix-cert",
+    crt      = "application/x-x509-ca-cert",
+    crl      = "application/pkix-crl",
+
+    -- generic binary & executables
+
+    bin      = "application/octet-stream",
+    exe      = "application/octet-stream",
+
+}
+
+table.setmetatableindex(server.mimetypes, function(t,k)
+    local suffix = match(match(k,"^([^?#]+)") or k,"%.?([%w_]+)$")
+    return suffix and rawget(t,lower(suffix)) or "application/octet-stream"
+end)
+
+-- print(server.mimetypes["jpg"])
+-- print(server.mimetypes["foo.pdf?page=1"])
+
+server.messages = {
+    [100] = "Continue",
+    [101] = "Switching Protocols",
+    [200] = "OK",
+    [201] = "Created",
+    [202] = "Accepted",
+    [203] = "Non-Authoritative Information",
+    [204] = "No Content",
+    [205] = "Reset Content",
+    [206] = "Partial Content",
+    [300] = "Multiple Choices",
+    [301] = "Moved Permanently",
+    [302] = "Found",
+    [303] = "See Other",
+    [304] = "Not Modified",
+    [305] = "Use Proxy",
+    [307] = "Temporary Redirect",
+    [400] = "Bad Request",
+    [401] = "Unauthorized",
+    [402] = "Payment Required",
+    [403] = "Forbidden",
+    [404] = "Not Found",
+    [405] = "Method Not Allowed",
+    [406] = "Not Acceptable",
+    [407] = "Proxy Authentication Required",
+    [408] = "Request Timeout",
+    [409] = "Conflict",
+    [410] = "Gone",
+    [411] = "Length Required",
+    [412] = "Precondition Failed",
+    [413] = "Request Entity Too Large",
+    [414] = "Request-URI Too Large",
+    [415] = "Unsupported Media Type",
+    [416] = "Request Range Not Satisfiable",
+    [417] = "Expectation Failed",
+    [500] = "Internal Server Error",
+    [501] = "Not Implemented",
+    [502] = "Bad Gateway",
+    [503] = "Service Unavailable",
+    [504] = "Gateway Timeout",
+    [505] = "HTTP Version Not Supported",
+}
+
+table.setmetatableindex(server.messages, function()
+    return "Internal Server Error"
+end)
+
+function server.reportstatistics(statistics)
+    if type(statistics) == "table" then
+     -- report()
+        report("uptime           : %i seconds", statistics.uptime)
+        report("requests         : %i",         statistics.requests)
+        report("errors           : %i",         statistics.errors)
+        report("active clients   : %i",         statistics.activeclients)
+        report("max nofclients   : %i",         statistics.maxnofclients)
+        report("bytes read       : %i",         statistics.bytesread)
+        report("bytes sent       : %i",         statistics.byteswritten)
+        report("client timeout   : %i seconds", statistics.clienttimeout)
+        report("timedout clients : %i",         statistics.timedoutclients)
+     -- report()
+    else
+        -- (server) statistics is an optional table in a request
+    end
+end

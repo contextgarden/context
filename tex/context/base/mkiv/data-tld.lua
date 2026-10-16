@@ -6,6 +6,46 @@ if not modules then modules = { } end modules ['data-tld'] = {
     license   = "see context related readme files",
 }
 
+-- The code below was added due to a request but as the maintainer dropped out we no
+-- longer do it this way. We just revert to what we always did: just unzip the
+-- context zip in texmf-dist, put this file in the root of texlive:
+--
+-- -- texfcnf.lua:
+--
+-- return {
+--   content = {
+--     variables = {
+--       TEXMFHOME = "selfautoparent:/texmf-home",
+--       TEXMFVAR = "selfautoparent:/texmf-var",
+--       TEXMFCONFIG = "selfautoparent:/texmf-config",
+--     },
+--   },
+-- }
+--
+-- and don't run anything in the installer. Just tell users to do this:
+--
+-- -- When running from the console, after an update:
+--
+--    -- mtxrun --generate
+--    -- context --make
+--    -- mtxrun --script font --reload
+--
+-- -- When running from an editor, configure the runner command as:
+--
+--    -- mtxrun --autogenerate --script context ...
+--
+-- Users are clever enough to do just that instead of relying on an installation
+-- script that keeps changing, and in the worst case let vthem end up with a slow
+-- startup every run. And, if someone wants a different setup, adapting the cnf file
+-- is the way to go.
+
+-- Please keep cont-new.mkxl as it is, If one really needs to set the paper size,
+-- which is a bad idea, do so in cont-loc.mkxl. Don't add more stuff there.
+
+if true then return end
+
+-- For now we keep the code below but it can disappear any time.
+
 -- This is a variant on code I found in a \TEXLIVE\ installation in \type
 -- {cont-sys.mkxl} in 2025 (probably written by Max). See \type {m-texlive.mkxl}.
 

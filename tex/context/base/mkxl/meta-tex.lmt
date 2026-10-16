@@ -1,0 +1,168 @@
+if not modules then modules = { } end modules ['meta-tex'] = {
+    version   = 1.001,
+    comment   = "companion to meta-tex.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local tostring, tonumber = tostring, tonumber
+local find, gsub = string.find, string.gsub
+local P, S, R, C, Cs, lpegmatch = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cs, lpeg.match
+
+metapost        = metapost or { }
+local metapost  = metapost
+local context   = context
+
+local implement = interfaces.implement
+
+local formatted = string.formatted
+
+do
+
+    local pattern = Cs((P([[\"]]) + P([["]])/"\\quotedbl{}" + P(1))^0) -- or \char
+
+    function metapost.escaped(str)
+        context(lpegmatch(pattern,str))
+    end
+
+    implement {
+        name      = "metapostescaped",
+        actions   = metapost.escaped,
+        arguments = "string"
+    }
+
+end
+
+do
+
+    local simplify = true
+    local number   = C((S("+-")^0 * R("09","..")^1))
+    local enumber  = number * S("eE") * number
+    local cleaner  = Cs((P("@@")/"@" + P("@")/"%%" + P(1))^0)
+
+    local function format_string(fmt,...)
+        context(lpegmatch(cleaner,fmt),...)
+    end
+
+    local function format_number(fmt,num)
+        if not num then
+            num = fmt
+            fmt = "%e"
+        end
+        local number = tonumber(num)
+        if number then
+            if find(fmt,"[mMfFgG]$") then
+                local clean = gsub(fmt,"@","%%")
+                context(formatted(clean,number))
+            elseif find(fmt,"[dD]$") then
+                local clean = gsub(fmt,"[dD]$","")
+                clean = gsub(clean,"@","%%")
+                context.digits(formatted(clean,number))
+            else
+                local clean = lpegmatch(cleaner,fmt)
+                local base, exponent = lpegmatch(enumber,formatted(clean,number))
+                if base and exponent then
+                    context.MPexponent(base,exponent)
+                else
+                    context(number)
+                end
+            end
+        else
+            context(tostring(num))
+        end
+    end
+
+    -- This is experimental and will change!
+
+    metapost.format_string = format_string
+    metapost.format_number = format_number
+
+    function metapost.svformat(fmt,str)
+        format_string(fmt,metapost.untagvariable(str,false))
+    end
+
+    function metapost.nvformat(fmt,str)
+        format_number(fmt,metapost.untagvariable(str,false))
+    end
+
+    -- can be a weak one: mpformatters
+
+    local mpformatters = table.setmetatableindex(function(t,k)
+        local v = lpegmatch(cleaner,k)
+        t[k] = v
+        return v
+    end)
+
+    function metapost.texexp(num,bfmt,efmt)
+        local number = tonumber(num)
+        if number then
+            local base, exponent = lpegmatch(enumber,formatted("%e",number))
+            if base and exponent then
+                if bfmt then
+                    base = formatted(mpformatters[bfmt],base)
+                else
+                    base = formatted("%f",base)
+                end
+                if efmt then
+                    exponent = formatted(mpformatters[efmt],exponent)
+                else
+                    exponent = formatted("%i",exponent)
+                end
+                return formatted("\\MPexponent{%s}{%s}",base,exponent)
+            elseif bfmt then
+                return formatted(mpformatters[bfmt],number)
+            else
+                return number
+            end
+        else
+            return num
+        end
+    end
+
+    implement {
+        name      = "metapostformatted",
+        actions   = metapost.svformat,
+        arguments = "2 strings",
+    }
+
+    implement {
+        name      = "metapostgraphformat",
+        actions   = metapost.nvformat,
+        arguments = "2 strings",
+    }
+
+    sequencer.extensions.texexp = metapost.texexp
+
+    local f_textext = [[textext("%s")]]
+    local f_mthtext = [[textext("\mathematics{%s}")]]
+    local f_exptext = [[textext("\mathematics{%s\times10^{%s}}")]]
+
+    local mpprint   = mp.print
+
+    function mp.format(fmt,str) -- bah, this overloads mp.format in mlib-lua.lua
+        fmt = lpegmatch(cleaner,fmt)
+        mpprint(formatted(f_textext,formatted(fmt,metapost.untagvariable(str,false))))
+    end
+
+    function mp.formatted(fmt,...) -- svformat
+        fmt = lpegmatch(cleaner,fmt)
+        mpprint(formatted(f_textext,formatted(fmt,...)))
+    end
+
+    function mp.graphformat(fmt,num) -- nvformat
+        fmt = lpegmatch(cleaner,fmt)
+        local number = tonumber(num)
+        if number then
+            local base, exponent = lpegmatch(enumber,number)
+            if base and exponent then
+                mpprint(f_exptext(base,exponent))
+            else
+                mpprint(f_mthtext(num))
+            end
+        else
+            mpprint(f_textext(tostring(num)))
+        end
+    end
+
+end

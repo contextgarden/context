@@ -423,7 +423,7 @@ static inline halfword tex_normalized_tight_badness(halfword b, halfword fitness
 static void tex_aux_set_quality(halfword active, halfword passive, scaled shrt, scaled glue, scaled height, halfword badness)
 {
     halfword quality = 0;
-    halfword deficiency = 0;
+    scaled deficiency = 0;
     active_short(active) = shrt;
     active_glue(active) = glue;
     active_page_height(active) = height;
@@ -447,7 +447,7 @@ static void tex_aux_set_quality(halfword active, halfword passive, scaled shrt, 
     active_deficiency(active) = deficiency;
 }
 
-static void tex_check_skips_shortfall(const balance_properties *properties, halfword breakpoint, halfword first, halfword current, halfword page_topskip, halfword page_bottomskip, halfword *shortfall, halfword *stretch, halfword *shrink, halfword options)
+static void tex_check_skips_shortfall(const balance_properties *properties, halfword breakpoint, halfword first, halfword current, halfword page_topskip, halfword page_bottomskip, scaled *shortfall, scaled *stretch, scaled *shrink, halfword options)
 {
     halfword left = active_break_node(breakpoint) ? passive_cur_break(active_break_node(breakpoint)) : first; /* nasty */
     scaled top = 0;
@@ -1109,11 +1109,11 @@ static int tex_aux_set_sub_pass_parameters(
     halfword            first,
     int                 details,
     halfword            features,
-    halfword            overfull,
-    halfword            underfull,
+    scaled              overfull,
+    scaled              underfull,
     halfword            verdict,
     halfword            classified,
-    halfword            threshold,
+    scaled              threshold,
     halfword            demerits,
     halfword            classes
 ) {
@@ -1147,7 +1147,7 @@ static int tex_aux_set_sub_pass_parameters(
     }
     /* */
     if (okay & passes_emergencystretch_okay) {
-        halfword v = tex_get_balance_passes_emergencystretch(passes, subpass);
+        scaled v = tex_get_balance_passes_emergencystretch(passes, subpass);
         if (v) {
             properties->emergency_stretch = v;
             properties->original_stretch = v; /* ! */
@@ -1167,7 +1167,7 @@ static int tex_aux_set_sub_pass_parameters(
     lmt_balance_state.background[total_stretch_amount] += properties->emergency_stretch;
     /* */
     if (okay & passes_emergencyshrink_okay) {
-        halfword v = tex_get_balance_passes_emergencyshrink(passes, subpass);
+        scaled v = tex_get_balance_passes_emergencyshrink(passes, subpass);
         if (v) {
             properties->emergency_shrink = v;
             properties->original_shrink = v; /* ! */
@@ -2099,9 +2099,9 @@ static void tex_aux_pre_balance(const balance_properties *properties, int callba
 
 static void tex_vbalanced_process_insert(halfword insert, double factor)
 {
-    halfword height = tex_insert_height(insert);
-    halfword stretch = insert_stretch(insert);
-    halfword shrink = insert_shrink(insert);
+    scaled height = tex_insert_height(insert);
+    scaled stretch = insert_stretch(insert);
+    scaled shrink = insert_shrink(insert);
     if (height > 0 && (stretch || shrink)) {
         scaled amount = 0;
         halfword callback = insert_callback(insert);
@@ -2986,7 +2986,7 @@ void tex_vbalanced_deinsert(
                                     /* todo: multiplier, so a better set height */
                                     if (last && node_subtype(head) == baseline_skip_glue) {
                                         if (forcedepth) {
-                                            halfword depth = insert_line_depth(last);
+                                            scaled depth = insert_line_depth(last);
                                             if (depth > 0) { 
                                                 halfword list = insert_list(last);
                                                 switch (node_type(list)) {

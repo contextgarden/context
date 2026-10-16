@@ -33,7 +33,6 @@ local setmetatableindex  = table.setmetatableindex
 local formatters         = string.formatters
 local variables          = interfaces.variables
 local constants          = interfaces.constants
-local addformatter       = utilities.strings.formatters.add
 
 local texset             = tex.set
 
@@ -1765,6 +1764,7 @@ do
     }
 
     -- todo : short week days
+    -- todo : more efficient formatters
 
     local f_monthlong    = formatters["\\monthlong{%s}"]
     local f_monthshort   = formatters["\\monthshort{%s}"]
@@ -1783,12 +1783,14 @@ do
         return f_dayoftheweek(tonumber(d) or 1,tonumber(m) or 1,tonumber(y) or 2000)
     end
 
-    addformatter(formatters,"monthlong",   [[tomonthlong(%s)]],         { tomonthlong    = tomonthlong    })
-    addformatter(formatters,"monthshort",  [[tomonthshort(%s)]],        { tomonthshort   = tomonthshort   })
-    addformatter(formatters,"daylong",     [[todaylong(%s)]],           { todaylong      = todaylong      })
-    addformatter(formatters,"dayshort",    [[todayshort(%s)]],          { todayshort     = todayshort     })
-    addformatter(formatters,"weekday",     [[toweekday(%s)]],           { toweekday      = toweekday      })
-    addformatter(formatters,"dayoftheweek",[[todayoftheweek(%s,%s,%s)]],{ todayoftheweek = todayoftheweek })
+    local extensions = sequencer.extensions
+
+    extensions.monthlong    = tomonthlong
+    extensions.monthshort   = tomonthshort
+    extensions.daylong      = todaylong
+    extensions.dayshort     = todayshort
+    extensions.weekday      = toweekday
+    extensions.dayoftheweek = todayoftheweek
 
     -- using %t is slower, even with caching as we seldom use > 3 items per epoch
 
@@ -1798,48 +1800,26 @@ do
     local function toeminute(e) return osdate("%M",tonumber(e))  end
     local function toesecond(e) return osdate("%S",tonumber(e))  end
 
-    local function toemonthlong(e)
-        return f_monthlong(tonumber(osdate("%m",tonumber(e))))
-    end
+    local function toemonthlong (e)        return f_monthlong (tonumber(osdate("%m",tonumber(e)))) end
+    local function toemonthshort(e)        return f_monthshort(tonumber(osdate("%m",tonumber(e)))) end
+    local function toedaylong   (e)        return f_datlong   (tonumber(osdate("%w",tonumber(e)))) end
+    local function toedayshort  (e)        return f_dayshort  (tonumber(osdate("%w",tonumber(e)))) end
+    local function toeweek      (e)        return tostring    (tonumber(osdate("%w",tonumber(e)))+1) end
+    local function toeweekday   (e)        return f_weekday   (tonumber(osdate("%w",tonumber(e)))+1) end
+    local function toedate      (format,e) return osdate(format,tonumber(e)) end
 
-    local function toemonthshort(e)
-        return f_monthshort(tonumber(osdate("%m",tonumber(e))))
-    end
-
-    local function toedaylong(e)
-        return f_datlong(tonumber(osdate("%w",tonumber(e))))
-    end
-
-    local function toedayshort(e)
-        return f_dayshort(tonumber(osdate("%w",tonumber(e))))
-    end
-
-    local function toeweek(e) -- we run from 1-7 not 0-6
-        return tostring(tonumber(osdate("%w",tonumber(e)))+1)
-    end
-
-    local function toeweekday(e)
-        return f_weekday(tonumber(osdate("%w",tonumber(e)))+1)
-    end
-
-    local function toedate(format,e)
-        return osdate(format,tonumber(e))
-    end
-
-    addformatter(formatters,"eyear",        [[toeyear(%s)]],        { toeyear         = toeyear       })
-    addformatter(formatters,"emonth",       [[toemonth(%s)]],       { toemonth        = toemonth      })
-    addformatter(formatters,"eday",         [[toeday(%s)]],         { toeday          = toeday        })
-    addformatter(formatters,"eweek",        [[toeweek(%s)]],        { toeweek         = toeweek       })
-    addformatter(formatters,"eminute",      [[toeminute(%s)]],      { toeminute       = toeminute     })
-    addformatter(formatters,"esecond",      [[toesecond(%s)]],      { toesecond       = toesecond     })
-
-    addformatter(formatters,"emonthlong",   [[toemonthlong(%s)]],   { toemonthlong    = toemonthlong  })
-    addformatter(formatters,"emonthshort",  [[toemonthshort(%s)]],  { toemonthshort   = toemonthshort })
-    addformatter(formatters,"edaylong",     [[toedaylong(%s)]],     { toedaylong      = toedaylong    })
-    addformatter(formatters,"edayshort",    [[toedayshort(%s)]],    { toedayshort     = toedayshort   })
-    addformatter(formatters,"eweekday",     [[toeweekday(%s)]],     { toeweekday      = toeweekday    })
-
-    addformatter(formatters,"edate",        [[toedate(%s,%s)]],     { toedate         = toedate       })
+    extensions.eyear       = toeyear
+    extensions.emonth      = toemonth
+    extensions.eday        = toeday
+    extensions.eweek       = toeweek
+    extensions.eminute     = toeminute
+    extensions.esecond     = toesecond
+    extensions.emonthlong  = toemonthlong
+    extensions.emonthshort = toemonthshort
+    extensions.edaylong    = toedaylong
+    extensions.edayshort   = toedayshort
+    extensions.eweekday    = toeweekday
+    extensions.edate       = toedate
 
 end
 
@@ -2048,7 +2028,7 @@ do
         end
     end
 
-    addformatter(formatters,"date", [[todate(...)]], { todate = todate })
+    sequencer.extensions.date = todate
 
     -- context("one: %4!date!","MONTH",2020,12,11)          context.par()
     -- context("one: %4!date!","month",2020,12,11)          context.par()

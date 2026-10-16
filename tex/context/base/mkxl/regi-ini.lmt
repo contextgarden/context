@@ -12,7 +12,7 @@ if not modules then modules = { } end modules ['regi-ini'] = {
 local tostring = tostring
 local utfchar = utf.char
 local P, Cs, Cc, lpegmatch = lpeg.P, lpeg.Cs, lpeg.Cc, lpeg.match
-local char, gsub, format, gmatch, byte, match, lower = string.char, string.gsub, string.format, string.gmatch, string.byte, string.match, string.lower
+local char, gsub, gmatch, byte, match, lower = string.char, string.gsub, string.gmatch, string.byte, string.match, string.lower
 local next = next
 local insert, remove, fastcopy = table.insert, table.remove, table.fastcopy
 local concat = table.concat
@@ -25,20 +25,18 @@ local setmetatableindex = table.setmetatableindex
 
 -- We will hook regime handling code into the input methods.
 
-local trace_translating = false  trackers.register("regimes.translating", function(v) trace_translating = v end)
+local trace_translating  = false  trackers.register("regimes.translating", function(v) trace_translating = v end)
 
 local report_loading     = logs.reporter("regimes","loading")
 local report_translating = logs.reporter("regimes","translating")
 
-regimes        = regimes or { }
-local regimes  = regimes
+local formatted          = string.formatted
 
-local mapping  = allocate {
-    utf = false
-}
+regimes                  = regimes or { }
+local regimes            = regimes
 
-local backmapping = allocate {
-}
+local mapping            = allocate { utf = false }
+local backmapping        = allocate { }
 
 -- regimes.mapping  = mapping
 
@@ -103,7 +101,7 @@ local currentregime = "utf"
 local function loadregime(mapping,regime)
     regime = lower(tostring(regime))
     regime = synonyms[regime] or synonyms["windows-"..regime] or regime
-    local name = resolvers.findfile(format("regi-%s.lua",regime)) or ""
+    local name = resolvers.findfile(formatted("regi-%s.lua",regime)) or ""
     local data = name ~= "" and dofile(name)
     if data then
         vector = { }
@@ -234,7 +232,7 @@ regimes.push = push
 regimes.pop  = pop
 
 function regimes.list()
-    local name = resolvers.findfile(format("regi-ini.lua",regime)) or ""
+    local name = resolvers.findfile(formatted("regi-ini.lua",regime)) or ""
     local okay = { }
     if name then
         local list = dir.glob(file.join(file.dirname(name),"regi-*.lua"))

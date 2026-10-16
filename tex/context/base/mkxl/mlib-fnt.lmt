@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['font-mps'] = {
 
 local type, tonumber, tostring = type, tonumber, tostring
 local concat, insert, remove = table.concat, table.insert, table.remove
-local formatters, match = string.formatters, string.match
+local match = string.match
 local utfbyte = utf.byte
 
 -- QP0 [QP1] QP2 => CP0 [CP1 CP2] CP3
@@ -28,19 +28,22 @@ local injectpair    = mp.inject.pair
 local injectnumeric = mp.inject.numeric
 local injectcolor   = mp.inject.color
 
-local f_moveto      = formatters["(%N,%N)"]
-local f_lineto      = formatters["--(%N,%N)"]
-local f_curveto     = formatters["..controls(%N,%N)and(%N,%N)..(%N,%N)"]
+local formatting    = string.formatting
+local formatted     = string.formatted
+
+local f_moveto      = formatting("(%N,%N)")
+local f_lineto      = formatting("--(%N,%N)")
+local f_curveto     = formatting("..controls(%N,%N)and(%N,%N)..(%N,%N)")
 local s_cycle       <const> = "--cycle"
 
-local f_nofill      = formatters["nofill %s;"]
-local f_dofill      = formatters["fill %s;"]
+local f_nofill      = formatting("nofill %s;")
+local f_dofill      = formatting("fill %s;")
 
-local f_draw_trace  = formatters["drawpathonly %s;"]
-local f_draw        = formatters["draw %s;"]
+local f_draw_trace  = formatting("drawpathonly %s;")
+local f_draw        = formatting("draw %s;")
 
-local f_rectangle   = formatters["((%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--cycle)"]
-local f_line        = formatters["((%N,%N)--(%N,%N))"]
+local f_rectangle   = formatting("((%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--cycle)")
+local f_line        = formatting("((%N,%N)--(%N,%N))")
 
 local bpfactor      <const> = number.dimenfactors.bp
 
@@ -51,7 +54,7 @@ function metapostfonts.boundingbox(d,factor)
     local lly    = factor*bounds[2]
     local urx    = factor*bounds[3]
     local ury    = factor*bounds[4]
-    return f_rectangle(llx,lly,urx,lly,urx,ury,llx,ury)
+    return formatted(f_rectangle,llx,lly,urx,lly,urx,ury,llx,ury)
 end
 
 function metapostfonts.baseline(d,factor)
@@ -59,7 +62,7 @@ function metapostfonts.baseline(d,factor)
     local factor = factor or 1
     local llx    = factor*bounds[1]
     local urx    = factor*bounds[3]
-    return f_line(llx,0,urx,0)
+    return formatted(f_line,llx,0,urx,0)
 end
 
 function metapostfonts.widthline(d,factor)
@@ -68,7 +71,7 @@ function metapostfonts.widthline(d,factor)
     local lly    = factor*bounds[2]
     local ury    = factor*bounds[4]
     local width  = factor*d.width
-    return f_line(width,lly,width,ury)
+    return formatted(f_line,width,lly,width,ury)
 end
 
 function metapostfonts.zeroline(d,factor)
@@ -76,7 +79,7 @@ function metapostfonts.zeroline(d,factor)
     local factor = factor or 1
     local lly    = factor*bounds[2]
     local ury    = factor*bounds[4]
-    return f_line(0,lly,0,ury)
+    return formatted(f_line,0,lly,0,ury)
 end
 
 function metapostfonts.paths(d,xfactor,yfactor)
@@ -105,15 +108,15 @@ function metapostfonts.paths(d,xfactor,yfactor)
                 else
                     size = size + 1
                 end
-                path[size] = f_moveto(xfactor*sequence[i+1],yfactor*sequence[i+2])
+                path[size] = formatted(f_moveto,xfactor*sequence[i+1],yfactor*sequence[i+2])
                 i = i + 3
             elseif operator == "l" then -- "lineto"
                 size = size + 1
-                path[size] = f_lineto(xfactor*sequence[i+1],yfactor*sequence[i+2])
+                path[size] = formatted(f_lineto,xfactor*sequence[i+1],yfactor*sequence[i+2])
                 i = i + 3
             elseif operator == "c" then -- "curveto"
                 size = size + 1
-                path[size] = f_curveto(xfactor*sequence[i+1],yfactor*sequence[i+2],xfactor*sequence[i+3],yfactor*sequence[i+4],xfactor*sequence[i+5],yfactor*sequence[i+6])
+                path[size] = formatted(f_curveto,xfactor*sequence[i+1],yfactor*sequence[i+2],xfactor*sequence[i+3],yfactor*sequence[i+4],xfactor*sequence[i+5],yfactor*sequence[i+6])
                 i = i + 7
             elseif operator =="q" then -- "quadraticto"
                 size = size + 1
@@ -124,7 +127,7 @@ function metapostfonts.paths(d,xfactor,yfactor)
                 local m_y = yfactor*sequence[i+2]
                 local r_x = xfactor*sequence[i+3]
                 local r_y = yfactor*sequence[i+4]
-                path[size] = f_curveto (
+                path[size] = formatted(f_curveto,
                     l_x + 2/3 * (m_x-l_x),
                     l_y + 2/3 * (m_y-l_y),
                     r_x + 2/3 * (m_x-r_x),
@@ -150,13 +153,13 @@ function metapostfonts.paths(d,xfactor,yfactor)
                 else
                     size = size + 1
                 end
-                path[size] = f_moveto(xfactor*segment[1],yfactor*segment[2])
+                path[size] = formatted(f_moveto,xfactor*segment[1],yfactor*segment[2])
             elseif operator == "l" then -- "lineto"
                 size = size + 1
-                path[size] = f_lineto(xfactor*segment[1],yfactor*segment[2])
+                path[size] = formatted(f_lineto,xfactor*segment[1],yfactor*segment[2])
             elseif operator == "c" then -- "curveto"
                 size = size + 1
-                path[size] = f_curveto(xfactor*segment[1],yfactor*segment[2],xfactor*segment[3],yfactor*segment[4],xfactor*segment[5],yfactor*segment[6])
+                path[size] = formatted(f_curveto,xfactor*segment[1],yfactor*segment[2],xfactor*segment[3],yfactor*segment[4],xfactor*segment[5],yfactor*segment[6])
             elseif operator == "q" then -- "quadraticto"
                 size = size + 1
                 -- first is always a moveto
@@ -167,7 +170,7 @@ function metapostfonts.paths(d,xfactor,yfactor)
                 local m_y = yfactor*segment[2]
                 local r_x = xfactor*segment[3]
                 local r_y = yfactor*segment[4]
-                path[size] = f_curveto (
+                path[size] = formatted(f_curveto,
                     l_x + 2/3 * (m_x-l_x),
                     l_y + 2/3 * (m_y-l_y),
                     r_x + 2/3 * (m_x-r_x),
@@ -199,9 +202,9 @@ function metapostfonts.fill(paths)
     local n = #paths
     for i=1,n do
         if i < n then
-            r[i] = f_nofill(paths[i])
+            r[i] = formatted(f_nofill,paths[i])
         else
-            r[i] = f_dofill(paths[i])
+            r[i] = formatted(f_dofill,paths[i])
         end
     end
     return concat(r)
@@ -212,9 +215,9 @@ function metapostfonts.draw(paths,trace)
     local n = #paths
     for i=1,n do
         if trace then
-            r[i] = f_draw_trace(paths[i])
+            r[i] = formatted(f_draw_trace,paths[i])
         else
-            r[i] = f_draw(paths[i])
+            r[i] = formatted(f_draw,paths[i])
         end
     end
     return concat(r)
@@ -263,7 +266,7 @@ function metapostfonts.maxbounds(data,index,factor)
     if width > urx then
         urx = width
     end
-    return f_rectangle(
+    return formatted(f_rectangle,
         factor*llx,factor*ymin,
         factor*urx,factor*ymin,
         factor*urx,factor*ymax,
@@ -301,9 +304,9 @@ local fontdescriptions   = fonthashes.descriptions
 
 local topaths            = metapostfonts.paths
 
-local f_text             = formatters["mfun_do_outline_text_flush(%q,%i,%N,%N,%q)(%,t);"]
-local f_rule             = formatters["mfun_do_outline_rule_flush(%q,%N,%N,%N,%N);"]
-local f_bounds           = formatters["checkbounds(%N,%N,%N,%N);"]
+local f_text             = formatting("mfun_do_outline_text_flush(%q,%i,%N,%N,%q)(%,t);")
+local f_rule             = formatting("mfun_do_outline_rule_flush(%q,%N,%N,%N,%N);")
+local f_bounds           = formatting("checkbounds(%N,%N,%N,%N);")
 local s_nothing          = "(origin scaled 10)"
 
 local scalefactor        <const> = 10
@@ -349,7 +352,7 @@ local function glyph(kind,font,char,advance,shift,ex,s,sx,sy)
                     end
                     local paths = topaths(glyf,xfactor,yfactor)
                     if paths then
-                        return f_text(kind,#paths,advance,shift,detail,paths), character.width * bpfactor * wfactor
+                        return formatted(f_text,kind,#paths,advance,shift,detail,paths), character.width * bpfactor * wfactor
                     end
                 end
             end
@@ -425,26 +428,26 @@ local function flushrule(current,pos_h,pos_v,pos_r,size_h,size_v,subtype)
         local ph = pos_h*bpfactor
         local sh = size_h*bpfactor
         b = b + 1
-        buffer[b] = f_rule(kind,ph,pos_v*bpfactor,sh,size_v*bpfactor)
+        buffer[b] = formatted(f_rule,kind,ph,pos_v*bpfactor,sh,size_v*bpfactor)
 register(ph,sh/2)
     elseif subtype == outlinerule_code then
         local ph = pos_h*bpfactor
         local sh = size_h*bpfactor
         b = b + 1
-        buffer[b] = f_rule("d",ph,pos_v*bpfactor,sh,size_v*bpfactor)
+        buffer[b] = formatted(f_rule,"d",ph,pos_v*bpfactor,sh,size_v*bpfactor)
 register(ph,sh/2)
     elseif subtype == userrule_code then
         -- same as normal_rule
         local ph = pos_h*bpfactor
         local sh = size_h*bpfactor
         b = b + 1
-        buffer[b] = f_rule(kind,ph,pos_v*bpfactor,sh,size_v*bpfactor)
+        buffer[b] = formatted(f_rule,kind,ph,pos_v*bpfactor,sh,size_v*bpfactor)
 register(ph,sh/2)
     elseif subtype == emptyrule_code then
         -- ignore
     else
      -- b = b + 1
-     -- buffer[b] = f_rule("f",pos_h*bpfactor,pos_v*bpfactor,size_h*bpfactor,size_v*bpfactor)
+     -- buffer[b] = formatted(f_rule,"f",pos_h*bpfactor,pos_v*bpfactor,size_h*bpfactor,size_v*bpfactor)
     end
 end
 
@@ -476,7 +479,7 @@ drivers.install {
             local urx = bb[3] * bpfactor
             local ury = bb[4] * bpfactor
             b = b + 1
-            buffer[b] = f_bounds(llx,lly,urx,ury)
+            buffer[b] = formatted(f_bounds,llx,lly,urx,ury)
          -- inspect(buffer)
         end,
     },
@@ -578,8 +581,8 @@ function mp.lmt_glyphshape_start(id,character)
                         italic      = italic,
                         accent      = accent,
                         llx         = llx,
-                        usedbox     = f_rectangle(llx,depth,llx+width,depth,llx+width,height,llx,height),
-                        usedline    = f_line(llx,0,llx+width,0),
+                        usedbox     = formatted(f_rectangle,llx,depth,llx+width,depth,llx+width,height,llx,height),
+                        usedline    = formatted(f_line,llx,0,llx+width,0),
                     }
                     glyph.mpdata = mpdata
                 else

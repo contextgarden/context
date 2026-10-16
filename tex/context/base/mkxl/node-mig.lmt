@@ -6,11 +6,13 @@ if not modules then modules = { } end modules ['node-mig'] = {
     license   = "see context related readme files"
 }
 
-local format = string.format
+if true then return end
 
 local trace_migrations = false trackers.register("nodes.migrations", function(v) trace_migrations = v end)
 
 local report_nodes     = logs.reporter("nodes","migrations")
+
+local formatted        = string.formatted
 
 local attributes       = attributes
 local nodes            = nodes
@@ -90,7 +92,7 @@ end
 
 statistics.register("node migrations", function()
     if trace_migrations and t_sweeps > 0 then
-        return format("%s sweeps, %s inserts moved, %s marks moved",t_sweeps,t_inserts,t_marks)
+        return formatted("%s sweeps, %s inserts moved, %s marks moved",t_sweeps,t_inserts,t_marks)
     end
 end)
 

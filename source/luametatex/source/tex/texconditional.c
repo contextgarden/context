@@ -595,9 +595,8 @@ static inline halfword tex_aux_grab_toks(int expand, int expandlist, int *head) 
                     p = eq_value(lmt_scanner_state.last_cs_name);
                 }
                 break;
-            } else { 
-                /* fall through */
             }
+            FALLTHROUGH
         case call_cmd:
         case protected_call_cmd:
         case semi_protected_call_cmd:

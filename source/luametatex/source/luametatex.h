@@ -87,6 +87,7 @@
     2.11.07 : just after texlive 2025 code freeze
     2.11.08 : just before the ctx 2025 meeting
     2.11.09 : just after texlive 2026 code freeze
+    2.11.10 : around the ctx 2026 meeting
 
     At some point the \CONTEXT\ group will be responsible for guaranteeing that the official version
     is what comes with \CONTEXT\ and that long term support and stability is guaranteed and that no 
@@ -99,6 +100,8 @@
     PS. Should we stay with mimalloc (too different platform code?)
 
 */
+
+# define lmt_float_math 0
 
 # include "utilities/auxcompiler.h"
 
@@ -122,7 +125,7 @@
 # define luametatex_release          10
 # define luametatex_version_string   "2.11.10"
 # define luametatex_version_number   211.10
-# define luametatex_development_id   20260923
+# define luametatex_development_id   20261015
 # define luametatex_name_camelcase   "LuaMetaTeX"
 # define luametatex_name_lowercase   "luametatex"
 # define luametatex_copyright_holder "Taco Hoekwater, Hans Hagen, Wolfgang Schuster & Mikael Sundqvist"
@@ -187,11 +190,15 @@ extern version_state_info lmt_version_state;
 # include <sys/stat.h>
 # include <stdbool.h>
 # include <limits.h>
+# include <fcntl.h>
 
 # ifdef _WIN32
+    /* no old stuff: */
+    # define WIN32_LEAN_AND_MEAN
+ // # include <winsock2.h> /* has to be done before <windows.h> */
+ // # include <ws2tcpip.h>
     # include <windows.h>
     # include <winerror.h>
-    # include <fcntl.h>
     # include <io.h>
 # else
     # include <unistd.h>
@@ -310,6 +317,7 @@ extern version_state_info lmt_version_state;
 # include "utilities/auxsparsearray.h"
 # include "utilities/auxunistring.h"
 # include "utilities/auxfile.h"
+# include "utilities/auxserialize.h"
 
 # include "libraries/hnj/hnjhyphen.h"
 

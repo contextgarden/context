@@ -1033,7 +1033,7 @@ int tex_ignore_math_skip(halfword p)
 
 # define fix_int(val,min,max) (val < min ? min : (val > max ? max : val))
 
-static inline halfword tex_aux_used_order(halfword *total)
+static inline halfword tex_aux_used_order(scaled *total)
 {
     if (total[filll_glue_order]) {
         return filll_glue_order;
@@ -1311,6 +1311,18 @@ void tex_repack(halfword p, scaled w, int m)
     When |limitate| equals the node type we indeed limitate. Otherwise we freeze. 
 */
 
+static inline double tex_aux_apply_glue_factor(double set, scaled factor)
+{
+    if (factor > 0) {
+        return set * ((double) factor * 0.001);
+    }
+    if (factor < 0) {
+        double max_set = (double) (-factor) * 0.001;
+        return (set > max_set) ? max_set : set;
+    }
+    return set;
+}
+
 void tex_freeze(halfword p, int recurse, int limitate, halfword factor) 
 {
     if (p) {
@@ -1318,17 +1330,9 @@ void tex_freeze(halfword p, int recurse, int limitate, halfword factor)
             case hlist_node:
                 {
                     halfword c = box_list(p);
-                    double set = (double) box_glue_set(p);
                     halfword order = box_glue_order(p);
                     singleword sign = box_glue_sign(p);
-                    if (factor > 0) { 
-                        set *= factor * 0.001;
-                    } else if (factor < 0) {
-                        double max = - factor * 0.001; 
-                        if (set > max) {
-                            set = max;
-                        }
-                    }
+                    double set = tex_aux_apply_glue_factor((double) box_glue_set(p), factor);
                     while (c) {
                         switch (node_type(c)) {
                             case glue_node:
@@ -1386,17 +1390,9 @@ void tex_freeze(halfword p, int recurse, int limitate, halfword factor)
             case vlist_node: 
                 {
                     halfword c = box_list(p);
-                    double set = (double) box_glue_set(p);
                     halfword order = box_glue_order(p);
                     singleword sign = box_glue_sign(p);
-                    if (factor > 0) { 
-                        set *= factor * 0.001;
-                    } else if (factor < 0) {
-                        double max = - factor * 0.001; 
-                        if (set > max) {
-                            set = max;
-                        }
-                    }
+                    double set = tex_aux_apply_glue_factor((double) box_glue_set(p), factor);
                     while (c) {
                         switch (node_type(c)) {
                             case glue_node:
@@ -1706,6 +1702,57 @@ static void tex_aux_adapt_just_skips(halfword ls, halfword rs)
     }
 }
 
+# if lmt_float_math
+
+    static inline void tex_aux_adjust_glue_amount(halfword p, scaled target)
+    {
+        if (target < 0) {
+            if (glue_shrink_order(p) == normal_glue_order) {
+                scaled shrink = glue_shrink(p);
+                if (shrink) {
+                    glue_amount(p) -= scaledround(-0.001 * (double) target * (double) shrink);
+                }
+            }
+        } else if (target > 0) {
+            if (glue_stretch_order(p) == normal_glue_order) {
+                scaled stretch = glue_stretch(p);
+                if (stretch) {
+                    glue_amount(p) += scaledround(0.001 * (double) target * (double) stretch);
+                }
+            }
+        }
+    }
+
+# else
+
+    static inline scaled tex_aux_round_div_1000(long long val)
+    {
+        return (scaled) ((val >= 0) ? (val + 500LL) / 1000LL : (val - 500LL) / 1000LL);
+    }
+
+    static inline void tex_aux_adjust_glue_amount(halfword p, scaled target)
+    {
+        if (target < 0) {
+            if (glue_shrink_order(p) == normal_glue_order) {
+                scaled shrink = glue_shrink(p);
+                if (shrink) {
+                    long long product = - (long long) target * (long long) shrink;
+                    glue_amount(p) -= tex_aux_round_div_1000(product);
+                }
+            }
+        } else if (target > 0) {
+            if (glue_stretch_order(p) == normal_glue_order) {
+                scaled stretch = glue_stretch(p);
+                if (stretch) {
+                    long long product = (long long) target * (long long) stretch;
+                    glue_amount(p) += tex_aux_round_div_1000(product);
+                }
+            }
+        }
+    }
+
+# endif
+
 halfword tex_hpack(halfword p, scaled target, int method, singleword pack_direction, int retain, int limit, halfword ls, halfword rs)
 {
     halfword tail = null;
@@ -1823,7 +1870,7 @@ halfword tex_hpack(halfword p, scaled target, int method, singleword pack_direct
                         it.
 
                     */
-                    halfword shift = box_shift_amount(p);
+                    scaled shift = box_shift_amount(p);
                     scaledwhd whd = tex_pack_dimensions(p);
                     width += whd.wd;
                     if (whd.ht - shift > height) {
@@ -1867,15 +1914,7 @@ halfword tex_hpack(halfword p, scaled target, int method, singleword pack_direct
                 {
                     switch (method) { 
                         case packing_adapted:
-                            if (target < 0) {
-                                if (glue_shrink_order(p) == normal_glue_order) {                                   
-                                    glue_amount(p) -= scaledround(-0.001 * target * (double) glue_shrink(p));
-                                }
-                            } else if (target > 0) {
-                                if (glue_stretch_order(p) == normal_glue_order) {
-                                    glue_amount(p) += scaledround( 0.001 * target * (double) glue_stretch(p));
-                                }
-                            }
+                            tex_aux_adjust_glue_amount(p, target);
                             width += glue_amount(p);
                             glue_shrink_order(p) = normal_glue_order;
                             glue_shrink(p) = 0;
@@ -2080,7 +2119,8 @@ halfword tex_hpack(halfword p, scaled target, int method, singleword pack_direct
         */
         halfword order = tex_aux_used_order(lmt_packaging_state.total_stretch);
         if ((method == packing_expanded) && (order == normal_glue_order) && (font_stretch > 0)) {
-            lmt_packaging_state.font_expansion_ratio = tex_divide_scaled_n(excess, font_stretch, scaling_factor_double);
+         // lmt_packaging_state.font_expansion_ratio = tex_divide_scaled_n(excess, font_stretch, scaling_factor_double);
+            lmt_packaging_state.font_expansion_ratio = tex_divide_scaled_factor(excess, font_stretch);
             goto EXIT;
         }
         box_glue_order(result) = order;
@@ -2141,7 +2181,8 @@ halfword tex_hpack(halfword p, scaled target, int method, singleword pack_direct
         */
         halfword order = tex_aux_used_order(lmt_packaging_state.total_shrink);
         if ((method == packing_expanded) && (order == normal_glue_order) && (font_shrink > 0)) {
-            lmt_packaging_state.font_expansion_ratio = tex_divide_scaled_n(excess, font_shrink, scaling_factor_double);
+         // lmt_packaging_state.font_expansion_ratio = tex_divide_scaled_n(excess, font_shrink, scaling_factor_double);
+            lmt_packaging_state.font_expansion_ratio = tex_divide_scaled_factor(excess, font_shrink);
             goto EXIT;
         }
         box_glue_order(result) = order;
@@ -2632,7 +2673,7 @@ scaledwhd tex_natural_vsizes(halfword p, halfword pp, glueratio g_mult, int g_si
                     siz.dp = 0;
                     if (is_leader(p)) {
                         halfword gl = glue_leader_ptr(p);
-                        halfword wd = 0;
+                        scaled wd = 0;
                         switch (node_type(gl)) {
                             case hlist_node:
                             case vlist_node:
@@ -2666,7 +2707,7 @@ scaledwhd tex_natural_vsizes(halfword p, halfword pp, glueratio g_mult, int g_si
                 break;
             case insert_node: 
                 if (inserts) {
-                    halfword height = tex_insert_height(p);
+                    scaled height = tex_insert_height(p);
                     if (height > 0) {
                         siz.ht += siz.dp + height;
                         siz.dp = 0;
@@ -2702,7 +2743,7 @@ scaledwhd tex_natural_vsizes(halfword p, halfword pp, glueratio g_mult, int g_si
 
 /*tex simplified variant with less memory access */
 
-halfword tex_natural_width(halfword p, halfword pp, glueratio g_mult, int g_sign, int g_order)
+scaled tex_natural_width(halfword p, halfword pp, glueratio g_mult, int g_sign, int g_order)
 {
     scaled wd = 0;
     scaled gp = 0;
@@ -2777,7 +2818,7 @@ halfword tex_natural_width(halfword p, halfword pp, glueratio g_mult, int g_sign
     return wd;
 }
 
-halfword tex_natural_hsize(halfword p, halfword *correction)
+scaled tex_natural_hsize(halfword p, halfword *correction)
 {
     scaled wd = 0;
     halfword c = null;
@@ -2824,7 +2865,7 @@ halfword tex_natural_hsize(halfword p, halfword *correction)
     return wd;
 }
 
-halfword tex_natural_vsize(halfword p)
+scaled tex_natural_vsize(halfword p)
 {
     scaled ht = 0;
     scaled dp = 0;
@@ -3500,7 +3541,7 @@ void tex_package(singleword nature)
             box_options(boxnode) |= box_option_align_split;
         }
         if (options & saved_box_swap_htdp_option) {
-            halfword ht = box_height(boxnode);
+            scaled ht = box_height(boxnode);
             box_height(boxnode) = box_depth(boxnode);
             box_depth(boxnode) = ht;
         }        
@@ -3752,8 +3793,8 @@ static halfword tex_aux_depth_correction(halfword b, const line_break_properties
 {
     /*tex The deficiency of space between baselines: */
     halfword p;
-    halfword height = has_box_package_state(b, dbox_package_state) ? tex_aux_first_height(b) : box_height(b);
-    halfword depth = cur_list.prev_depth;
+    scaled height = has_box_package_state(b, dbox_package_state) ? tex_aux_first_height(b) : box_height(b);
+    scaled depth = cur_list.prev_depth;
     if (properties) {
         if (properties->line_snapping) {
             p = tex_new_glue_node(zero_glue, baseline_skip_glue);
@@ -3782,7 +3823,7 @@ void tex_append_to_vlist(halfword b, int location, const line_break_properties *
 {
     if (location >= 0) { 
         halfword result = null;
-        halfword next_depth = ignore_depth_criterion_par;
+        scaled next_depth = ignore_depth_criterion_par;
         int prev_set = 0;
         int check_depth = 0;
         if (b && lmt_append_to_vlist_callback(b, location, cur_list.prev_depth, &result, &next_depth, &prev_set, &check_depth)) {
@@ -3856,7 +3897,7 @@ halfword tex_prune_page_top(halfword p, int s)
             case rule_node:
                 {
                     /*tex Insert glue for |split_top_skip| and set |p| to |null|. */
-                    halfword h = node_type(p) == rule_node ? rule_height(p) : box_height(p);
+                    scaled h = node_type(p) == rule_node ? rule_height(p) : box_height(p);
                     halfword q = tex_new_param_glue_node(split_top_skip_code, split_top_skip_glue);
                  // node_next(prev_p) = q; 
                     tex_couple_nodes(prev_p, q); /* there is no real need to point back to temp */
@@ -4406,7 +4447,7 @@ void tex_begin_box(int boxcontext, scaled shift, halfword slot, halfword callbac
                 */
                 halfword mode = packing_exactly ;
                 halfword index = tex_scan_box_register_number();
-                halfword size = 0;
+                scaled size = 0;
                 halfword attrlist = null;
                 while (1) {
                     switch (tex_scan_character("atu", 0, 1, 0)) {

@@ -13,7 +13,7 @@ local lpegmatch, patterns, P, C, Cs = lpeg.match, lpeg.patterns, lpeg.P, lpeg.C,
 local context           = context
 local implement         = interfaces.implement
 
-local formatters        = string.formatters
+local formatted         = string.formatted
 
 typesetters.processors  = typesetters.processors or { }
 local processors        = typesetters.processors
@@ -112,7 +112,7 @@ end
 function processors.tostring(str)
     local p, s = lpegmatch(splitter,str)
     if registered[p] then
-        return formatters["\\applyprocessor{%s}{%s}"](p,s)
+        return formatted("\\applyprocessor{%s}{%s}",p,s)
     else
         return str
     end

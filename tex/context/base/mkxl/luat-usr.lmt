@@ -29,8 +29,6 @@ local lpeg              = lpeg
 local setmetatableindex = table.setmetatableindex
 local load              = load
 local xpcall            = xpcall
------ pcall             = pcall
-local instance_banner   = string.formatters["=[instance: %s]"] -- the = controls the lua error / see: lobject.c
 local tex_errormessage  = context.errmessage
 
 local implement         = interfaces.implement

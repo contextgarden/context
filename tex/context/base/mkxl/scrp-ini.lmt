@@ -28,6 +28,8 @@ local context           = context
 
 local implement         = interfaces.implement
 
+local formatted         = string.formatted
+
 local glyph_code        <const> = nodes.nodecodes.glyph
 local glue_code         <const> = nodes.nodecodes.glue
 
@@ -568,7 +570,7 @@ end
 
 statistics.register("loaded split lists", function()
     if next(loaded) then
-        return string.format("%s, load time: %s",table.sequenced(loaded),statistics.elapsedtime(loaded))
+        return formatted("%s, load time: %s",table.sequenced(loaded),statistics.elapsedtime(loaded))
     end
 end)
 

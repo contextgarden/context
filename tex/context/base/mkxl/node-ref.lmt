@@ -43,6 +43,8 @@ local report_reference     = logs.reporter("backend","references")
 local report_destination   = logs.reporter("backend","destinations")
 local report_area          = logs.reporter("backend","areas")
 
+local formatted            = string.formatted
+
 local texsetcount          = tex.setcount
 
 local injectreference      = backends.nodeinjections.reference
@@ -917,7 +919,7 @@ implement {
 
 statistics.register("interactive elements", function()
     if nofreferences > 0 or nofdestinations > 0 then
-        return string.format("%s references, %s destinations",nofreferences,nofdestinations)
+        return formatted("%s references, %s destinations",nofreferences,nofdestinations)
     else
         return nil
     end

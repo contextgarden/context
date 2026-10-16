@@ -7,11 +7,13 @@ if not modules then modules = { } end modules ['toks-aux'] = {
 
 local type, tostring, next = type, tostring, next
 local max = math.max
-local formatters, gsub, char, gmatch = string.formatters, string.gsub, string.char, string.gmatch
+local gsub, char, gmatch = string.gsub, string.char, string.gmatch
 local concat, swapped = table.concat, table.swapped
 
 local allocate      = utilities.storage.allocate
 local texintegerdef = tex.integerdef
+
+local formatted     = string.formatted
 
 do
 
@@ -122,9 +124,9 @@ do
                     w3 = max(w3,#tostring(ti.index))
                     w4 = max(w4,#ti.cmdname)
                 end
-                local f1 = formatters["%" .. w1 .. "i  %" .. w2 .. "i  %" .. w3 .. "i  %-" .. w4 .. "s  %s"]
-                local f2 = formatters["%" .. w1 .. "i  %" .. w2 .. "i  %" .. w3 .. "i  %-" .. w4 .. "s"]
-                local f3 = formatters["%" .. w1 .. "i  %" .. w2 .. "i  %" .. w3 .. "i  %-" .. w4 .. "s  %C"]
+                local f1 = "%" .. w1 .. "i  %" .. w2 .. "i  %" .. w3 .. "i  %-" .. w4 .. "s  %s"
+                local f2 = "%" .. w1 .. "i  %" .. w2 .. "i  %" .. w3 .. "i  %-" .. w4 .. "s"
+                local f3 = "%" .. w1 .. "i  %" .. w2 .. "i  %" .. w3 .. "i  %-" .. w4 .. "s  %C"
                 for i=1,#t do
                     local ti = t[i]
                     local li = tl and tl[i]
@@ -138,9 +140,9 @@ do
                     end
                     cn = gsub(cn,"_"," ")
                     if cs then
-                        wr(f1(id,cd,ix,cn,cs))
+                        wr(formatted(f1,id,cd,ix,cn,cs))
                     elseif cn == "letter" or cn == "other char" then
-                        wr(f3(id,cd,ix,cn,ix))
+                        wr(formatted(f3,id,cd,ix,cn,ix))
                     elseif cn == "match" then
                         -- needs checking for additions
                         local s
@@ -156,9 +158,9 @@ do
                         elseif ix == 95 then s = "keep mandate braces" -- _
                         else                 s = "argument " .. char(ix)
                         end
-                        wr(f1(id,cd,ix,cn,s))
+                        wr(formatted(f1,id,cd,ix,cn,s))
                     else
-                        wr(f2(id,cd,ix,cn))
+                        wr(formatted(f2,id,cd,ix,cn))
                         if cn == "end match" then
                             wr("--------------")
                         end

@@ -74,11 +74,13 @@ local floor = math.floor
 local ceil = math.ceil
 
 local settings_to_hash  = utilities.parsers.settings_to_hash_colon_too
+
 local setmetatableindex = table.setmetatableindex
-local formatters        = string.formatters
 local sortedkeys        = table.sortedkeys
 local sortedhash        = table.sortedhash
 local sequenced         = table.sequenced
+
+local formatted         = string.formatted
 
 local report            = logs.reporter("otf reader")
 
@@ -2063,7 +2065,7 @@ do
     end
 
     for i=1,20 do
-        plugins[formatters["ss%02i"](i)] = ssxx
+        plugins[formatted("ss%02i",i)] = ssxx
     end
 
     local function reorderfeatures(fontdata,scripts,features)
@@ -2262,7 +2264,7 @@ do
         return lookups
     end
 
-    local f_lookupname = formatters["%s_%s_%s"]
+    local f_lookupname = "%s_%s_%s"
 
     local function resolvelookups(f,lookupoffset,fontdata,lookups,lookuptypes,lookuphandlers,what,tableoffset)
 
@@ -2396,7 +2398,7 @@ do
                      -- report("registering %i as sequence step %i",lookupid,nofsequences)
                         local l = {
                             index     = nofsequences,
-                            name      = f_lookupname(lookupprefix,"s",lookupid+lookupidoffset),
+                            name      = formatted(f_lookupname,lookupprefix,"s",lookupid+lookupidoffset),
                             steps     = steps,
                             nofsteps  = nofsteps,
                             type      = lookuptype,
@@ -2413,7 +2415,7 @@ do
                      -- report("registering %i as sublookup %i",lookupid,nofsublookups)
                         local l = {
                             index     = nofsublookups,
-                            name      = f_lookupname(lookupprefix,"l",lookupid+lookupidoffset),
+                            name      = formatted(f_lookupname,lookupprefix,"l",lookupid+lookupidoffset),
                             steps     = steps,
                             nofsteps  = nofsteps,
                             type      = lookuptype,
@@ -2497,7 +2499,7 @@ do
                                                      -- report("registering %i as sublookup %i",lookupid,nofsublookups)
                                                         local l = {
                                                             index     = nofsublookups, -- handy for tracing
-                                                            name      = f_lookupname(lookupprefix,"d",lookupid+lookupidoffset),
+                                                            name      = formatted(f_lookupname,lookupprefix,"d",lookupid+lookupidoffset),
                                                             derived   = true,          -- handy for tracing
                                                             steps     = d.steps,
                                                             nofsteps  = d.nofsteps,

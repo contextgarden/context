@@ -39,7 +39,9 @@ local char, byte = string.char, string.byte
 
 local loaddata             = io.loaddata
 local setmetatableindex    = table.setmetatableindex
-local formatters           = string.formatters
+
+local formatting           = string.formatting
+local formatted            = string.formatted
 
 local streams              = utilities.streams
 local openstring           = streams.openstring
@@ -1050,6 +1052,10 @@ do
 
     -- we could have a helper for this
 
+    local f_1 = formatting("%02X")
+    local f_3 = formatting("%02X%02X%02X")
+    local f_4 = formatting("%02X%02X%02X%02X")
+
     local function pack(specification,what)
         local t = { }
         local n = 0
@@ -1071,21 +1077,18 @@ do
         else
             local z = d[0] and 0 or 1
             if s == -1 then
-                local f = formatters["%02X"]
                 for i=z,#d do
-                    n = n + 1 ; t[n] = f(d[i])
+                    n = n + 1 ; t[n] = formatted(f_1,d[i])
                 end
             elseif s == -2 then
-                local f = formatters["%02X%02X%02X"]
                 for i=z,#d do
                     local c = d[i]
-                    n = n + 1 ; t[n] = f(c[1],c[2],c[3])
+                    n = n + 1 ; t[n] = formatted(f_3,c[1],c[2],c[3])
                 end
             elseif s == -3 then
-                local f = formatters["%02X%02X%02X%02X"]
                 for i=z,#d do
                     local c = d[i]
-                    n = n + 1 ; t[n] = f(c[1],c[2],c[3],c[4])
+                    n = n + 1 ; t[n] = formatted(f_4,c[1],c[2],c[3],c[4])
                 end
             end
             return "<" .. concat(t," ") .. ">"
@@ -1132,7 +1135,7 @@ do
             Height           = ysize,
             BitsPerComponent = colordepth,
             ColorSpace       = colorspace,
-            Length           = #content, -- specification.length
+         -- Length           = #content, -- specification.length
         }
         if mask then
             local d = pdfdictionary {

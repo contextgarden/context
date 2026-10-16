@@ -88,6 +88,7 @@ do
     local charstrings = P("/CharStrings")
     local subroutines = P("/Subrs")
     local encoding    = P("/Encoding")
+--     local noaccess    = P("noaccess")
     local dup         = P("dup")
     local put         = P("put")
     local array       = P("array")
@@ -96,6 +97,9 @@ do
     local cardinal    = digits / tonumber
     local spaces      = P(" ")^1
     local spacing     = patterns.whitespace^0
+
+--     dup = (spaces * noaccess)^0 * spaces * dup
+--     put = (spaces * noaccess)^0 * spaces * put
 
     local routines, vector, chars, n, m
 
@@ -110,6 +114,7 @@ do
             -- we have passed the end
             return false
         end
+-- print(index,size,sub(str,position+1,forward))
         local forward = position + size
         local stream  = decrypt(sub(str,position+1,forward),4330,4)
         routines[index] = { byte(stream,1,#stream) }
@@ -117,8 +122,9 @@ do
         if n >= m then
             -- m should be index now but can we assume ordering?
             return #str
+        else
+            return forward + 1
         end
-        return forward + 1
     end
 
     local setvector = function(str,position,name,size,filename)
@@ -158,8 +164,8 @@ do
     end
 
     local p_rd = spacing * (P("RD") + P("-|"))
-    local p_np = spacing * (P("NP") + P( "|"))
-    local p_nd = spacing * (P("ND") + P( "|"))
+    local p_np = spacing * (P("NP") + P( "|") + "noaccess put")
+    local p_nd = spacing * (P("ND") + P( "|") + "noaccess dup")
 
     local p_filterroutines = -- dup <i> <n> RD or -| <n encrypted bytes> NP or |
         (1-subroutines)^0 * subroutines * spaces * Cmt(cardinal,initialize)
@@ -217,6 +223,26 @@ do
       + P(1)
     )^0 * Carg(1)
 
+    -- The hinting part of the private dictionary, only needed when we keep the hints
+    -- (fonts.type1.keephints).
+
+    local p_filterprivate = (
+        P("/") * Carg(1) * ( (
+            C("BlueValues")         * arr
+          + C("OtherBlues")         * arr
+          + C("FamilyBlues")        * arr
+          + C("FamilyOtherBlues")   * arr
+          + C("BlueScale")          * num
+          + C("BlueShift")          * num
+          + C("BlueFuzz")           * num
+          + C("StdHW")              * arr
+          + C("StdVW")              * arr
+          + C("StemSnapH")          * arr
+          + C("StemSnapV")          * arr
+        ) ) / function  (t,k,v) t[lower(k)] = v end
+      + (1 - subroutines - charstrings)
+    )^0 * Carg(1)
+
     -- cache this?
 
     local filecache = containers.define("fonts", "pfb", pfb.version, true)
@@ -224,7 +250,7 @@ do
 
     local caching   = true -- mainly for MS and HH as they test huge files with many instances
 
-    local function loadpfbvector(filename,shapestoo,streams)
+    local function loadpfbvector(filename,shapestoo,streams,keephints)
         -- for the moment limited to encoding only
 
         local fullname = resolvers.findfile(filename)
@@ -284,6 +310,7 @@ do
         if not metadata then
             metadata = lpegmatch(p_filtermetadata,ascii,1,{})
         end
+        local private = keephints and lpegmatch(p_filterprivate,binary,1,{}) or nil
 
         glyphs   = { }
         routines = { }
@@ -293,7 +320,7 @@ do
         if shapestoo or streams then
          -- io.savedata("foo.txt",binary)
             lpegmatch(p_filterroutines,binary,1,filename)
-            lpegmatch(p_filtershapes,  binary,1,filename)
+            lpegmatch(p_filtershapes,binary,1,filename)
             local data = {
                 dictionaries = {
                     {
@@ -305,10 +332,11 @@ do
             }
             local version = metadata.FontType or 1
             -- only cff 1 in type 1 fonts
-            fonts.handlers.otf.readers.parsecharstrings(false,data,glyphs,true,"cff0",streams,true,true)
+            fonts.handlers.otf.readers.parsecharstrings(false,data,glyphs,true,"cff0",streams,true,true,keephints)
         elseif not names then
             lpegmatch(p_filternames,binary,1,filename)
         end
+
 
         names    = names or vector
         routines = nil
@@ -326,7 +354,7 @@ do
             })
         end
 
-        return names, encoding, glyphs, metadata
+        return names, encoding, glyphs, metadata, private
 
     end
 

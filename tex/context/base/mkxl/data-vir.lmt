@@ -7,10 +7,11 @@ if not modules then modules = { } end modules ['data-vir'] = {
 }
 
 local type = type
-local formatters = string.formatters
 
 local trace_virtual  = false
 local report_virtual = logs.reporter("resolvers","virtual")
+
+local formatted      = string.formatted
 
 trackers.register("resolvers.locating", function(v) trace_virtual = v end)
 trackers.register("resolvers.virtual",  function(v) trace_virtual = v end)
@@ -23,8 +24,8 @@ do
 
     local n = 0 -- hm, number can be query
 
-    local f_virtual_n = formatters["virtual://%s.%s"]
-    local f_virtual_y = formatters["virtual://%s-%s.%s"]
+    local f_virtual_n = "virtual://%s.%s"
+    local f_virtual_y = "virtual://%s-%s.%s"
 
     local function virtualname(specification,suffix)
         n = n + 1 -- one number for all namespaces
@@ -32,7 +33,7 @@ do
         if type(path) ~= "string" or path == "" then
             path = "virtualfile"
         end
-        return suffix and f_virtual_y(path,n,suffix) or f_virtual_n(path,n)
+        return suffix and formatted(f_virtual_y,path,n,suffix) or formatted(f_virtual_n,path,n)
     end
 
     local function directvirtual(filename,content,persistent)

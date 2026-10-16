@@ -1,0 +1,599 @@
+-- This is modern-math.lfg adapted to MLModern Math. That font is a darker variant
+-- of Latin Modern Math with the same glyphs, variants and math constants, so the
+-- tweaks carry over. We don't use the Latin Modern companion font here because its
+-- glyphs have the lighter Latin Modern weight.
+
+local common  = fonts.goodies.load("common-math.lfg")
+local presets = common.mathematics.tweaks.presets
+
+local punctuation = mathematics.tweaks.kernsets[".,"]
+
+return {
+    name = "mlmodern math",
+    version = "1.00",
+    comment = "Goodies that complement mlmodern math.",
+    author = "Hans Hagen & Mikael Sundqvist",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        parameters = {
+            FractionNumeratorDisplayStyleShiftUp = 600, -- used to be a function
+            AccentTopShiftUp                     = -30,
+            FlattenedAccentTopShiftUp            = -30,
+            AccentSuperscriptDrop                = 100, -- drop the superscripts if accents are present. Amount in percentage of height of accent(?)
+            AccentSuperscriptPercent             =   0,
+            DelimiterPercent                     =  85,
+            DelimiterShortfall                   = 400,
+            DelimiterDisplayPercent              =  90, -- MS
+            DelimiterDisplayShortfall            = 400,
+            SubscriptShiftDown                   = 150, -- 247 in font (multiplied to be consistent with cm)
+            SubscriptShiftDownWithSuperscript    = 247, -- relates to the previous one (see math-act)
+         -- SubscriptTopMax                      = 344, -- 344 in font .8 exheight
+         -- SuperscriptBaselineDropMax           = 386, -- 250 in font (multiplied by 4.6333/2.99 (values in cm/values in lm)) 0 means: align the baseline of the superscript at the (top)
+            SuperscriptBaselineDropMax           = 0.6*431, -- 250 in font (multiplied by 4.6333/2.99 (values in cm/values in lm))
+            SubscriptBaselineDropMin             = 0.1*431, -- 200 in font
+         -- SuperscriptBottomMaxWithSubscript    = 344, -- 344 in font .8 exheight
+         -- SuperscriptBottomMin                 = 108, -- 108 in font .25 exheight
+            SuperscriptShiftUp                   = 413, -- 363 in font (multiplied with 4.9547/4.3536, got 413)
+            SuperscriptShiftUpCramped            = 329, -- 289 in font (no distinction, old TeX)
+            PrimeShiftUp                         = "1.05*SuperscriptShiftUp",
+            PrimeShiftUpCramped                  = "1.05*SuperscriptShiftUp",
+         -- PrimeRaisePercent                    =   0, -- set to 0 in math-act
+         -- PrimeRaiseComposedPercent            =   0, -- set to 0 in math-act
+            RadicalDisplayStyleVerticalGap       = 120,--"RadicalVerticalGap" too small, 148, 50
+         -- RadicalVerticalGap                   =  50,-- Going smaller looks too cramped
+        },
+        tweaks = {
+            aftercopying = {
+                {
+                    tweak    = "fontname",
+                    expected = "MLModernMath-Regular",
+                    abort    = true,
+                },
+                {
+                    tweak    = "version",
+                    expected = "Version 2.0",
+                },
+                -- The companion font has Latin Modern weight, so for now we use the
+                -- delimiters of the font itself.
+             -- {
+             --     tweak   = "replacealphabets",
+             --     list    = {
+             --         {
+             --             -- source   = { first = 0x02980 }, -- triplebar
+             --             filename = "latinmodernmathcompanion-regular.otf",
+             --             feature = "ss01",
+             --             unicodes = {
+             --                 0x00028, -- left parenthesis
+             --                 0x00029, -- right parenthesis
+             --                 0x0005B, -- left bracket
+             --                 0x0005D, -- right bracket
+             --                 0x027EE, -- left flattened parenthesis
+             --                 0x027EF, -- right falttened parenthesis
+             --                 0x02308, -- left ceiling
+             --                 0x02309, -- right ceiling
+             --                 0x0230A, -- left floor
+             --                 0x0230B, -- right floor
+             --                 0x027E6, -- left white bracket
+             --                 0x027E7, -- right white bracket
+             --             },
+             --         },
+             --         {
+             --             -- source   = { first = 0x02980 }, -- triplebar
+             --             filename = "latinmodernmathcompanion-regular.otf",
+             --             feature = "ss02",
+             --             unicodes = {
+             --                 0x0007B, -- left brace
+             --                 0x0007D, -- right brace
+             --             },
+             --         },
+             --         {
+             --             filename = "latinmodernmathcompanion-regular.otf",
+             --             feature = "ss03",
+             --             unicodes = {
+             --                 0x0221A, -- radical
+             --             },
+             --         },
+             --         {
+             --             -- source   = { first = 0x02980 }, -- triplebar
+             --             filename = "latinmodernmathcompanion-regular.otf",
+             --             unicodes = {
+             --                 0x0002F, -- solidus
+             --              -- 0x00028, -- left parenthesis
+             --              -- 0x00029, -- right parenthesis
+             --              -- 0x0005B, -- left bracket
+             --                 0x0005C, -- reverse solidus
+             --              -- 0x0005D, -- right bracket
+             --              -- 0x0007B, -- left brace
+             --                 0x0007C, -- single vertical bar
+             --              -- 0x0007D, -- right brace
+             --                 0x02016, -- double vertical bar
+             --              -- 0x02308, -- left ceiling
+             --              -- 0x02309, -- right ceiling
+             --              -- 0x0230A, -- left floor
+             --              -- 0x0230B, -- right floor
+             --              -- 0x027E6, -- left white bracket
+             --              -- 0x027E7, -- right white bracket
+             --                 0x027E8, -- left angle
+             --                 0x027E9, -- right angle
+             --                 0x027EA, -- left double angle
+             --                 0x027EB, -- right double angle
+             --              -- 0x027EE, -- left flattened parenthesis
+             --              -- 0x027EF, -- right flattened parenthesis
+             --                 0x02980, -- triple vertical bar
+             --             },
+             --         },
+             --     },
+             -- },
+                {
+                    tweak = "addmirrors", --bidi
+                },
+                {
+                    tweak = "addcomposites",
+                },
+                presets.scripttocalligraphic { },
+                presets.rsfstoscript         { },
+                presets.rsfsuprighttoscript  { },
+                presets.moderntocalligraphic { },
+                presets.eulertocalligraphic  { },
+                presets.xitsarabic           { rscale  = 0.80 },
+                presets.fallbacks            { },
+                presets.moveitalics          { correct = true, letters = true },
+                presets.moveitalics          { correct = true, list = mathematics.tweaks.subsets.letterlike },
+                presets.moveintegrals        { factor = 1.4, icfactor = 0.8 }, -- the icfactor is due to the very slanted integral.
+                presets.wipeanchors          { },
+                presets.wipeitalics          { },
+                {
+                    tweak = "checkaccents",
+                },
+                {
+                    tweak = "wipecues",
+                },
+                {
+                    tweak = "dimensions",
+                    list  = {
+                        [0x1D487] = { anchor = 0.9  }, -- bold italic f
+                        [0x1D489] = { anchor = 1.2  }, -- bold italic h
+                        [0x1D48C] = { anchor = 1.2  }, -- bold italic k
+                        [0x1D48F] = { anchor = 1.1  }, -- bold italic n
+                        [0x1D491] = { anchor = 1.2  }, -- bold italic p
+                        [0x1D492] = { anchor = 0.9  }, -- bold italic q
+                        [0x1D49B] = { anchor = 0.9  }, -- bold italic z
+
+                        [0x1D736] = { anchor = 0.9  }, -- bold italic alpha
+                        [0x1D737] = { anchor = 0.9  }, -- bold italic beta
+                        [0x1D738] = { anchor = 1.1  }, -- bold italic gamma
+                        [0x1D740] = { anchor = 1.2  }, -- bold italic lambda
+                        [0x1D744] = { anchor = 1.2  }, -- bold italic omicron
+
+                        [0x1D6FE] = { anchor = 1.1  }, -- italic gamma
+                        [0x1D702] = { anchor = 1.1  }, -- italic eta
+
+                        [0x1D44F] = { anchor = 1.15 }, -- italic b
+                        [0x1D451] = { anchor = 0.8, }, -- italic d
+                        [0x1D455] = { anchor = 1.15 }, -- italic h
+                        [0x1D458] = { anchor = 1.15 }, -- italic k
+                        [0x1D45B] = { anchor = 1.1  }, -- italic n
+                        [0x1D45D] = { anchor = 1.1  }, -- italic p
+                        [0x1D45E] = { anchor = 0.9  }, -- italic q
+                        [0x1D467] = { anchor = 0.9  }, -- italic z
+
+                        [0x1D6FE] = { anchor = 1.2  }, -- italic gamma
+                        [0x1D706] = { anchor = 1.2  }, -- italic lambda
+                        [0x1D70A] = { anchor = 1.1  }, -- italic omikron
+                        [0x1D70D] = { anchor = 1.1  }, -- italic varsigma
+
+                        [0x1D46A] = { anchor = 0.75 }, -- bold italic C
+                        [0x1D46B] = { anchor = 1.1  }, -- bold italic D
+                        [0x1D46E] = { anchor = 0.75 }, -- bold italic G
+                        [0x1D479] = { anchor = 1.2  }, -- bold italic R
+                        [0x1D47A] = { anchor = 0.8  }, -- bold italic S
+                        -- uppercaseboldscript could be improved
+                        [0x1D435] = { anchor = 1.05 }, -- italic B
+                        [0x1D436] = { anchor = 0.7  }, -- italic C
+                        [0x1D437] = { anchor = 1.05 }, -- italic D
+                        [0x1D43A] = { anchor = 0.8  }, -- italic G
+                        [0x1D443] = { anchor = 1.1  }, -- italic P
+                        [0x1D445] = { anchor = 1.05 }, -- italic R
+                        [0x1D446] = { anchor = 0.85 }, -- italic S
+                        [0x1D49C] = { anchor = 0.9  }, -- script A
+                        [0x1D49D] = { anchor = 0.95 }, -- script B
+                        [0x1D49E] = { anchor = 0.8  }, -- script C
+                        [0x1D49F] = { anchor = 0.95 }, -- script D
+                        [0x1D4A0] = { anchor = 0.85 }, -- script E
+                        [0x1D4A1] = { anchor = 0.75 }, -- script F
+                        [0x1D4A2] = { anchor = 0.9  }, -- script G
+                        [0x1D4A3] = { anchor = 0.85 }, -- script H
+                        [0x1D4A4] = { anchor = 0.8  }, -- script I
+                        [0x1D4A5] = { anchor = 0.8  }, -- script J
+                        [0x1D4A6] = { anchor = 0.85 }, -- script K
+                        [0x1D4A7] = { anchor = 0.75 }, -- script L
+                        [0x1D4A8] = { anchor = 0.9  }, -- script M
+                        [0x1D4A9] = { anchor = 0.85 }, -- script N
+                        [0x1D4AA] = { anchor = 0.95 }, -- script O
+                        [0x1D4AB] = { anchor = 0.95 }, -- script P
+                        [0x1D4AC] = { anchor = 0.95 }, -- script Q
+                        [0x1D4AD] = { anchor = 0.95 }, -- script R
+                        [0x1D4AE] = { anchor = 0.9  }, -- script S
+                        [0x1D4AF] = { anchor = 0.75 }, -- script T
+                        [0x1D4B0] = { anchor = 0.9, }, -- script U
+                        [0x1D4B1] = { anchor = 0.95 }, -- script V
+                        [0x1D4B2] = { anchor = 0.95 }, -- script W
+                        [0x1D4B3] = { anchor = 0.95 }, -- script X
+                        [0x1D4B4] = { anchor = 0.9  }, -- script Y
+                        [0x1D4B5] = { anchor = 1    }, -- script Z
+                     -- ["0x7C.variants.1"]={ squeeze = 0.90, height = 0.90, depth = 0.90 },
+                     -- ["0x7C.variants.2"]={ squeeze = 0.85, height = 0.85, depth = 0.85 },
+                     -- ["0x7C.variants.3"]={ squeeze = 0.80, height = 0.80, depth = 0.80 },
+                     -- ["0x7C.variants.4"]={ squeeze = 0.80, height = 0.80, depth = 0.80 },
+                     -- ["0x7C.variants.5"]={ squeeze = 0.80, height = 0.80, depth = 0.80 },
+                     -- ["0x7C.variants.6"]={ squeeze = 0.80, height = 0.80, depth = 0.80 },
+                     -- ["0x7C.variants.7"]={ squeeze = 0.80, height = 0.80, depth = 0.80 },
+                    },
+                },
+                {
+                    tweak = "kernpairs",
+                    list = {
+                        -- Values taken from lmmi10
+                        [0x1D436] = punctuation[-0.07], -- italic C
+                        [0x1D439] = punctuation[-0.14], -- italic F
+                        [0x1D43B] = punctuation[-0.06], -- italic H
+                        [0x1D43D] = punctuation[-0.17], -- italic J
+                        [0x1D43E] = punctuation[-0.06], -- italic K
+                        [0x1D440] = punctuation[-0.05], -- italic M
+                        [0x1D441] = punctuation[-0.06], -- italic N
+                        [0x1D443] = punctuation[-0.14], -- italic P
+                        [0x1D446] = punctuation[-0.08], -- italic S
+                        [0x1D447] = punctuation[-0.08], -- italic T
+                        [0x1D448] = punctuation[-0.14], -- italic U
+                        [0x1D449] = punctuation[-0.21], -- italic V
+                        [0x1D44A] = punctuation[-0.15], -- italic W
+                        [0x1D44B] = punctuation[-0.06], -- italic X
+                        [0x1D44C] = punctuation[-0.21], -- italic Y
+                        [0x1D44D] = punctuation[-0.07], -- italic Z
+                        [0x1D451] = { -- italic d
+                            [0x1D44C] =  .11, -- italic Y
+                            [0x1D449] = -.11, -- italic Z
+                            [0x1D453] = -.32, -- italic f (DEK)
+                            [0x1D453] = -.22, -- italic f (this one wins here)
+                            [0x1D457] = -.21, -- italic j (DEK)
+                            [0x1D457] = -.11, -- italic j (this one wins here)
+                        },
+                        [0x1D453] = punctuation[-0.09], -- italic f
+                        [0x1D457] = punctuation[-0.12], -- italic j
+                        [0x1D45F] = punctuation[-0.12], -- italic r
+                        [0x00393] = punctuation[-0.15], -- upright Gamma
+                        [0x003A0] = punctuation[-0.06], -- upright Pi
+                        [0x003A5] = punctuation[-0.15], -- upright Ypsilon
+                        [0x003A8] = punctuation[-0.08], -- upright Psi
+                        [0x1D6FF] = punctuation[-0.12], -- italic delta
+                        [0x1D708] = punctuation[-0.10], -- italic nu
+                        [0x1D70E] = punctuation[-0.09], -- italic sigma
+                        [0x1D70F] = punctuation[-0.10], -- italic tau
+                        -- Values taken from lmmib10 (same ratios)
+                        [0x1D46A] = punctuation[-0.07], -- bold italic C
+                        [0x1D46D] = punctuation[-0.15], -- bold italic F
+                        [0x1D46F] = punctuation[-0.06], -- bold italic H
+                        [0x1D471] = punctuation[-0.17], -- bold italic J
+                        [0x1D472] = punctuation[-0.06], -- bold italic K
+                        [0x1D474] = punctuation[-0.05], -- bold italic M
+                        [0x1D475] = punctuation[-0.06], -- bold italic N
+                        [0x1D477] = punctuation[-0.14], -- bold italic P
+                        [0x1D47A] = punctuation[-0.09], -- bold italic S
+                        [0x1D47B] = punctuation[-0.08], -- bold italic T
+                        [0x1D47C] = punctuation[-0.14], -- bold italic U
+                        [0x1D47D] = punctuation[-0.21], -- bold italic V
+                        [0x1D47E] = punctuation[-0.15], -- bold italic W
+                        [0x1D47F] = punctuation[-0.06], -- bold italic X
+                        [0x1D480] = punctuation[-0.21], -- bold italic Y
+                        [0x1D481] = punctuation[-0.08], -- bold italic Z
+                        [0x1D485] = { -- bold italic d
+                            [0x1D480] =  .10, -- italic Y
+                            [0x1D481] = -.10, -- italic Z
+                            [0x1D487] = -.31, -- italic f
+                            [0x1D48B] = -.21, -- italic j
+                        },
+                        [0x1D487] = punctuation[-0.09], -- bold italic f
+                        [0x1D48B] = punctuation[-0.12], -- bold italic j
+                        [0x1D493] = punctuation[-0.11], -- bold italic r
+                        [0x1D6AA] = punctuation[-0.16], -- bold upright Gamma
+                        [0x1D6B7] = punctuation[-0.06], -- bold upright Pi
+                        [0x1D6BC] = punctuation[-0.15], -- bold upright Ypsilon
+                        [0x1D6BF] = punctuation[-0.08], -- bold upright Psi
+                        [0x1D739] = punctuation[-0.11], -- bold italic delta
+                        [0x1D742] = punctuation[-0.10], -- bold italic nu
+                        [0x1D748] = punctuation[-0.09], -- bold italic sigma
+                        [0x1D749] = punctuation[-0.10], -- bold italic tau
+                    },
+                },
+                -- Accents are a mess. We migrate the extensibles from the combiners to the base accent
+                -- and then need to tweak the width (which is auto set because it was zero with a large
+                -- accent anchor offset). First we copy and fix.
+                {
+                    tweak = "extendaccents",
+                },
+                {
+                    tweak = "flattenaccents",
+                },
+                {
+                    tweak = "fixaccents",
+                },
+                {
+                    tweak   = "radicaldegreeanchors",
+                    list = {
+                        ["0x221A.parts.bottom"] = { location = "left", hfactor  = 0.05, vfactor  = 1.05 },
+                    }
+                },
+                {
+                    tweak = "radicalbodymargins",
+                    list  = {
+                        -- [0x221A]                = { left = 0.025 },
+                        ["0x221A.variants.*"]   = { left = 0.05 },
+                        ["0x221A.variants.1"]   = { left = 0 },
+                        ["0x221A.variants.2"]   = { left = 0 },
+                        ["0x221A.variants.3"]   = { left = 0 },
+                        ["0x221A.variants.4"]   = { left = 0 },
+                        ["0x221A.variants.5"]   = { left = 0 },
+                        ["0x221A.variants.6"]   = { left = 0.025 },
+                        ["0x221A.variants.7"]   = { left = 0.025 },
+                        ["0x221A.variants.8"]   = { left = 0.025 },
+                        ["0x221A.variants.9"]   = { left = 0.025 },
+                        ["0x221A.variants.10"]  = { left = 0.025 },
+                        ["0x221A.parts.bottom"] = { left = 0.10 },
+                    }
+                },
+                -- First we set the dimensions of the initial accent which started out as zero but we want
+                -- a proper width.
+             -- {
+             --     tweak = "dimensions",
+             --     list  = {
+             --         [0x00302] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widehat
+             --         [0x00303] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widetilde
+             --         [0x00306] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widebreve
+             --         [0x0030C] = { width = 1.4, anchor = 1.20, xoffset =  .10 }, -- widecheck
+             --     },
+             -- },
+                -- Then we deal with all offsets and heights in one go. So we treat the initial accent
+                -- as well as the variants here.
+                {
+                    tweak = "dimensions",
+                    list  = {
+                        [0x020DB] = { yoffset = -0.015, height = .95, all = true }, -- widedddot : 0x20DB (self)
+                    },
+                },
+                -- We now copy these to the not wide slots so that we can set these to stretch as well,
+                -- if only because it is less confusing and more consistent.
+                {
+                    tweak = "copyaccents",
+                },
+                -- So far for the accents.
+                {
+                    -- Here we modify "corner kerns".
+                    -- We started with 0x2F, the solidus
+                    -- to have the 2 in x^2/5 a bit over the slash
+                    tweak = "kerns",
+                    list  = {
+                        [0x0002F] = { topleft = -0.2, bottomright = -0.2 }, -- solidus
+                        --
+                        [0x1D49C] = { bottomright = -0.05, }, -- script A
+                        [0x1D49D] = { bottomright = -0.05, }, -- script B
+                        [0x1D49E] = { bottomright = -0.25, }, -- script C
+                        [0x1D49F] = { bottomright = -0.11, }, -- script D
+                        [0x1D4A0] = { bottomright = -0.18, }, -- script E
+                        [0x1D4A1] = { bottomright = -0.30, }, -- script F
+                        [0x1D4A2] = { bottomright = -0.11, }, -- script G
+                        [0x1D4A3] = { bottomright = -0.18, }, -- script H
+                        [0x1D4A4] = { bottomright = -0.25, }, -- script I
+                        [0x1D4A5] = { bottomright = -0.25, }, -- script J
+                        [0x1D4A6] = { bottomright = -0.11, }, -- script K
+                        [0x1D4A7] = { bottomright = -0.05, }, -- script L
+                        [0x1D4A8] = { bottomright = -0.11, }, -- script M
+                        [0x1D4A9] = { bottomright = -0.18, }, -- script N
+                        [0x1D4AA] = { bottomright = -0.05, }, -- script O
+                        [0x1D4AB] = { bottomright = -0.25, }, -- script P
+                        [0x1D4AC] = { bottomright = -0.05, }, -- script Q
+                        [0x1D4AD] = { bottomright = -0.05, }, -- script R
+                        [0x1D4AE] = { bottomright = -0.11, }, -- script S
+                        [0x1D4AF] = { bottomright = -0.33, }, -- script T
+                        [0x1D4B0] = { bottomright = -0.11, }, -- script U
+                        [0x1D4B1] = { bottomright = -0.25, }, -- script V
+                        [0x1D4B2] = { bottomright = -0.25, }, -- script W
+                        [0x1D4B3] = { bottomright = -0.11, }, -- script X
+                        [0x1D4B4] = { bottomright = -0.18, }, -- script Y
+                        [0x1D4B5] = { bottomright = -0.05, }, -- script Z
+                        --
+                        [0x00393] = { bottomright = -0.20, }, -- upright Gamma
+                        [0x02207] = { bottomright = -0.20, }, -- nabla
+                        [0x1D6C1] = { bottomright = -0.20, }, -- bold nabla
+                        [0x1D6FB] = { bottomright = -0.25, }, -- italic nabla
+                        [0x1D735] = { bottomright = -0.25, }, -- bold italic nabla
+                        --
+                        [0x0222B] = { bottomright = -0.30, }, -- integral
+                        --
+                        ["0x7D.parts.top"]      = { topright = -0.25                      }, -- right brace top
+                        ["0x7D.parts.bottom"]   = {                   bottomright = -0.25 }, -- right brace bottom
+                        ["0x7D.variants.*"]     = { topright = -0.25, bottomright = -0.25 }, -- right brace variants
+                        ["0x29.parts.top"]      = { topright = -0.3,                      }, -- right parenthesis top
+                        ["0x29.parts.bottom"]   = {                   bottomright = -0.3  }, -- right parenthesis bottom
+                        ["0x29.variants.*"]     = { topright = -0.15, bottomright = -0.15 }, -- right parenthesis variants
+                        ["0x221A.parts.top"]    = { topright =  0.2,                      }, -- right radical top
+                        ["0x221A.parts.bottom"] = {                   bottomright =  0.2  }, -- right radical bottom
+                        ["0x221A.variants.*"]   = { topright =  0.2,  bottomright =  0.2  }, -- right radical variants
+                        [0x27E9]                = { topright = -0.2,  bottomright = -0.2  }, -- angles
+                        ["0x27E9.variants.*"]   = { topright = -0.3,  bottomright = -0.3  },
+                        [0x27EB]                = { topright = -0.2,  bottomright = -0.2  },
+                        ["0x27EB.variants.*"]   = { topright = -0.3,  bottomright = -0.3  },
+                    },
+                },
+                {
+                    -- This one fakes margins to get larger/smaller accents
+                    -- with for example \widetilde.
+                    tweak = "margins",
+                    list  = {
+                        [0x1D487] = { left = -.2,  right = -.2 }, -- bold italic f
+                        [0x1D489] = { left = -.2,  right = -.2 }, -- bold italic h
+                        [0x1D496] = { left = -.1,  right = -.1 }, -- bold italic u
+                        [0x1D499] = { left = -.1,  right = -.1 }, -- bold italic x
+
+                        [0x1D711] = { left = -.1,  right = -.1 }, -- italic varphi
+                        [0x1D713] = { left = -.1,  right = -.1 }, -- italic psi
+
+                        [0x1D659] = { left = -.1,  right = -.1 }, -- sans bold italic d
+                        [0x1D65C] = { left = -.1,  right = -.1 }, -- sans bold italic g
+
+                        [0x1D409] = { left =  .1,  right =  .1 }, -- bold upright J
+                        [0x1D412] = { left =  .1,  right =  .1 }, -- bold upright S
+
+                        [0x1D509] = { left =  .1,  right =  .1 }, -- fraktur F
+                        [0x1D50C] = { left =  .1,  right =  .1 }, -- fraktur I
+                        [0x1D50D] = { left =  .1,  right =  .1 }, -- fraktur J
+                        [0x1D51D] = { left =  .1,  right =  .1 }, -- fraktur Z
+
+                        [0x1D538] = { left =  .1,  right =  .1 }, -- doublestruck A
+                        [0x1D539] = { left =  .1,  right =  .1 }, -- doublestruck B
+                        [0x1D53C] = { left =  .1,  right =  .1 }, -- doublestruck E
+                        [0x1D53D] = { left =  .1,  right =  .1 }, -- doublestruck F
+                        [0x1D541] = { left =  .1,  right =  .1 }, -- doublestruck J
+                        [0x1D542] = { left =  .1,  right =  .1 }, -- doublestruck K
+                        [0x1D543] = { left =  .1,  right =  .1 }, -- doublestruck L
+                        [0x1D547] = { left =  .1,  right =  .1 }, -- doublestruck P
+                        [0x1D549] = { left =  .1,  right =  .1 }, -- doublestruck R
+                        [0x1D54A] = { left =  .1,  right =  .1 }, -- doublestruck S
+                        [0x1D54B] = { left =  .1,  right =  .1 }, -- doublestruck T
+                        [0x1D54D] = { left =  .1,  right =  .1 }, -- doublestruck V
+                        [0x1D550] = { left =  .1,  right =  .1 }, -- doublestruck Y
+
+                        [0x1D506] = { left =  .1,  right =  .1 }, -- fraktur C
+
+                        [0x00393] = { left =  .1,  right =  .1 }, -- upfight Gamma
+                        [0x00396] = { left =  .1,  right =  .1 }, -- upfight Zeta
+
+                        [0x1D5D8] = { left =  .1,  right =  .1 }, -- sans bold E
+                        [0x1D5D9] = { left =  .1,  right =  .1 }, -- sans bold F
+                        [0x1D5DF] = { left =  .1,  right =  .1 }, -- sans bold L
+                        [0x1D5E6] = { left =  .1,  right =  .1 }, -- sans bold S
+
+                        [0x1D61A] = { left =  .1,  right =  .1 }, -- sans italic S
+
+                        [0x1D5A2] = { left =  .1,  right =  .1 }, -- sans C
+                        [0x1D5A4] = { left =  .1,  right =  .1 }, -- sans E
+                        [0x1D5A5] = { left =  .1,  right =  .1 }, -- sans F
+                        [0x1D5AF] = { left =  .1,  right =  .1 }, -- sans P
+                        [0x1D5B2] = { left =  .1,  right =  .1 }, -- sans S
+                        [0x1D5B9] = { left =  .1,  right =  .1 }, -- sans Z
+
+                        [0x1D4A0] = { left =  .1,  right =  .1 }, -- script E
+                        [0x1D4AE] = { left =  .1,  right =  .1 }, -- script S
+                        [0x1D4B4] = { left =  .1,  right =  .1 }, -- script Y
+
+                        [0x0004C] = { left =  .1,  right =  .1 }, -- L
+                        [0x00053] = { left =  .1,  right =  .1 }, -- S
+                        [0x0005A] = { left =  .1,  right =  .1 }, -- Z
+
+                        [0x1D43D] = { left = -.1,  right = -.1  }, -- italic J
+                        [0x1D409] = { left = -.1,  right = -.1  }, -- bold J
+                        [0x1D471] = { left = -.1,  right = -.1  }, -- bold italic J
+                        [0x1D4D9] = { left = -.05, right = -.05 }, -- bold script J
+                    },
+                },
+                {
+                    tweak   = "fixprimes",
+                    factor  = 0.825,
+                },
+                {
+                    tweak = "checkspacing",
+                },
+                {
+                    tweak = "fixradicals",
+                },
+                {
+                    tweak = "addprivates",
+                },
+                {
+                    tweak = "addscripts",
+                },
+                {
+                    tweak = "accentdimensions",
+                },
+                {
+                    tweak = "addrules",
+                },
+                {
+                    tweak    = "replacerules",
+                 -- minus    = true, -- we have an extensible
+                    fraction = { height = .15, yoffset = .85 },
+                    radical  = { height = .15, yoffset = .85, leftoffset = .065, rightoffset = .065, leftoverlap = 0.023, rightoverlap = 0.023 },
+                    stacker  = { height = .15, yoffset = .85 },
+                },
+                -- This is gone:
+             -- {
+             --     tweak   = "addbars",
+             --     advance = 0.52,
+             -- },
+                -- And instead we now have this. Without the companion font we need it,
+                -- because otherwise the bars are some 20% larger than the other fences.
+               {
+                    tweak = "fixvariants",
+                    list  = {
+                        -- watch out, showglyphs is now fuzzy
+                     -- [0x0028] = { template = 0x005B, index = 1, yoffset = .03 },
+                     -- [0x0029] = { template = 0x005D, index = 1, yoffset = .03 },
+                        [0x007C] = { template = 0x005B, index = 1, yoffset = .03 },
+                        [0x2016] = { template = 0x005B, index = 1, yoffset = .03 },
+                        [0x2980] = { template = 0x005B, index = 1, yoffset = .03 },
+                    }
+                },
+             -- {
+             --     tweak   = "addbars",
+             --     advance = 0.52,
+             --     check   = true,
+             -- --     variant = 1,
+             -- },
+                {
+                    tweak = "addactuarian",
+                },
+             -- {
+             --     comment = "demo",
+             --     tweak   = "radicalbodymargins",
+             --     list    = {
+             --         ["delimited right annuity.parts.bottom"] = { right = 1 },
+             --     }
+             -- },
+                {
+                    tweak = "addfourier",
+                    variant = 1,
+                },
+                {
+                    tweak = "addprimed",
+                },
+                {
+                    tweak = "addequals",
+                },
+                -- this is the mkiv section
+                {
+                    tweak   = "emulatelmtx",
+                    feature = "emulatelmtx",
+                    comment = "this is for mkiv",
+                },
+            -- { tweak = "inspect", slot = 0x2212 },
+            -- { tweak = "inspect", slot = 0x003D },
+            --
+            -- only for testing
+            --
+                {
+                    tweak   = "dimensions",
+                    feature = "mathforme",
+                    list    = {
+                        [0x58] = { -- upright X
+                         -- scale   = 0.5,
+                            xoffset = 0.5,
+                            yoffset = 0.5,
+                        },
+                    }
+                },
+            },
+        },
+        bigslots = {
+            2, 4, 6, 7 -- In fact, 7 is the last one.
+        },
+    },
+}

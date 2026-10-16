@@ -416,9 +416,8 @@ void tex_finish_discretionary(void)
                         glue_shrink_order(next) = 0;
                     }
                     break;
-                } else {
-                    // fall through
                 }
+                FALLTHROUGH
             default:
                 if lmt_likely(hyphenation_permitted(hyphenation_mode_par, permit_all_hyphenation_mode)) {
                     break;

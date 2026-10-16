@@ -10,9 +10,9 @@ if not modules then modules = { } end modules ['l-number'] = {
 -- functions below ... that file evolved over time.
 
 local tonumber = tonumber
-local format = string.format
-local concat = table.concat
-local floor = math.floor
+local format   = sequencer.format
+local concat   = table.concat
+local floor    = math.floor
 
 number       = number or { }
 local number = number
@@ -69,13 +69,9 @@ function number.valid(str,default)
     return tonumber(str) or default or nil
 end
 
-function number.toevenhex(n)
-    local s = format("%X",n)
-    if #s % 2 == 0 then
-        return s
-    else
-        return "0" .. s
-    end
+local function toevenhex(n)
+    local s = format("%X", n)
+    return (#s % 2 ~= 0) and ("0" .. s) or s
 end
 
 function number.bytetodecimal(b)

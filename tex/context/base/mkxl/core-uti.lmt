@@ -16,13 +16,14 @@ if not modules then modules = { } end modules ['core-uti'] = {
 
 local math = math
 local next, type, tostring, tonumber, setmetatable, load = next, type, tostring, tonumber, setmetatable, load
-local format, match = string.format, string.match
+local match = string.match
 local concat, sortedkeys = table.concat, table.sortedkeys
 
 local definetable    = utilities.tables.definetable
 local accesstable    = utilities.tables.accesstable
 local migratetable   = utilities.tables.migratetable
 local serialize      = table.serialize
+local formatted      = string.formatted
 local packers        = utilities.packers
 local allocate       = utilities.storage.allocate
 local mark           = utilities.storage.mark
@@ -88,8 +89,8 @@ function job.initialize(loadname,savename)
     end
 end
 
-function job.register(collected, tobesaved, initializer, finalizer, serializer)
-    savelist[#savelist+1] = { collected, tobesaved, initializer, finalizer, serializer }
+function job.register(collected, tobesaved, initializer, finalizer)
+    savelist[#savelist+1] = { collected, tobesaved, initializer, finalizer }
 end
 
 -- as an example we implement variables
@@ -121,7 +122,7 @@ do
 
     statistics.register("randomizer", function()
         if rmethod and rvalue then
-            return format("%s with value %s",rmethod,rvalue)
+            return formatted("%s with value %s",rmethod,rvalue)
         end
     end)
 
@@ -301,13 +302,12 @@ function job.save(filename) -- we could return a table but it can get pretty lar
     local f = io.open(filename,'w')
     if f then
         f:write("local utilitydata = { }\n\n")
-        f:write(serialize(comment,"utilitydata.comment",true),"\n\n")
+        f:write(serialize(comment,"utilitydata.comment"),"\n\n")
         for l=1,#savelist do
             local list       = savelist[l]
-            local target     = format("utilitydata.%s",list[1])
+            local target     = formatted("utilitydata.%s",list[1])
             local data       = list[2]
             local finalizer  = list[4]
-            local serializer = list[5]
             if type(data) == "string" then
                 data = utilities.tables.accesstable(data)
             end
@@ -318,11 +318,7 @@ function job.save(filename) -- we could return a table but it can get pretty lar
                 packers.pack(data,jobpacker,true)
             end
             local definer, name = definetable(target,true,true) -- no first and no last
-            if serializer then
-                f:write(definer,"\n\n",serializer(data,name,true),"\n\n")
-            else
-                f:write(definer,"\n\n",serialize(data,name,true),"\n\n")
-            end
+            f:write(definer,"\n\n",serialize(data,name),"\n\n")
         end
         if job.pack then
             packers.strip(jobpacker)
@@ -448,15 +444,15 @@ statistics.register("jobdata time",function()
     local elapsedload = statistics.elapsedtime(loadedfiles)
     if enabled then
         if next(othercache) then
-            return format("%s seconds saving, %s seconds loading, other files: %s",elapsedsave,elapsedload,concat(sortedkeys(othercache), ", "))
+            return formatted("%s seconds saving, %s seconds loading, other files: %s",elapsedsave,elapsedload,concat(sortedkeys(othercache), ", "))
         else
-            return format("%s seconds saving, %s seconds loading",elapsedsave,elapsedload)
+            return formatted("%s seconds saving, %s seconds loading",elapsedsave,elapsedload)
         end
     else
         if next(othercache) then
-            return format("nothing saved, %s seconds loading, other files: %s",elapsedload,concat(sortedkeys(othercache), ", "))
+            return formatted("nothing saved, %s seconds loading, other files: %s",elapsedload,concat(sortedkeys(othercache), ", "))
         else
-            return format("nothing saved, %s seconds loading",elapsedload)
+            return formatted("nothing saved, %s seconds loading",elapsedload)
         end
     end
 end)
@@ -467,7 +463,7 @@ statistics.register("callbacks", function()
     local pages    = structures.pages.nofpages or 0
     local total    = frontend.count + backend.count
     local average  = pages > 0 and math.round(total/pages) or 0
-    local result   = format (
+    local result   = formatted(
         "file: %s, saved: %s, direct: %s, function: %s, value: %s, message: %s, bytecode: %s, late %s, total: %s (%s per page)",
         frontend.file,  frontend.saved,   frontend.direct,   frontend["function"],
         frontend.value, frontend.message, frontend.bytecode, backend.count,
@@ -492,9 +488,9 @@ function statistics.formatruntime(runtime)
             if pages == 0 then
                 pages = shipped
             end
-            return format("%0.3f seconds, %i processed pages, %i shipped pages, %.3f pages/second",runtime,pages,shipped,persecond)
+            return formatted("%0.3f seconds, %i processed pages, %i shipped pages, %.3f pages/second",runtime,pages,shipped,persecond)
         else
-            return format("%0.3f seconds",runtime)
+            return formatted("%0.3f seconds",runtime)
         end
     end
 end

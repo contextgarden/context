@@ -9,7 +9,9 @@ if not modules then modules = { } end modules ['lpdf-sig'] = {
 
 -- experiment and playground
 
-local find, gsub, rep, format = string.find, string.gsub, string.rep, string.format
+local find, gsub, rep = string.find, string.gsub, string.rep
+
+local formatted = string.formatted
 
 -- M         = "D:20231118193724Z",
 -- Reference = pdfdictionary  {
@@ -28,7 +30,7 @@ local function updatesignature(signature,...)
     local updated = gsub(signature,
      -- "/ByteRange %[ 2000000000 2000000000 2000000000 2000000000 %]",
         "/ByteRange %[ .......... .......... .......... .......... %]",
-        format("/ByteRange [ %010i %010i %010i %010i ]",...)
+        formatted("/ByteRange [ %010i %010i %010i %010i ]",...)
     )
     return updated ~= signature and updated or false
 end

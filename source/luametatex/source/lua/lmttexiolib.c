@@ -22,7 +22,7 @@
 
     static const void *G_FILEHANDLE_METATABLE_PTR = NULL;
 
-    FILE *lmt_valid_file(lua_State *L)
+    inline FILE *lmt_valid_file(lua_State *L)
     {
         luaL_Stream *p = (luaL_Stream *) lua_touserdata(L, 1);
         if (p && lua_getmetatable(L, 1)) {
@@ -37,7 +37,7 @@
 
 # else
 
-    FILE *lmt_valid_file(lua_State *L)
+    inline FILE *lmt_valid_file(lua_State *L)
     {
         luaL_Stream *p = (luaL_Stream *) lua_touserdata(L, 1);
         if (p && lua_getmetatable(L, 1)) {

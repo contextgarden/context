@@ -6,6 +6,7 @@
 # define LMT_UTILITIES_UNISTRING_H
 
 extern unsigned char *aux_uni2str         (unsigned unic);
+extern int            aux_uni2strlen      (unsigned unic, char *buf);
 extern void           aux_uni2str_callback(unsigned unic, void (*handle) (int));
 extern unsigned       aux_str2uni         (const unsigned char *text);
 extern unsigned       aux_str2uni_len     (const unsigned char *text, size_t size, int *len);

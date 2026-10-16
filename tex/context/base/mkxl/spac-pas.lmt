@@ -6,14 +6,15 @@ if not modules then modules = { } end modules ['spac-pas'] = {
     license   = "see context related readme files"
 }
 
--- My usual usical timestamp: early September 2024, Albion live in Alphen NL
+-- My usual musical timestamp: early September 2024, Albion live in Alphen NL
 -- (as impressive as expected).
 
 local rawget, tonumber, type, unpack = rawget, tonumber, type, unpack
 local sortedhash = table.sortedhash
-local formatters = string.formatters
 
 local report         = logs.reporter("linebreak","quality")
+
+local formatted      = string.formatted
 
 local currentfile    = luatex.currentfile
 
@@ -82,7 +83,6 @@ end
 
 local visualizepasses = false
 local summary         = { }
-local f_3             = false
 
 local noffirst     = 0
 local nofsecond    = 0
@@ -94,7 +94,6 @@ local function marker(par,pass,subpass,subpasses,state,identifier,name,collect)
     if not visualizepasses then
         visualizepasses = nodes.visualizers.register("passes","trace:dr","trace:dr",-1.5)
         nodes.visualizers.definelayer("passes")
-        f_3 = formatters["subpass %02i"]
     end
     if pass == 1 then
         pass = "pretolerance"
@@ -108,7 +107,7 @@ local function marker(par,pass,subpass,subpasses,state,identifier,name,collect)
     elseif subpass == -1 then
         pass = "subpass tol"
     else
-        pass = f_3(subpass)
+        pass = formatted("subpass %02i",subpass)
     end
     if collect then
         local s = summary[identifier]
@@ -187,7 +186,7 @@ end)
 
 statistics.register("linebreak quality",function()
     if tracing then
-        return string.formatters["%i first, %i second, %i third, %i subpasses, %i subruns"](noffirst, nofsecond, nofthird,nofsubpasses,nofsubdone)
+        return formatted("%i first, %i second, %i third, %i subpasses, %i subruns",noffirst,nofsecond,nofthird,nofsubpasses,nofsubdone)
     end
 end)
 

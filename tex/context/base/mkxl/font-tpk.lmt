@@ -15,11 +15,11 @@ if not modules then modules = { } end modules ['font-tpk'] = {
 local next = next
 local char = string.char
 local concat, insert, remove, copy = table.concat, table.insert, table.remove, table.copy
-local tobitstring = number.tobitstring
-local formatters = string.formatters
 local round = math.round
 local addsuffix, basename, nameonly, pathpart, joinfile = file.addsuffix, file.basename, file.nameonly, file.pathpart, file.join
 
+local tobitstring   = number.tobitstring
+local formatted     = string.formatted
 local findbinfile   = resolvers.findbinfile
 
 local streams       = utilities.streams
@@ -282,7 +282,7 @@ do
         end
     end
 
-    local template = formatters [ [[
+    local template = [[
 %N 0 %i %i %i %i d1
 %i 0 0 %i %i %i cm
 BI
@@ -292,7 +292,7 @@ BI
   /BPC 1
   /D [1 0]
 ID %t
-EI]] ]
+EI]]
 
     function readers.pktopdf(glyph,data,factor)
         local width   = data.width * factor
@@ -336,21 +336,21 @@ width = round(width)
                  r = r + 1 ; result[r] = char((b >> 8) & 0xFF)
             end
         end
-     -- return template(width,llx,lly,urx,ury,xdpi,ydpi,llx,lly,xsize,ysize,result), width
-        return template(width,llx,lly,urx,ury,xsize,ysize,llx,lly,xsize,ysize,result), width
+     -- return formatted(template,width,llx,lly,urx,ury,xdpi,ydpi,llx,lly,xsize,ysize,result), width
+        return formatted(template,width,llx,lly,urx,ury,xsize,ysize,llx,lly,xsize,ysize,result), width
     end
 
-    local template = formatters [ [[
+    local template = [[
 %N 0 %N %N %N %N d1
 1 0 0 1 %N %N cm
 %t h f
-]] ]
+]]
 
 -- S
 
-    local f_curveto = formatters["%N %N %N %N %N %N c"]
-    local f_moveto  = formatters["%N %N m"]
-    local f_lineto  = formatters["%N %N l"]
+    local f_curveto = "%N %N %N %N %N %N c"
+    local f_moveto  = "%N %N m"
+    local f_lineto  = "%N %N l"
 
     function readers.potracedtopdf(glyph,data,factor,settings)
         local width   = data.width * factor
@@ -379,11 +379,11 @@ width = round(width)
                     local x1 = tj[1]
                     local y1 = tj[2]
                     if nj == 6 then
-                        ri[j] = f_curveto(tj[3],tj[4],tj[5],tj[6],x1,y1)
+                        ri[j] = formatted(f_curveto,tj[3],tj[4],tj[5],tj[6],x1,y1)
                     elseif j == 1 then
-                        ri[j] = f_moveto(x1,y1)
+                        ri[j] = formatted(f_moveto,x1,y1)
                     else
-                        ri[j] = f_lineto(x1,y1)
+                        ri[j] = formatted(f_lineto,x1,y1)
                     end
                 end
                 ri[ni+1] = " "
@@ -393,7 +393,7 @@ llx = round(llx)
 lly = round(lly)
 urx = round(urx)
 ury = round(ury)
-            return template(width,llx,lly,urx,ury,llx,lly,result), width
+            return formatted(template,width,llx,lly,urx,ury,llx,lly,result), width
         end
 
     end

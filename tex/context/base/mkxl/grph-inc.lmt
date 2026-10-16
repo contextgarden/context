@@ -53,7 +53,6 @@ local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
 local concat, insert, remove, unique = table.concat, table.insert, table.remove, table.unique
 local todimen = string.todimen
 local collapsepath = file.collapsepath
-local formatters = string.formatters
 local odd = math.odd
 local isfile, isdir, modificationtime = lfs.isfile, lfs.isdir, lfs.modification
 local joinfile, is_qualified_path = file.join, file.is_qualified_path
@@ -66,6 +65,9 @@ local settings_to_set   = utilities.parsers.settings_to_set
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
 local replacetemplate   = utilities.templates.replace
+
+----- formatters        = string.formatters
+local formatted         = string.formatted
 
 local bpfactor          <const> = number.dimenfactors.bp
 local maxdimen          <const> = tex.magicconstants.maxdimen
@@ -107,8 +109,8 @@ local auto_transform    = true   directives.register("graphics.autotransform", f
 local report            = logs.reporter("graphics")
 local report_inclusion  = logs.reporter("graphics","inclusion")
 
-local f_hash_part       = formatters["%s->%s->%s->%s"]
-local f_hash_full       = formatters["%s->%s->%s->%s->%s->%s->%s->%s->%s->%s"]
+local f_hash_part       = "%s->%s->%s->%s"
+local f_hash_full       = "%s->%s->%s->%s->%s->%s->%s->%s->%s->%s"
 
 local v_yes             <const> = variables.yes
 local v_always          <const> = variables.always
@@ -1006,7 +1008,7 @@ local function register(askedname,specification)
         specification.foundname = nil
     end
     specification.badname   = figures.badname(askedname)
-    local askedhash = f_hash_part(
+    local askedhash = formatted(f_hash_part,
         askedname,
         specification.conversion or "default",
         specification.resolution or "default",
@@ -1037,7 +1039,7 @@ local function locate(request) -- name, format, cache
     local askedresolution = request.resolution
     local askedarguments  = request.arguments
     local askedcrop       = request.crop
-    local askedhash       = f_hash_part(
+    local askedhash       = formatted(f_hash_part,
         askedname,
         askedconversion or "default",
         askedresolution or "default",
@@ -1414,7 +1416,7 @@ statistics.register("used graphics",function()
                 found = found,
                 used  = used_images,
             } )
-            return format("log saved in '%s'",filename)
+            return formatted("log saved in '%s'",filename)
         else
             os.remove(filename)
         end
@@ -1563,7 +1565,7 @@ function checkers.generic(data) -- called by checkers.pdf/png/jpg
     if not arguments or arguments == "" then
         arguments = "default"
     end
-    local hash = f_hash_full(
+    local hash = formatted(f_hash_full,
         name,
         page,
         size,
@@ -1599,7 +1601,7 @@ function checkers.generic(data) -- called by checkers.pdf/png/jpg
                 page = f and f.page or page
             end
             figure.page = page
-            hash = f_hash_full(
+            hash = formatted(f_hash_full,
                 name,
                 page,
                 size,
@@ -1922,7 +1924,7 @@ function programs.run(binary,argument,variables)
     else
         -- no need to use the full found filename (found) .. we also don't quote the program
         -- name any longer as in luatex there is too much messing with these names
-        local command = format([[%s %s]],binary,replacetemplate(longtostring(argument),variables))
+        local command = formatted([[%s %s]],binary,replacetemplate(longtostring(argument),variables))
         if trace_conversion or trace_programs then
             report_inclusion("running command: %s",command)
         end
@@ -2076,7 +2078,7 @@ statistics.register("graphics processing time", function()
                 nofbadnames = nofbadnames + 1
             end
         end
-        return format("%s seconds including tex, %s processed images, %s unique asked, %s bad names",
+        return formatted("%s seconds including tex, %s processed images, %s unique asked, %s bad names",
             statistics.elapsedtime(figures),nofprocessed,nofnames,nofbadnames)
     else
         return nil
@@ -2115,8 +2117,8 @@ end
 --
 -- figures.converters.png = {
 --     png = function(oldname,newname,resolution)
---         local command = string.format('gm convert -depth 1 "%s" "%s"',oldname,newname)
---         logs.report(string.format("running command %s",command))
+--         local command = string.formatted('gm convert -depth 1 "%s" "%s"',oldname,newname)
+--         logs.report(string.formatted("running command %s",command))
 --         os.execute(command)
 --     end,
 -- }

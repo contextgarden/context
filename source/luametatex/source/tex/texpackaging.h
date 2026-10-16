@@ -142,9 +142,9 @@ extern halfword  tex_filtered_vpack        (halfword p, scaled h, int m, scaled 
 extern scaledwhd tex_natural_hsizes        (halfword p, halfword pp, glueratio g_mult, int g_sign, int g_order);
 extern scaledwhd tex_natural_vsizes        (halfword p, halfword pp, glueratio g_mult, int g_sign, int g_order, int inserts);
 extern scaledwhd tex_natural_msizes        (halfword p, int ignoreprime);
-extern halfword  tex_natural_width         (halfword p, halfword pp, glueratio g_mult, int g_sign, int g_order);
-extern halfword  tex_natural_hsize         (halfword p, halfword *correction);
-extern halfword  tex_natural_vsize         (halfword p);
+extern scaled    tex_natural_width         (halfword p, halfword pp, glueratio g_mult, int g_sign, int g_order);
+extern scaled    tex_natural_hsize         (halfword p, halfword *correction);
+extern scaled    tex_natural_vsize         (halfword p);
                                            
 extern halfword  tex_hpack                 (halfword p, scaled w, int m, singleword d, int retain, int limit, halfword ls, halfword rs);
 extern halfword  tex_vpack                 (halfword p, scaled h, int m, scaled l, singleword d, int retain, int *excess);

@@ -119,15 +119,14 @@ randomizers.poisson   = poisson
 
 -- The MetaFun interface:
 
-local formatters = string.formatters
-local concat = table.concat
-
-local f_macro = formatters["%s(%N,%N);"]
+local formatting = string.formatting
+local formatted  = string.formatted
+local concat     = table.concat
 
 local f_macros = {
-    [2] = formatters["%s(%N,%N);"],
-    [3] = formatters["%s(%N,%N,%i);"],
-    [4] = formatters["%s(%N,%N,%i,%i);"],
+    [2] = formatting("%s(%N,%N);"),
+    [3] = formatting("%s(%N,%N,%i);"),
+    [4] = formatting("%s(%N,%N,%i,%i);"),
 }
 
 local function grid_to_mp(t,f,n)
@@ -136,7 +135,7 @@ local function grid_to_mp(t,f,n)
     local result = { }
     local r      = 0
     local macro  = f or "draw"
-    local runner = f_macros[n or 2] or f_macros[2]
+    local fmt    = f_macros[n or 2] or f_macros[2]
     for i=1,#grid do
         local g = grid[i]
         if g then
@@ -144,7 +143,7 @@ local function grid_to_mp(t,f,n)
                 local v = g[j]
                 if v then
                     r = r + 1
-                    result[r] = runner(macro,v[1],v[2],v[3],count)
+                    result[r] = formatted(fmt,macro,v[1],v[2],v[3],count)
                 end
             end
         end
@@ -196,11 +195,11 @@ end
 --     local result = { }
 --     local r      = 0
 --     local macro  = f or "draw"
---     local runner = f_macros[n or 2] or f_macros[2]
+--     local fmt    = f_macros[n or 2] or f_macros[2]
 --     for i=1,count do
 --         local v = points[i]
 --         r = r + 1
---         result[r] = runner(macro,v[1],v[2],v[3],count)
+--         result[r] = formatted(fmt,macro,v[1],v[2],v[3],count)
 --     end
 --     return concat(result, " ")
 -- end

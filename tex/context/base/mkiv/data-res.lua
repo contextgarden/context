@@ -1184,42 +1184,46 @@ local function find_analyze(filename,askedformat,allresults)
     local filetype    = ""
     local filesuffix  = suffixonly(filename)
     local wantedfiles = { }
-    -- too tricky as filename can be bla.1.2.3:
-    --
-    -- if not suffixmap[filesuffix] then
-    --     wantedfiles[#wantedfiles+1] = filename
-    -- end
-    wantedfiles[#wantedfiles+1] = filename
-    if askedformat == "" then
-        if filesuffix == "" or not suffixmap[filesuffix] then
-            local defaultsuffixes = resolvers.defaultsuffixes
-            for i=1,#defaultsuffixes do
-                local forcedname = filename .. "." .. defaultsuffixes[i]
-                wantedfiles[#wantedfiles+1] = forcedname
-                filetype = formatofsuffix(forcedname)
+    if filename and filename ~= "" and filename ~= "." then -- weird check
+        -- too tricky as filename can be bla.1.2.3:
+        --
+        -- if not suffixmap[filesuffix] then
+        --     wantedfiles[#wantedfiles+1] = filename
+        -- end
+        wantedfiles[#wantedfiles+1] = filename
+        if askedformat == "" then
+            if filesuffix == "" or not suffixmap[filesuffix] then
+                local defaultsuffixes = resolvers.defaultsuffixes
+                for i=1,#defaultsuffixes do
+                    local forcedname = filename .. "." .. defaultsuffixes[i]
+                    wantedfiles[#wantedfiles+1] = forcedname
+                    filetype = formatofsuffix(forcedname)
+                    if trace_locating then
+                        report_resolving("forcing filetype %a",filetype)
+                    end
+                end
+            else
+                filetype = formatofsuffix(filename)
                 if trace_locating then
-                    report_resolving("forcing filetype %a",filetype)
+                    report_resolving("using suffix based filetype %a",filetype)
                 end
             end
         else
-            filetype = formatofsuffix(filename)
+            if filesuffix == "" or not suffixmap[filesuffix] then
+                local format_suffixes = suffixes[askedformat]
+                if format_suffixes then
+                    for i=1,#format_suffixes do
+                        wantedfiles[#wantedfiles+1] = filename .. "." .. format_suffixes[i]
+                    end
+                end
+            end
+            filetype = askedformat
             if trace_locating then
-                report_resolving("using suffix based filetype %a",filetype)
+                report_resolving("using given filetype %a",filetype)
             end
         end
     else
-        if filesuffix == "" or not suffixmap[filesuffix] then
-            local format_suffixes = suffixes[askedformat]
-            if format_suffixes then
-                for i=1,#format_suffixes do
-                    wantedfiles[#wantedfiles+1] = filename .. "." .. format_suffixes[i]
-                end
-            end
-        end
-        filetype = askedformat
-        if trace_locating then
-            report_resolving("using given filetype %a",filetype)
-        end
+        -- kind of weird
     end
     return filetype, wantedfiles
 end

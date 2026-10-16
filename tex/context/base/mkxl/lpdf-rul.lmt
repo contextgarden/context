@@ -31,7 +31,10 @@ local report_mp        = logs.reporter("rules","mp")
 
 local floor            = math.floor
 local getrandom        = utilities.randomizer.get
+
 local formatters       = string.formatters
+local formatting       = string.formatting
+local formatted        = string.formatted
 
 local setdimen         = tex.setdimen
 local isdimen          = tex.isdimen
@@ -165,7 +168,7 @@ FakeRule(RuleWidth,RuleHeight,RuleDepth,RuleThickness,RuleColor);
         --
         if not initialized then
             initialized = true
-            simplemetapost("rulefun",formatters["randomseed := %s;"](getrandom("rulefun",0,4095)))
+            simplemetapost("rulefun",formatted("randomseed := %s;",getrandom("rulefun",0,4095)))
         end
         -- we enable extensions but we could also consider to delegate colors
         -- to the node finalizer
@@ -254,17 +257,59 @@ do
     setmetatableindex(linemapping, register)
     setmetatableindex(roundmapping,register)
 
+    local f_xxxx = formatting("q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N l %.6N %.6N l h %s Q")
+    local f_x    = formatting("q %.6N w %.6N %.6N m %.6N %.6N l S Q")
+    local f_x_x  = formatting("q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N m %.6N %.6N %.6N l S Q")
+    local f_xxx  = formatting("q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N l %.6N %.6N l S Q")
+    local f_xx   = formatting("q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N l S Q")
+
+    local f_ltbr = formatting("q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y h %s Q")
+
+    local f_1    = formatting("q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N l %.6N %.6N l %.6N %.6N %.6N %.6N y h %s Q")
+    local f_2    = formatting("q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N l %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y h %s Q")
+    local f_3    = formatting("q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l h %s Q")
+    local f_4    = formatting("q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N l h %s Q")
+    local f_5    = formatting("q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N l h %s Q")
+    local f_6    = formatting("q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N l %.6N %.6N l h %s Q")
+    local f_7    = formatting("q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N l %.6N %.6N l %.6N %.6N l %.6N %.6N %.6N %.6N y h %s Q") -- outlier
+    local f_8    = formatting("q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N l %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l h %s Q")
+    local f_lbr  = formatting("q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l S Q")
+    local f_tlb  = f_lbr --  ("q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l S Q")
+    local f_ltr  = f_lbr --  ("q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l S Q")
+    local f_trb  = f_lbr --  ("q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l S Q")
+    local f_lr   = formatting("q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y S Q")
+    local f_tb   = f_lr  --  ("q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y S Q")
+    local f_rt   = formatting("q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l S Q")
+    local f_rb   = f_rt --   ("q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l S Q")
+    local f_bl   = f_rt --   ("q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l S Q")
+    local f_tl   = f_rt --   ("q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l S Q")
+    local f_17   = formatting("q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y S Q")
+    local f_18   = f_17 --   ("q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y S Q")
+    local f_19   = f_17 --   ("q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y S Q")
+    local f_20   = f_17 --   ("q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y S Q")
+    local f_21   = formatting("q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N m %.6N %.6N %.6N %.6N y S Q")
+    local f_22   = f_21 --   ("q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N m %.6N %.6N %.6N %.6N y S Q")
+    local f_23   = f_21 --   ("q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N m %.6N %.6N %.6N %.6N y S Q")
+    local f_24   = f_21 --   ("q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N m %.6N %.6N %.6N %.6N y S Q")
+    local f_25   = formatting("q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N m %.6N %.6N %.6N %.6N y S Q")
+    local f_26   = f_21 --   ("q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N m %.6N %.6N %.6N %.6N y S Q")
+    local f_27   = f_26 --   ("q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N m %.6N %.6N %.6N %.6N y S Q")
+    local f_l    = f_26 --   ("q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y S Q")
+    local f_r    = f_26 --   ("q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y S Q")
+    local f_b    = f_26 --   ("q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y S Q")
+    local f_t    = f_26 --   ("q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y S Q")
+
     local function round(p,kind,corner)
-        local width  = p.width or 0
-        local height = p.height or 0
-        local depth  = p.depth or 0
-        local radius = p.radius or 655360
-        local line   = (p.line or 65536) * bpfactor
+        local width  = (p.width  or 0) * bpfactor
+        local height = (p.height or 0) * bpfactor
+        local depth  = (p.depth  or 0) * bpfactor
+        local radius = (p.radius or 655360) * bpfactor
+        local line   = (p.line   or  65536) * bpfactor
         local half   = line / 2
         local xxmin  = 0
-        local xxmax  =  width * bpfactor
-        local yymax  = height * bpfactor
-        local yymin  = -depth * bpfactor
+        local xxmax  = width
+        local yymax  = height
+        local yymin  = -depth
         local xmin   = xxmin + half
         local xmax   = xxmax - half
         local ymax   = yymax - half
@@ -273,214 +318,116 @@ do
         local done   = kind ~= "fill" and "S" or "f"
         if radius == 0 then
             local method = linemapping[corner]
-            if method == "ltrb" then
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N l %.6N %.6N l h %s Q"]
-                    (line,xmin,ymin,xmax,ymin,xmax,ymax,xmin,ymax,done)
-            elseif method == "l" then
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l S Q"]
-                    (line,xmin,yymin,xmin,yymax)
-            elseif method == "r" then
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l S Q"]
-                    (line,xmax,yymin,xmax,yymax)
-            elseif method == "b" then
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l S Q"]
-                    (line,xxmin,ymin,xxmax,ymin)
-            elseif method == "t" then
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l S Q"]
-                    (line,xxmin,ymax,xxmax,ymax)
-            elseif method == "lr" then
-                list = formatters
-                    ["q %.6N w %.6N  %.6N m %.6N  %.6N l %.6N  %.6N m %.6N  %.6N  %.6N l S Q"]
-                    (line,xmin,yymin,xmin,yymax,xmax,yymin,xmax,yymax)
-            elseif method == "tb" then
-                list = formatters
-                    ["q %.6N w %.6N  %.6N m %.6N  %.6N l %.6N  %.6N m %.6N  %.6N  %.6N l S Q"]
-                    (line,xxmin,ymin,xxmax,ymin,xxmin,ymax,xxmax,ymax)
-            elseif method == "lbr" then
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N l %.6N %.6N l S Q"]
-                    (line,xmin,yymax,xmin,ymin,xmax,ymin,xmax,yymax)
-            elseif method == "tlb" then -- 10
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N l %.6N %.6N l S Q"]
-                    (line,xxmax,ymax,xmin,ymax,xmin,ymin,xxmax,ymin)
-            elseif method == "ltr" then -- 11
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N l %.6N %.6N l S Q"]
-                    (line,xmin,yymin,xmin,ymax,xmax,ymax,xmax,yymin)
-            elseif method == "trb" then
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N l %.6N %.6N l S Q"]
-                    (line,xxmin,ymax,xmax,ymax,xmax,ymin,xxmin,ymin)
-            elseif method == "rt" then
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N l S Q"]
-                    (line,xxmin,ymax,xmax,ymax,xmax,yymin)
-            elseif method == "rb" then
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N l S Q"]
-                    (line,xmax,yymax,xmax,ymin,xxmin,ymin)
-            elseif method == "bl" then
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N l S Q"]
-                    (line,xxmax,ymin,xmin,ymin,xmin,yymax)
-            elseif method == "tl" then
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N l S Q"]
-                    (line,xmin,yymin,xmin,ymax,xxmax,ymax)
+                if method == "ltrb" then
+                list = formatted(f_xxxx,line,xmin,ymin,xmax,ymin,xmax,ymax,xmin,ymax,done)
+            elseif method == "l"    then
+                list = formatted(f_x,   line,xmin,yymin,xmin,yymax)
+            elseif method == "r"    then
+                list = formatted(f_x,   line,xmax,yymin,xmax,yymax)
+            elseif method == "b"    then
+                list = formatted(f_x,   line,xxmin,ymin,xxmax,ymin)
+            elseif method == "t"    then
+                list = formatted(f_x,   line,xxmin,ymax,xxmax,ymax)
+            elseif method == "lr"   then
+                list = formatted(f_x_x, line,xmin,yymin,xmin,yymax,xmax,yymin,xmax,yymax)
+            elseif method == "tb"   then
+                list = formatted(f_x_x, line,xxmin,ymin,xxmax,ymin,xxmin,ymax,xxmax,ymax)
+            elseif method == "lbr"  then
+                list = formatted(f_xxx, line,xmin,yymax,xmin,ymin,xmax,ymin,xmax,yymax)
+            elseif method == "tlb"  then -- 10
+                list = formatted(f_xxx, line,xxmax,ymax,xmin,ymax,xmin,ymin,xxmax,ymin)
+            elseif method == "ltr"  then -- 11
+                list = formatted(f_xxx, line,xmin,yymin,xmin,ymax,xmax,ymax,xmax,yymin)
+            elseif method == "trb"  then
+                list = formatted(f_xxx, line,xxmin,ymax,xmax,ymax,xmax,ymin,xxmin,ymin)
+            elseif method == "rt"   then
+                list = formatted(f_xx,  line,xxmin,ymax,xmax,ymax,xmax,yymin)
+            elseif method == "rb"   then
+                list = formatted(f_xx,  line,xmax,yymax,xmax,ymin,xxmin,ymin)
+            elseif method == "bl"   then
+                list = formatted(f_xx,  line,xxmax,ymin,xmin,ymin,xmin,yymax)
+            elseif method == "tl"   then
+                list = formatted(f_xx,  line,xmin,yymin,xmin,ymax,xxmax,ymax)
             else
                 return
             end
         else
             local method = roundmapping[corner]
             local full   = ( radius + half)
-            local xxxmin =            full  * bpfactor
-            local xxxmax = ( width  - full) * bpfactor
-            local yyymax = ( height - full) * bpfactor
-            local yyymin = (-depth  + full) * bpfactor
+            local xxxmin =            full
+            local xxxmax = ( width  - full)
+            local yyymax = ( height - full)
+            local yyymin = (-depth  + full)
             if xxxmin > xxxmax or yyymin > yyymax then
                 return
             elseif method == "ltrb" then
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y h %s Q"]
-                    (line,xxxmin,ymin,xxxmax,ymin,xmax,ymin,xmax,yyymin,xmax,yyymax,xmax,ymax,xxxmax,ymax,xxxmin,ymax,xmin,ymax,xmin,yyymax,xmin,yyymin,xmin,ymin,xxxmin,ymin,done)
-            elseif method == "1" then -- ll lr
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N l %.6N %.6N l %.6N %.6N %.6N %.6N y h %s Q"]
-                    (line,xxxmin,ymin,xxxmax,ymin,xmax,ymin,xmax,yyymin,xmax,ymax,xmin,ymax,xmin,yyymin,xmin,ymin,xxxmin,ymin,done)
-            elseif method == "2" then -- ll ul
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N l %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y h %s Q"]
-                    (line,xxxmin,ymin,xmax,ymin,xmax,ymax,xxxmin,ymax,xmin,ymax,xmin,yyymax,xmin,yyymin,xmin,ymin,xxxmin,ymin,done)
-            elseif method == "3" then -- ul ur
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l h %s Q"]
-                    (line,xmin,ymin,xmax,ymin,xmax,yyymax,xmax,ymax,xxxmax,ymax,xxxmin,ymax,xmin,ymax,xmin,yyymax,xmin,ymin,done)
-            elseif method == "4" then -- ur lr
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N l h %s Q"]
-                    (line,xmin,ymin,xxxmax,ymin,xmax,ymin,xmax,yyymin,xmax,yyymax,xmax,ymax,xxxmax,ymax,xmin,ymax,xmin,ymin,done)
-            elseif method == "5" then -- ur
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N l h %s Q"]
-                    (line,xmin,ymin,xmax,ymin,xmax,yyymax,xmax,ymax,xxxmax,ymax,xmin,ymax,xmin,ymin,done)
-            elseif method == "6" then -- lr
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N l %.6N %.6N l h %s Q"]
-                    (line,xmin,ymin,xxxmax,ymin,xmax,ymin,xmax,yyymin,xmax,ymax,xmin,ymax,xmin,ymin,done)
-            elseif method == "7" then -- ur
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N l %.6N %.6N l %.6N %.6N l %.6N %.6N %.6N %.6N y h %s Q"] -- outlier
-                    (line,xxxmin,ymin,xmax,ymin,xmax,ymax,xmin, ymax,xmin,yyymin,xmin,ymin,xxxmin,ymin,done)
-            elseif method == "8" then -- ul
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N l %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l h %s Q"]
-                    (line,xmin,ymin,xmax,ymin,xmax,ymax,xxxmin,ymax,xmin,ymax,xmin,yyymax,xmin,ymin,done)
-            elseif method == "lbr" then -- 12
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l S Q"]
-                    (line,xmin,yymax,xmin,yyymin,xmin,ymin,xxxmin,ymin,xxxmax,ymin,xmax,ymin,xmax,yyymin,xmax,yymax)
-            elseif method == "tlb" then -- 10
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l S Q"]
-                    (line,xxmax,ymax,xxxmin,ymax,xmin,ymax,xmin,yyymax,xmin,yyymin,xmin,ymin,xxxmin,ymin,xxmax,ymin)
-            elseif method == "ltr" then -- 11
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l S Q"]
-                    (line,xmax,yymin,xmax,yyymax,xmax,ymax,xxxmax,ymax,xxxmin,ymax,xmin,ymax,xmin,yyymax,xmin,yymin)
-            elseif method == "trb" then -- 9
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l S Q"]
-                    (line,xxmin,ymax,xxxmax,ymax,xmax,ymax,xmax,yyymax,xmax,yyymin,xmax,ymin,xxxmax,ymin,xxmin,ymin)
-            elseif method == "lr" then
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y S Q"]
-                    (line,xxxmin,ymin,xmin,ymin,xmin,yyymin,xmin,yyymax,xmin,ymax,xxxmin,ymax,xxxmax,ymax,xmax,ymax,xmax,yyymax,xmax,yyymin,xmax,ymin,xxxmax,ymin)
-            elseif method == "tb" then
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y S Q"]
-                    (line,xmax,yyymin,xmax,ymin,xxxmax,ymin,xxxmin,ymin,xmin,ymin,xmin,yyymin,xmax,yyymax,xmax,ymax,xxxmax,ymax,xxxmin,ymax,xmin,ymax,xmin,yyymax)
-            elseif method == "rt" then
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l S Q"]
-                    (line,xxmin,ymax,xxxmax,ymax,xmax,ymax,xmax,yyymax,xmax,yymin)
-            elseif method == "rb" then
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l S Q"]
-                    (line,xmax,yymax,xmax,yyymin,xmax,ymin,xxxmax,ymin,xxmin,ymin)
-            elseif method == "bl" then
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l S Q"]
-                    (line,xxmax,ymin,xxxmin,ymin,xmin,ymin,xmin,yyymin,xmin,yymax)
-            elseif method == "tl" then
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l S Q"]
-                    (line,xmin,yymin,xmin,yyymax,xmin,ymax,xxxmin,ymax,xxmax,ymax)
-            elseif method == "17" then -- urx
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y S Q"]
-                    (line,xxxmax,ymax,xmax,ymax,xmax,yyymax)
-            elseif method == "18" then -- lrt
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y S Q"]
-                    (line,xmax,yyymin,xmax,ymin,xxxmax,ymin)
-            elseif method == "19" then -- llx
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y S Q"]
-                    (line,xxxmin,ymin,xmin,ymin,xmin,yyymin)
-            elseif method == "20" then -- urx
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y S Q"]
-                    (line,xmin,yyymax,xmin,ymax,xxxmin,ymax)
-            elseif method == "21" then -- ulx urx
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N m %.6N %.6N %.6N %.6N y S Q"]
-                    (line,xmax,yyymax,xmax,ymax,xxxmax,ymax,xxxmin,ymax,xmin,ymax,xmin,yyymax)
-            elseif method == "22" then -- urt lrt
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N m %.6N %.6N %.6N %.6N y S Q"]
-                    (line,xxxmax,ymax,xmax,ymax,xmax,yyymax,xmax,yyymin,xmax,ymin,xxxmax,ymin)
-            elseif method == "23" then -- llx lrx
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N m %.6N %.6N %.6N %.6N y S Q"]
-                    (line,xmax,yyymin,xmax,ymin,xxxmax,ymin,xxxmin,ymin,xmin,ymin,xmin,yyymin)
-            elseif method == "24" then -- ulx llx
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N m %.6N %.6N %.6N %.6N y S Q"]
-                    (line,xxxmin,ymin,xmin,ymin,xmin,yyymin,xmin,yyymax,xmin,ymax,xxxmin,ymax)
-            elseif method == "25" then -- llx lrx urx ulx
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N m %.6N %.6N %.6N %.6N y S Q"]
-                    (line,xxxmax,ymax,xmax,ymax,xmax,yyymax,xmax,yyymin,xmax,ymin,xxxmax,ymin,xxxmin,ymin,xmin,ymin,xmin,yyymin,xmin,yyymax,xmin,ymax,xxxmin,ymax)
-            elseif method == "26" then
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N m %.6N %.6N %.6N %.6N y S Q"]
-                    (line,xmax,yyymin,xmax,ymin,xxxmax,ymin,xmin,yyymax,xmin,ymax,xxxmin,ymax)
-            elseif method == "27" then
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N m %.6N %.6N %.6N %.6N y S Q"]
-                    (line,xxxmax,ymax,xmax,ymax,xmax,yyymax,xxxmin,ymin,xmin,ymin,xmin,yyymin)
-            elseif method == "l" then
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y S Q"]
-                    (line,xxxmin,ymin,xmin,ymin,xmin,yyymin,xmin,yyymax,xmin,ymax,xxxmin,ymax)
-            elseif method == "r" then
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y S Q"]
-                    (line,xxxmax,ymax,xmax,ymax,xmax,yyymax,xmax,yyymin,xmax,ymin,xxxmax,ymin)
-            elseif method == "b" then
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y S Q"]
-                    (line,xmax,yyymin,xmax,ymin,xxxmax,ymin,xxxmin,ymin,xmin,ymin,xmin,yyymin)
-            elseif method == "t" then
-                list = formatters
-                    ["q %.6N w %.6N %.6N m %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y S Q"]
-                    (line,xmax,yyymax,xmax,ymax,xxxmax,ymax,xxxmin,ymax,xmin,ymax,xmin,yyymax)
+                list = formatted(f_ltbr,line,xxxmin,ymin,xxxmax,ymin,xmax,ymin,xmax,yyymin,xmax,yyymax,xmax,ymax,xxxmax,ymax,xxxmin,ymax,xmin,ymax,xmin,yyymax,xmin,yyymin,xmin,ymin,xxxmin,ymin,done)
+            elseif method == "1"    then -- ll lr
+                list = formatted(f_1,   line,xxxmin,ymin,xxxmax,ymin,xmax,ymin,xmax,yyymin,xmax,ymax,xmin,ymax,xmin,yyymin,xmin,ymin,xxxmin,ymin,done)
+            elseif method == "2"    then -- ll ul
+                list = formatted(f_2,   line,xxxmin,ymin,xmax,ymin,xmax,ymax,xxxmin,ymax,xmin,ymax,xmin,yyymax,xmin,yyymin,xmin,ymin,xxxmin,ymin,done)
+            elseif method == "3"    then -- ul ur
+                list = formatted(f_3,   line,xmin,ymin,xmax,ymin,xmax,yyymax,xmax,ymax,xxxmax,ymax,xxxmin,ymax,xmin,ymax,xmin,yyymax,xmin,ymin,done)
+            elseif method == "4"    then -- ur lr
+                list = formatted(f_4,   line,xmin,ymin,xxxmax,ymin,xmax,ymin,xmax,yyymin,xmax,yyymax,xmax,ymax,xxxmax,ymax,xmin,ymax,xmin,ymin,done)
+            elseif method == "5"    then -- ur
+                list = formatted(f_5,   line,xmin,ymin,xmax,ymin,xmax,yyymax,xmax,ymax,xxxmax,ymax,xmin,ymax,xmin,ymin,done)
+            elseif method == "6"    then -- lr
+                list = formatted(f_6,   line,xmin,ymin,xxxmax,ymin,xmax,ymin,xmax,yyymin,xmax,ymax,xmin,ymax,xmin,ymin,done)
+            elseif method == "7"    then -- ur
+                list = formatted(f_7,   line,xxxmin,ymin,xmax,ymin,xmax,ymax,xmin, ymax,xmin,yyymin,xmin,ymin,xxxmin,ymin,done)
+            elseif method == "8"    then -- ul
+                list = formatted(f_8,   line,xmin,ymin,xmax,ymin,xmax,ymax,xxxmin,ymax,xmin,ymax,xmin,yyymax,xmin,ymin,done)
+            elseif method == "lbr"  then -- 12
+                list = formatted(f_lbr, line,xmin,yymax,xmin,yyymin,xmin,ymin,xxxmin,ymin,xxxmax,ymin,xmax,ymin,xmax,yyymin,xmax,yymax)
+            elseif method == "tlb"  then -- 10
+                list = formatted(f_tlb, line,xxmax,ymax,xxxmin,ymax,xmin,ymax,xmin,yyymax,xmin,yyymin,xmin,ymin,xxxmin,ymin,xxmax,ymin)
+            elseif method == "ltr"  then -- 11
+                list = formatted(f_ltr, line,xmax,yymin,xmax,yyymax,xmax,ymax,xxxmax,ymax,xxxmin,ymax,xmin,ymax,xmin,yyymax,xmin,yymin)
+            elseif method == "trb"  then -- 9
+                list = formatted(f_trb, line,xxmin,ymax,xxxmax,ymax,xmax,ymax,xmax,yyymax,xmax,yyymin,xmax,ymin,xxxmax,ymin,xxmin,ymin)
+            elseif method == "lr"   then
+                list = formatted(f_lr,  line,xxxmin,ymin,xmin,ymin,xmin,yyymin,xmin,yyymax,xmin,ymax,xxxmin,ymax,xxxmax,ymax,xmax,ymax,xmax,yyymax,xmax,yyymin,xmax,ymin,xxxmax,ymin)
+            elseif method == "tb"   then
+                list = formatted(f_tb,  line,xmax,yyymin,xmax,ymin,xxxmax,ymin,xxxmin,ymin,xmin,ymin,xmin,yyymin,xmax,yyymax,xmax,ymax,xxxmax,ymax,xxxmin,ymax,xmin,ymax,xmin,yyymax)
+            elseif method == "rt"   then
+                list = formatted(f_rt,  line,xxmin,ymax,xxxmax,ymax,xmax,ymax,xmax,yyymax,xmax,yymin)
+            elseif method == "rb"   then
+                list = formatted(f_rb,  line,xmax,yymax,xmax,yyymin,xmax,ymin,xxxmax,ymin,xxmin,ymin)
+            elseif method == "bl"   then
+                list = formatted(f_bl,  line,xxmax,ymin,xxxmin,ymin,xmin,ymin,xmin,yyymin,xmin,yymax)
+            elseif method == "tl"   then
+                list = formatted(f_tl,  line,xmin,yymin,xmin,yyymax,xmin,ymax,xxxmin,ymax,xxmax,ymax)
+            elseif method == "17"   then -- urx
+                list = formatted(f_17,  line,xxxmax,ymax,xmax,ymax,xmax,yyymax)
+            elseif method == "18"   then -- lrt
+                list = formatted(f_18,  line,xmax,yyymin,xmax,ymin,xxxmax,ymin)
+            elseif method == "19"   then -- llx
+                list = formatted(f_19,  line,xxxmin,ymin,xmin,ymin,xmin,yyymin)
+            elseif method == "20"   then -- urx
+                list = formatted(f_20,  line,xmin,yyymax,xmin,ymax,xxxmin,ymax)
+            elseif method == "21"   then -- ulx urx
+                list = formatted(f_21,  line,xmax,yyymax,xmax,ymax,xxxmax,ymax,xxxmin,ymax,xmin,ymax,xmin,yyymax)
+            elseif method == "22"   then -- urt lrt
+                list = formatted(f_22,  line,xxxmax,ymax,xmax,ymax,xmax,yyymax,xmax,yyymin,xmax,ymin,xxxmax,ymin)
+            elseif method == "23"   then -- llx lrx
+                list = formatted(f_23,  line,xmax,yyymin,xmax,ymin,xxxmax,ymin,xxxmin,ymin,xmin,ymin,xmin,yyymin)
+            elseif method == "24"   then -- ulx llx
+                list = formatted(f_24,  line,xxxmin,ymin,xmin,ymin,xmin,yyymin,xmin,yyymax,xmin,ymax,xxxmin,ymax)
+            elseif method == "25"   then -- llx lrx urx ulx
+                list = formatted(f_25,  line,xxxmax,ymax,xmax,ymax,xmax,yyymax,xmax,yyymin,xmax,ymin,xxxmax,ymin,xxxmin,ymin,xmin,ymin,xmin,yyymin,xmin,yyymax,xmin,ymax,xxxmin,ymax)
+            elseif method == "26"   then
+                list = formatted(f_26,  line,xmax,yyymin,xmax,ymin,xxxmax,ymin,xmin,yyymax,xmin,ymax,xxxmin,ymax)
+            elseif method == "27"   then
+                list = formatted(f_27,  line,xxxmax,ymax,xmax,ymax,xmax,yyymax,xxxmin,ymin,xmin,ymin,xmin,yyymin)
+            elseif method == "l"    then
+                list = formatted(f_l,   line,xxxmin,ymin,xmin,ymin,xmin,yyymin,xmin,yyymax,xmin,ymax,xxxmin,ymax)
+            elseif method == "r"    then
+                list = formatted(f_r,   line,xxxmax,ymax,xmax,ymax,xmax,yyymax,xmax,yyymin,xmax,ymin,xxxmax,ymin)
+            elseif method == "b"    then
+                list = formatted(f_b,   line,xmax,yyymin,xmax,ymin,xxxmax,ymin,xxxmin,ymin,xmin,ymin,xmin,yyymin)
+            elseif method == "t"    then
+                list = formatted(f_t,   line,xmax,yyymax,xmax,ymax,xxxmax,ymax,xxxmin,ymax,xmin,ymax,xmin,yyymax)
              else
                 return
             end
@@ -489,11 +436,12 @@ do
         pdfprint("direct",list)
     end
 
-    local f_rectangle = formatters["q %.6N w %.6N %.6N %.6N %.6N re %s Q"]
-    local f_baselined = formatters["q %.6N w %.6N %.6N %.6N %.6N re s %.6N %.6N m %.6N %.6N l s Q"]
-    local f_dashlined = formatters["q %.6N w %.6N %.6N %.6N %.6N re s [%.6N %.6N] 2 d %.6N %.6N m %.6N %.6N l s Q"]
-    local f_dashtwice = formatters["q %.6N w %.6N %.6N %.6N %.6N re s [%.6N %.6N] 2 d %.6N %.6N m %.6N %.6N l s %.6N %.6N m %.6N %.6N l s Q"]
-    local f_radtangle = formatters["q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y h %s Q"]
+    local f_rectangle = formatting("q %.6N w %.6N %.6N %.6N %.6N re %s Q")
+    local f_baselined = formatting("q %.6N w %.6N %.6N %.6N %.6N re s %.6N %.6N m %.6N %.6N l s Q")
+    local f_dashlined = formatting("q %.6N w %.6N %.6N %.6N %.6N re s [%.6N %.6N] 2 d %.6N %.6N m %.6N %.6N l s Q")
+    local f_dashtwice = formatting("q %.6N w %.6N %.6N %.6N %.6N re s [%.6N %.6N] 2 d %.6N %.6N m %.6N %.6N l s %.6N %.6N m %.6N %.6N l s Q")
+    ----- f_radtangle = formatting("q %.6N w %.6N %.6N m %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y %.6N %.6N l %.6N %.6N %.6N %.6N y h %s Q")
+    local f_radtangle = f_ltbr
 
     local rule_any = function(p,h,v,i,n)
         local corner = p.corner
@@ -510,11 +458,11 @@ do
             if r > 0 then
                 w = w - o
                 h = h - o
-                m = f_radtangle(l, r,o, w-r,o, w,o,w,r, w,h-r, w,h,w-r,h, r,h, o,h,o,h-r, o,r, o,o,r,o, t)
+                m = formatted(f_radtangle,l,r,o,w-r,o,w,o,w,r,w,h-r,w,h,w-r,h,r,h,o,h,o,h-r,o,r,o,o,r,o,t)
             else
                 w = w - l
                 h = h - l
-                m = f_rectangle(l,o,o,w,h,t)
+                m = formatted(f_rectangle,l,o,o,w,h,t)
             end
             pdfprint("direct",m)
         end
@@ -536,15 +484,15 @@ do
                 local delta = (w - 2*dashed*floor(w/(2*dashed)))/2
                 if u then
                     u = u * bpfactor
-                    pdfprint("direct",f_dashtwice(l,o,o,w-l,h+d-l,dashed,dashed,delta,d,w-delta,d,delta,d+u,w-delta,d+u))
+                    pdfprint("direct",formatted(f_dashtwice,l,o,o,w-l,h+d-l,dashed,dashed,delta,d,w-delta,d,delta,d+u,w-delta,d+u))
                 else
-                    pdfprint("direct",f_dashlined(l,o,o,w-l,h+d-l,dashed,dashed,delta,d,w-delta,d))
+                    pdfprint("direct",formatted(f_dashlined,l,o,o,w-l,h+d-l,dashed,dashed,delta,d,w-delta,d))
                 end
             else
-                pdfprint("direct",f_baselined(l,o,o,w-l,h+d-l,0,d,w,d))
+                pdfprint("direct",formatted(f_baselined,l,o,o,w-l,h+d-l,0,d,w,d))
             end
         else
-            pdfprint("direct",f_rectangle(l,o,o,w-l,h+d-l,"s"))
+            pdfprint("direct",formatted(f_rectangle,l,o,o,w-l,h+d-l,"s"))
         end
     end
 

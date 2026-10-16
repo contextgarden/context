@@ -114,7 +114,7 @@ interfaces.implement {
     name      = "setrealspaces",
     arguments = "string",
     actions   = function(v)
-        directives.enable("backends.spaces", v == variables.yes)
+        directives.set("backends.spaces",v == variables.yes)
      -- setaction("shipouts","nodes.handlers.accessibility",v == variables.yes)
     end
 }

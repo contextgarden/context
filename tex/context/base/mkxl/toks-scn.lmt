@@ -15,7 +15,9 @@ if not modules then modules = { } end modules ['toks-scn'] = {
 local type, next, tostring, tonumber, load = type, next, tostring, tonumber, load
 local dump = string.dump
 
-local formatters          = string.formatters
+----- formatters          = string.formatters
+local formatted           = string.formatted
+
 local concat              = table.concat
 
 local scanners            = tokens.scanners
@@ -313,45 +315,45 @@ tokens.converters = {
 -- the gain is only some 10 percent but if we don't have keywords with numbers it might
 -- make sense in the end, some day.
 
-local f_if           = formatters[    "  if scankeywordcs('%s') then data['%s'] = scan%s()"]
-local f_elseif       = formatters["  elseif scankeywordcs('%s') then data['%s'] = scan%s()"]
+local f_if           =     "  if scankeywordcs('%s') then data['%s'] = scan%s()"
+local f_elseif       = "  elseif scankeywordcs('%s') then data['%s'] = scan%s()"
 
------ f_if_x         = formatters[    "  if not data['%s'] and scankeywordcs('%s') then data['%s'] = scan%s()"]
------ f_elseif_x     = formatters["  elseif not data['%s'] and scankeywordcs('%s') then data['%s'] = scan%s()"]
+----- f_if_x         =     "  if not data['%s'] and scankeywordcs('%s') then data['%s'] = scan%s()"
+----- f_elseif_x     = "  elseif not data['%s'] and scankeywordcs('%s') then data['%s'] = scan%s()"
 
------ f_if           = formatters["  local key = scanletters() if key == '' then break elseif key == '%s' then data['%s'] = scan%s()"]
------ f_elseif       = formatters["  elseif key == '%s' then data['%s'] = scan%s()"]
+----- f_if           = "  local key = scanletters() if key == '' then break elseif key == '%s' then data['%s'] = scan%s()"
+----- f_elseif       = "  elseif key == '%s' then data['%s'] = scan%s()"
 
-local f_local        = formatters["local scan%s = scanners.%s"]
-local f_scan         = formatters["scan%s()"]
-local f_shortcut     = formatters["local %s = scanners.converters.%s"]
+local f_local        = "local scan%s = scanners.%s"
+local f_scan         = "scan%s()"
+local f_shortcut     = "local %s = scanners.converters.%s"
 
-local f_if_c         = formatters[    "  if scankeywordcs('%s') then data['%s'] = %s(scan%s())"]
-local f_elseif_c     = formatters["  elseif scankeywordcs('%s') then data['%s'] = %s(scan%s())"]
-local f_scan_c       = formatters["%s(scan%s())"]
+local f_if_c         =     "  if scankeywordcs('%s') then data['%s'] = %s(scan%s())"
+local f_elseif_c     = "  elseif scankeywordcs('%s') then data['%s'] = %s(scan%s())"
+local f_scan_c       = "%s(scan%s())"
 
 -- see above
 
------ f_if_c         = formatters["  local key = scanletters() if key == '' then break elseif key == '%s' then data['%s'] = %s(scan%s())"]
------ f_elseif_c     = formatters["  elseif k == '%s' then data['%s'] = %s(scan%s())"]
+----- f_if_c         = "  local key = scanletters() if key == '' then break elseif key == '%s' then data['%s'] = %s(scan%s())"]
+----- f_elseif_c     = "  elseif k == '%s' then data['%s'] = %s(scan%s())"]
 
-local f_any          = formatters["  else local key = scanword(true) if key then data[key] = scan%s() else break end end"]
-local f_any_c        = formatters["  else local key = scanword(true) if key then data[key] = %s(scan%s()) else break end end"]
+local f_any          = "  else local key = scanword(true) if key then data[key] = scan%s() else break end end"
+local f_any_c        = "  else local key = scanword(true) if key then data[key] = %s(scan%s()) else break end end"
 local s_done         <const> = "  else break end"
 
-local f_any_all      = formatters["  local key = scanword(true) if key then data[key] = scan%s() else break end"]
-local f_any_all_c    = formatters["  local key = scanword(true) if key then data[key] = %s(scan%s()) else break end"]
+local f_any_all      = "  local key = scanword(true) if key then data[key] = scan%s() else break end"
+local f_any_all_c    = "  local key = scanword(true) if key then data[key] = %s(scan%s()) else break end"
 
-local f_table        = formatters["%\nt\nreturn function()\n  local data = { }\n%s\n  return %s\nend\n"]
-local f_sequence     = formatters["%\nt\n%\nt\n%\nt\nreturn function()\n    return %s\nend\n"]
-local f_singular     = formatters["%\nt\n%\nt\n\nreturn function(%s)\n    return %s\nend\n"]
-local f_simple       = formatters["%\nt\nreturn function()\n    return %s\nend\n"]
-local f_string       = formatters["%q"]
-local f_action_f     = formatters["action%s(%s)"]
-local f_action_s     = formatters["local action%s = tokens._action[%s]"]
-local f_nested       = formatters["local function scan%s()\n  local data = { }\n%s\n  return data\nend\n"]
+local f_table        = "%\nt\nreturn function()\n  local data = { }\n%s\n  return %s\nend\n"
+local f_sequence     = "%\nt\n%\nt\n%\nt\nreturn function()\n    return %s\nend\n"
+local f_singular     = "%\nt\n%\nt\n\nreturn function(%s)\n    return %s\nend\n"
+local f_simple       = "%\nt\nreturn function()\n    return %s\nend\n"
+local f_string       = "%q"
+local f_action_f     = "action%s(%s)"
+local f_action_s     = "local action%s = tokens._action[%s]"
+local f_nested       = "local function scan%s()\n  local data = { }\n%s\n  return data\nend\n"
 
-local f_check = formatters[ [[
+local f_check = [[
   local wrapped = scanopen()
   while true do
     ]] .. "%\nt\n" .. [[
@@ -360,7 +362,7 @@ local f_check = formatters[ [[
   if wrapped then
     scanclose()
   end
-]] ]
+]]
 
 -- using these shortcuts saves temporary small tables (okay, it looks uglier)
 
@@ -410,7 +412,7 @@ function tokens.compile(specification)
         for i=1,#t do
             local ti = t[i]
             if ti == "*" and i == 1 then
-                done = f_any_all("string")
+                done = formatted(f_any_all,"string")
             else
                 local t1 = ti[1]
                 local t2 = ti[2] or "string"
@@ -423,37 +425,37 @@ function tokens.compile(specification)
                 if type(t3) == "function" then
                     -- todo: also create shortcut
                 elseif t3 then
-                    c[t3] = f_shortcut(t3,t3)
+                    c[t3] = formatted(f_shortcut,t3,t3)
                     if t1 == "*" then
                         if i == 1 then
-                            done = f_any_all_c(t3,t2)
+                            done = formatted(f_any_all_c,t3,t2)
                             break
                         else
-                            done = f_any_c(t3,t2)
+                            done = formatted(f_any_c,t3,t2)
                         end
                     else
                         m = m + 1
-                        r[m] = (m > 1 and f_elseif_c or f_if_c)(t1,t1,t3,t2)
+                        r[m] = formatted(m > 1 and f_elseif_c or f_if_c,t1,t1,t3,t2)
                     end
                 else
                     if t1 == "*" then
                         if i == 1 then
-                            done = f_any_all(t2)
+                            done = formatted(f_any_all,t2)
                             break
                         else
-                            done = f_any(t2)
+                            done = formatted(f_any,t2)
                         end
                     else
                         m = m + 1
-                        r[m] = (m > 1 and f_elseif   or f_if  )(t1,t1,t2)
-                     -- r[m] = (m > 1 and f_elseif_x or f_if_x)(t1,t1,t1,t2)
+                        r[m] = formatted(m > 1 and f_elseif   or f_if  ,t1,t1,t2)
+                     -- r[m] = formatted(m > 1 and f_elseif_x or f_if_x,t1,t1,t1,t2)
                     end
                 end
             end
         end
-        local c = f_check(r,done)
+        local c = formatted(f_check,r,done)
         if nested then
-            return f_nested(nested,c)
+            return formatted(f_nested,nested,c)
         else
             return c
         end
@@ -469,15 +471,15 @@ function tokens.compile(specification)
             if s and t ~= s then
                 code = t
             else
-                code = f_scan(t)
+                code = formatted(f_scan,t)
             end
             tokens._action = a
             for i=1,#a do
-                code = f_action_f(i,code)
+                code = formatted(f_action_f,i,code)
                 n    = n + 1
-                f[n] = f_action_s(i,i)
+                f[n] = formatted(f_action_s,i,i)
             end
-            code = f_simple(f,code)
+            code = formatted(f_simple,f,code)
         else
             return scanners[t]
         end
@@ -491,21 +493,21 @@ function tokens.compile(specification)
             if a then
                 tokens._action = a
                 for i=1,#a do
-                    code = f_action_f(i,code)
+                    code = formatted(f_action_f,i,code)
                     n    = n + 1
-                    f[n] = f_action_s(i,i)
+                    f[n] = formatted(f_action_s,i,i)
                 end
             end
-            code = f_table(f,ti,code)
+            code = formatted(f_table,f,ti,code)
         elseif a then
-            code = f_scan(ti)
+            code = formatted(f_scan,ti)
             tokens._action = a
             for i=1,#a do
-                code = f_action_f(i,code)
+                code = formatted(f_action_f,i,code)
                 n    = n + 1
-                f[n] = f_action_s(i,i)
+                f[n] = formatted(f_action_s,i,i)
             end
-            code = f_simple(f,code)
+            code = formatted(f_simple,f,code)
         else
             return scanners[ti]
         end
@@ -520,12 +522,12 @@ function tokens.compile(specification)
         if a then
             tokens._action = a
             for i=1,#a do
-                code = f_action_f(i,code)
+                code = formatted(f_action_f,i,code)
                 n    = n + 1
-                f[n] = f_action_s(i,i)
+                f[n] = formatted(f_action_s,i,i)
             end
         end
-        code = f_singular(c,f,args,code)
+        code = formatted(f_singular,c,f,args,code)
     else
         local r = { }
         local p = { }
@@ -537,14 +539,14 @@ function tokens.compile(specification)
                 if ti[1] == "_constant_" then
                     local v = ti[2]
                     if type(v) == "string" then
-                        r[i] = f_string(v)
+                        r[i] = formatted(f_string,v)
                     else
                         r[i] = tostring(v)
                     end
                 else
                     m = m + 1
                     p[m] = compile(ti,100+m)
-                    r[i] = f_scan(100+m)
+                    r[i] = formatted(f_scan,100+m)
                 end
             elseif tt == "number" then
                 r[i] = tostring(ti)
@@ -555,7 +557,7 @@ function tokens.compile(specification)
                 if s and ti ~= s then
                     r[i] = ti -- a string, given as "'foo'" or '"foo"'
                 elseif scanners[ti] then
-                    r[i] = f_scan(ti)
+                    r[i] = formatted(f_scan,ti)
                 else
                     report_compile("unknown scanner %a",ti)
                     r[i] = ti
@@ -566,12 +568,12 @@ function tokens.compile(specification)
         if a then
             tokens._action = a
             for i=1,#a do
-                code = f_action_f(i,code)
+                code = formatted(f_action_f,i,code)
                 n    = n + 1
-                f[n] = f_action_s(i,i)
+                f[n] = formatted(f_action_s,i,i)
             end
         end
-        code = f_sequence(c,f,p,code)
+        code = formatted(f_sequence,c,f,p,code)
     end
     if not code then
         return

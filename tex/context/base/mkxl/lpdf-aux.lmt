@@ -6,7 +6,6 @@ if not modules then modules = { } end modules ['lpdf-aux'] = {
     license   = "see context related readme files"
 }
 
-local format, concat = string.format, table.concat
 local utfchar, utfbyte, char = utf.char, utf.byte, string.char
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local P, C, R, S, Cc, Cs, V = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc, lpeg.Cs, lpeg.V
@@ -16,28 +15,31 @@ lpdf = lpdf or { }
 
 -- tosixteen --
 
-local cache = table.setmetatableindex(function(t,k) -- can be made weak
-    local v = utfbyte(k)
-    if v < 0x10000 then
-        v = format("%04x",v)
-    else
-        v = v - 0x10000
-     -- v = format("%04x%04x",rshift(v,10)+0xD800,v%1024+0xDC00)
-        v = format("%04x%04x",(v >> 10) + 0xD800,v%1024+0xDC00)
-    end
-    t[k] = v
-    return v
-end)
+-- local format = string.format
 
-local unified = Cs(Cc("<feff") * (lpegpatterns.utf8character/cache)^1 * Cc(">"))
+-- local cache = table.setmetatableindex(function(t,k) -- can be made weak
+--     local v = utfbyte(k)
+--     if v < 0x10000 then
+--         v = format("%04x",v)
+--     else
+--         v = v - 0x10000
+--         v = format("%04x%04x",(v >> 10) + 0xD800,v%1024+0xDC00)
+--     end
+--     t[k] = v
+--     return v
+-- end)
+--
+-- local unified = Cs(Cc("<feff") * (lpegpatterns.utf8character/cache)^1 * Cc(">"))
+--
+-- function lpdf.tosixteen(str) -- an lpeg might be faster (no table)
+--     if not str or str == "" then
+--         return "<feff>" -- not () as we want an indication that it's unicode
+--     else
+--         return lpegmatch(unified,str)
+--     end
+-- end
 
-function lpdf.tosixteen(str) -- an lpeg might be faster (no table)
-    if not str or str == "" then
-        return "<feff>" -- not () as we want an indication that it's unicode
-    else
-        return lpegmatch(unified,str)
-    end
-end
+lpdf.tosixteen = string.topdfsixteen
 
 -- fromsixteen --
 

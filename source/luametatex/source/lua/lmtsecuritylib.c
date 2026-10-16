@@ -6,27 +6,35 @@
 
 static inline int security_target_okay(int target)
 {
-    return target >= security_generic && target <= security_loadable;
+    return target >= security_generic && target <= security_client;
 }
 
 static void securitylib_initialize(lua_State *L)
 {
+    (void) L;
     for (int i = 0; i < n_of_security_targets; i++) {
         lmt_lua_state.security_checkers[i] = LUA_NOREF;
+        lmt_lua_state.security_states  [i] = security_state_unset;
     }
 }
 
 static int securitylib_setchecker(lua_State *L)
 {
     int target = lmt_tointeger(L, 1);
-    luaL_checktype(L, 2, LUA_TFUNCTION);
-    if (! security_target_okay(target)) {
-        return luaL_error(L, "second argument must be a valid target");
-    } else if (lmt_lua_state.security_checkers[target] != LUA_NOREF) {
-        return luaL_error(L, "security checker for target %d is frozen and cannot be (re)set", target);
+    if (lua_type(L, 2) == LUA_TFUNCTION) {
+        int freeze = ! lua_toboolean(L, 3);
+        lua_settop(L, 2);
+        if (! security_target_okay(target)) {
+            return luaL_error(L, "first argument must be a valid target");
+        } else if (lmt_lua_state.security_states[target] == security_state_frozen) {
+            return luaL_error(L, "security checker for target %d is frozen and cannot be (re)set", target);
+        } else {
+            lmt_lua_state.security_checkers[target] = luaL_ref(L, LUA_REGISTRYINDEX);
+            lmt_lua_state.security_states  [target] = freeze ? security_state_frozen : security_state_set;
+            return 0;
+        }
     } else {
-        lmt_lua_state.security_checkers[target] = luaL_ref(L, LUA_REGISTRYINDEX);
-        return 0;
+        return luaL_error(L, "second argument must be a function");
     }
 }
 
@@ -112,19 +120,21 @@ static int securitylib_resetdebug(lua_State *L)
 
 static int securitylib_gettargets(lua_State *L)
 {
-    lua_createtable(L, 5, 1);
+    lua_createtable(L, 7, 1);
     lua_set_string_by_index(L, security_generic,    "generic");
     lua_set_string_by_index(L, security_readable,   "readable");
     lua_set_string_by_index(L, security_writeable,  "writeable");
     lua_set_string_by_index(L, security_executable, "executable");
     lua_set_string_by_index(L, security_library,    "library");
     lua_set_string_by_index(L, security_loadable,   "loadable");
+    lua_set_string_by_index(L, security_launchable, "launchable");
+    lua_set_string_by_index(L, security_client,     "client");
     return 1;
 }
 
 static int securitylib_getactions(lua_State *L)
 {
-    lua_createtable(L, 15, 1);
+    lua_createtable(L, 17, 1);
     lua_set_string_by_index(L, security_generic_action,   "generic");
     lua_set_string_by_index(L, security_remove_directory, "remove directory");
     lua_set_string_by_index(L, security_change_directory, "change directory");
@@ -141,6 +151,8 @@ static int securitylib_getactions(lua_State *L)
     lua_set_string_by_index(L, security_run_executable,   "run executable");
     lua_set_string_by_index(L, security_load_library,     "load library");
     lua_set_string_by_index(L, security_open_database,    "open database");
+    lua_set_string_by_index(L, security_launch_command,   "launch command");
+    lua_set_string_by_index(L, security_http_request,     "http request");
     return 1;
 }
 

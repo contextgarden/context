@@ -7,23 +7,19 @@ if not modules then modules = { } end modules ['data-sch'] = {
 }
 
 local load, tonumber, require = load, tonumber, require
-local gsub, format = string.gsub, string.format
+local gsub = string.gsub
 local savedata = io.savedata
 local sortedhash, concat = table.sortedhash, table.concat
 local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
 local addsuffix, suffix, splitbase = file.addsuffix, file.suffix, file.splitbase
 local md5hex = md5.hex
-local removefile, renamefile, fileexists = os.remove, os.rename, io.exists
-
--- todo: more locals
+local fileexists = io.exists
+local httprequest = client.httprequest
 
 local trace_schemes  = false  trackers.register("resolvers.schemes",function(v) trace_schemes = v end)
 local report_schemes = logs.reporter("resolvers","schemes")
 
-local http           = require("socket.http")
-local ltn12          = require("ltn12")
-
-if mbox then mbox = nil end -- useless and even bugged (helper overwrites lib)
+local formatted      = string.formatted
 
 local resolvers      = resolvers
 local schemes        = resolvers.schemes or { }
@@ -34,20 +30,13 @@ schemes.cleaners     = cleaners
 
 local threshold      = 24 * 60 * 60
 local inmemory       = false
-local uselibrary     = false
 
-directives.register("schemes.threshold",  function(v) threshold = tonumber(v) or threshold end)
-directives.register("schemes.inmemory",   function(v) inmemory = v end)
-directives.register("schemes.uselibrary", function(v) uselibrary = v end)
+directives.register("schemes.threshold", function(v) threshold = tonumber(v) or threshold end)
+directives.register("schemes.inmemory",  function(v) inmemory = v end)
 
 function cleaners.none(specification)
     return specification.original
 end
-
--- function cleaners.strip(specification)
---     -- todo: only keep suffix periods, so after the last
---     return (gsub(specification.original,"[^%a%d%.]+","-")) -- so we keep periods
--- end
 
 function cleaners.strip(specification) -- keep suffixes
     local path, name = splitbase(specification.original)
@@ -78,62 +67,6 @@ local cached     = { }
 local loaded     = { }
 local reused     = { }
 local thresholds = { }
-local handlers   = { }
-
-local function fetcher(report)
-    if uselibrary then
-        local curl = require("curl") or require("libs-imp-curl") -- we have curl preloaded
-        local fetch = curl and curl.fetch
-        if fetch then
-            return function(str)
-                local data, message = fetch {
-                    url            = str,
-                    followlocation = true,
-                    sslverifyhost  = false,
-                    sslverifypeer  = false,
-                }
-                if not data then
-                    report("some error: %s",message)
-                end
-                return data
-            end
-        end
-    end
-end
-
-local runner = sandbox.registerrunner {
-    name     = "to file curl resolver",
-    method   = "execute",
-    program  = "curl", -- redirects: -L or --follow (new)
-    template = '-L --silent --insecure --create-dirs --output "%cachename%" "%original%"',
-    internal = function(specification)
-        local fetch = fetcher(specification.reporter)
-        return fetch and function(name,program,template,checkers,defaults,variables,reporter,finalized)
-            local data = fetch(variables.original)
-            savedata(variables.cachename,data or "")
-        end
-    end,
-    checkers = {
-        cachename = "cache",
-        original  = "url",
-    }
-}
-
-local memrunner = sandbox.registerrunner {
-    name     = "in memory curl resolver",
-    method   = "resultof",
-    program  = "curl", -- redirects: -L or --follow (new)
-    template = '-L --silent --insecure "%original%"',
-    internal = function(specification)
-        local fetch = fetcher(specification.reporter)
-        return fetch and function(name,program,template,checkers,defaults,variables,reporter,finalized)
-            return fetch(variables.original) or ""
-        end
-    end,
-    checkers = {
-        original = "url",
-    }
-}
 
 local function fetch(specification)
     local original  = specification.original
@@ -142,24 +75,20 @@ local function fetch(specification)
     if inmemory then
         statistics.starttiming(schemes)
         local cachename = resolvers.savers.virtualname(cleanname)
-        local handler   = handlers[scheme]
-     -- if handler and not uselibrary then
-        if handler then -- internal sockets are twice as fast as library
-            if trace_schemes then
-                report_schemes("fetching %a, protocol %a, method %a",original,scheme,"built-in")
-            end
-            logs.flush()
-            handler(specification,cachename)
-        else
-            if trace_schemes then
-                report_schemes("fetching %a, protocol %a, method %a",original,scheme,"curl")
-            end
-            logs.flush()
-            local result = memrunner {
-                original = original,
-            }
-            resolvers.savers.directvirtual(cachename,result,true) -- persistent
+        if trace_schemes then
+            report_schemes("fetching %a, protocol %a",original,scheme)
         end
+        logs.flush()
+        local status, result = httprequest {
+            url = original
+        }
+        if status then
+            report_schemes("fetching %a %s",original,"succeeded")
+        else
+            report_schemes("fetching %a %s",original,"failed")
+            result = ""
+        end
+        resolvers.savers.directvirtual(cachename,result,true) -- persistent
         loaded[scheme] = loaded[scheme] + 1
         statistics.stoptiming(schemes)
         return cachename
@@ -168,24 +97,19 @@ local function fetch(specification)
         if not cached[original] or threshold == 0 then
             statistics.starttiming(schemes)
             if threshold == 0 or not fileexists(cachename) or (os.difftime(os.time(),lfs.attributes(cachename).modification) > (thresholds[protocol] or threshold)) then
-             -- removefile(cachename)
-                cached[original] = cachename
-                local handler = handlers[scheme]
-                if handler then
-                    if trace_schemes then
-                        report_schemes("fetching %a, protocol %a, method %a",original,scheme,"built-in")
-                    end
-                    logs.flush()
-                    handler(specification,cachename)
+                if trace_schemes then
+                    report_schemes("fetching %a, protocol %a",original,scheme)
+                end
+                logs.flush()
+                local status, result = httprequest {
+                    url = original
+--                         cachename = cachename,
+                }
+                if status then
+                    report_schemes("fetching %a %s",original,"succeeded")
+                    io.savedata(cachename,result)
                 else
-                    if trace_schemes then
-                        report_schemes("fetching %a, protocol %a, method %a",original,scheme,"curl")
-                    end
-                    logs.flush()
-                    runner {
-                        original  = original,
-                        cachename = cachename,
-                    }
+                    report_schemes("fetching %a %s",original,"failed")
                 end
             end
             if fileexists(cachename) then
@@ -219,7 +143,6 @@ local opener = openers.file
 local loader = loaders.file
 
 local function install(scheme,handler,newthreshold)
-    handlers  [scheme] = handler
     loaded    [scheme] = 0
     reused    [scheme] = 0
     finders   [scheme] = finder
@@ -228,36 +151,10 @@ local function install(scheme,handler,newthreshold)
     thresholds[scheme] = newthreshold or threshold
 end
 
-schemes.install = install
+install("http")
+install("https")
 
-local function http_handler(specification,cachename)
-    if inmemory then
-        local result = { }
-        local status, message = http.request {
-            url  = specification.original,
-            sink = ltn12.sink.table(result)
-        }
-        resolvers.savers.directvirtual(cachename,concat(result),true) -- persistent
-    else
-        local tempname = cachename .. ".tmp"
-        local handle   = io.open(tempname,"wb")
-        local status, message = http.request {
-            url  = specification.original,
-            sink = ltn12.sink.file(handle)
-        }
-        if not status then
-            removefile(tempname)
-        else
-            removefile(cachename)
-            renamefile(tempname,cachename)
-        end
-    end
-    return cachename
-end
-
-install('http',http_handler)
-install('https') -- see pod
-install('ftp')   -- will go away
+schemes.install = function() end
 
 statistics.register("scheme handling time", function()
     local l, r, nl, nr = { }, { }, 0, 0
@@ -277,18 +174,16 @@ statistics.register("scheme handling time", function()
     if n > 0 then
         if nl == 0 then l = { "none" } end
         if nr == 0 then r = { "none" } end
-        return format("%s seconds, %s processed, threshold %s seconds, %s loaded, %s reused",
+        return formatted("%s seconds, %s processed, threshold %s seconds, %s loaded, %s reused",
             statistics.elapsedtime(schemes), n, threshold, concat(l," "), concat(l," "))
     else
         return nil
     end
 end)
 
--- We provide a few more helpers:
+-- We provide a few more helpers but they might disappear when we are in \TEX\ mode.
 
------ http        = require("socket.http")
-local httprequest = http.request
-local toquery     = url.toquery
+local toquery = url.toquery
 
 local function fetchstring(url,data)
     local q = data and toquery(data)

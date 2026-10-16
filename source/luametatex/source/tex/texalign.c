@@ -231,6 +231,7 @@ typedef enum align_options {
     align_option_split         = 0x1000,
     align_option_use_glue      = 0x2000,
     align_option_add_penalties = 0x4000,
+    align_option_combine_size  = 0x8000,
 } align_options;
 
 /* Do we still need these .. we have a dedicated stack. */
@@ -271,7 +272,7 @@ typedef struct alignment_row_state {
     scaled   yoffset;
     scaled   xmove;
     scaled   ymove;
-    halfword shift;
+    scaled   shift;
     halfword source;
     halfword target;
     halfword anchor;
@@ -306,7 +307,7 @@ typedef struct alignment_state_info {
     halfword column_number;
     halfword last_row_number;
     halfword last_column_number;
-    halfword tabskip_amount;
+    scaled   tabskip_amount;
     /* */
     alignment_row_state row_state; 
 } alignment_state_info ;
@@ -457,17 +458,17 @@ halfword tex_alignment_get_options(void)
 
 static void tex_aux_wipe_row_state(void)
 {
-    lmt_alignment_state.row_state.attrlist = null;
+    lmt_alignment_state.row_state.attrlist    = null;
     lmt_alignment_state.row_state.orientation = 0;
-    lmt_alignment_state.row_state.xoffset = 0;
-    lmt_alignment_state.row_state.yoffset = 0;
-    lmt_alignment_state.row_state.xmove = 0;
-    lmt_alignment_state.row_state.ymove = 0;
-    lmt_alignment_state.row_state.shift = 0;
-    lmt_alignment_state.row_state.source = 0;
-    lmt_alignment_state.row_state.target = 0;
-    lmt_alignment_state.row_state.anchor = 0;
-    lmt_alignment_state.row_state_set = 0;
+    lmt_alignment_state.row_state.xoffset     = 0;
+    lmt_alignment_state.row_state.yoffset     = 0;
+    lmt_alignment_state.row_state.xmove       = 0;
+    lmt_alignment_state.row_state.ymove       = 0;
+    lmt_alignment_state.row_state.shift       = 0;
+    lmt_alignment_state.row_state.source      = 0;
+    lmt_alignment_state.row_state.target      = 0;
+    lmt_alignment_state.row_state.anchor      = 0;
+    lmt_alignment_state.row_state_set         = 0;
 }
 
 /*tex The current preamble list: */
@@ -492,14 +493,14 @@ static void tex_aux_finish_align      (void);
 
 static inline void tex_aux_change_list_type(halfword n, quarterword type)
 {
-    node_type(n) = type;
-    box_w_offset(n) = 0;    /* box_glue_stretch    align_record_span_ptr   */
-    box_h_offset(n) = 0;    /* box_glue_shrink     align_record_extra_info */
-    box_d_offset(n) = 0;    /* box_span_count                              */
-    box_x_offset(n) = 0;    /*                     align_record_u_part     */
-    box_y_offset(n) = 0;    /*                     align_record_v_part     */
- /* box_geometry(n) = 0; */ /* box_size                                    */
-    box_orientation(n) = 0; /* box_size                                    */
+    node_type      (n) = type;
+    box_w_offset   (n) = 0;    /* box_glue_stretch    align_record_span_ptr   */
+    box_h_offset   (n) = 0;    /* box_glue_shrink     align_record_extra_info */
+    box_d_offset   (n) = 0;    /* box_span_count                              */
+    box_x_offset   (n) = 0;    /*                     align_record_u_part     */
+    box_y_offset   (n) = 0;    /*                     align_record_v_part     */
+ /* box_geometry   (n) = 0; */ /* box_size                                    */
+    box_orientation(n) = 0;    /* box_size                                    */
 }
 
 /*tex
@@ -771,14 +772,25 @@ static void tex_aux_scan_align_spec(quarterword c)
                 }
                 break;
             case 'c':
-                /* We permits multiple callbacks so we |or| them. */
-                if (tex_scan_mandate_keyword("callback", 1)) {
-                    options |= align_option_callback;
-                    if (tex_scan_character("s", 0, 0, 0)) {
-                        callback |= tex_scan_integer(0, NULL, NULL);
-                    } else { 
-                        callback = tex_scan_integer(0, NULL, NULL);
-                    }
+                switch (tex_scan_character("ao", 0, 0, 0)) {
+                    case 'a':
+                        if (tex_scan_mandate_keyword("callback", 2)) {
+                            options |= align_option_callback;
+                            if (tex_scan_character("s", 0, 0, 0)) {
+                                callback |= tex_scan_integer(0, NULL, NULL);
+                            } else {
+                                callback = tex_scan_integer(0, NULL, NULL);
+                            }
+                        }
+                        break;
+                    case 'o':
+                        if (tex_scan_mandate_keyword("combine", 2)) {
+                            options |= align_option_combine_size;
+                        }
+                        break;
+                    default:
+                        tex_aux_show_keyword_error("callback|combine");
+                        goto DONE;
                 }
                 break;
             case 'd':
@@ -1702,6 +1714,17 @@ static int tex_aux_finish_column(void)
                 if (state) {
                     size = box_size(lmt_alignment_state.cur_align);
                     packing = packing_exactly;
+
+if (lmt_alignment_state.options & align_option_combine_size) {
+    if (lmt_alignment_state.cur_span != lmt_alignment_state.cur_align) {
+        halfword ptr = lmt_alignment_state.cur_span;
+        do {
+            ptr = node_next(node_next(ptr));
+            size += box_size(ptr);
+        } while (ptr != lmt_alignment_state.cur_align);
+    }
+}
+
                 }
                 if (cur_list.mode == restricted_hmode) {
                     lmt_packaging_state.post_adjust_tail = lmt_alignment_state.cur_post_adjust_tail;
@@ -2129,7 +2152,7 @@ static void tex_aux_prune_align_two(void)
 */
 
 typedef struct alignment_split_state {
-    halfword glueamount;
+    scaled   glueamount;
     int      glueused;
     halfword penalty;
     halfword padding;
@@ -2398,7 +2421,7 @@ static void tex_aux_split_align(void)
             int maxlines = tex_aux_get_maxlines(&state, rowptr);
             if (maxlines > 1) {
                 halfword curptr = rowptr;
-                halfword amount = 0;
+                scaled amount = 0;
                 halfword prvptr = node_prev(rowptr);
                 if (prvptr && node_type(prvptr) == glue_node) {
                     switch (node_subtype(prvptr)) {
@@ -2485,7 +2508,7 @@ static void tex_aux_finish_align(void)
     halfword reverse = lmt_alignment_state.options & align_option_reverse;
     halfword callback = lmt_alignment_state.options & align_option_callback;
     halfword discard = normalize_line_mode_option(discard_zero_tab_skips_mode) || (lmt_alignment_state.options & align_option_discard);
-    halfword amount = 0;
+    scaled amount = 0;
     halfword mode = 0;
     /*tex The |align_group| was for individual entries: */
     if (cur_group != align_group) {
@@ -2582,7 +2605,7 @@ static void tex_aux_finish_align(void)
                     |r|, according as |link(r) = n| or |link(r) > n| or |link(r) < n|.
 
                 */
-                halfword t = box_width(q) + glue_amount(node_next(q));
+                scaled t = box_width(q) + glue_amount(node_next(q));
                 halfword n = 1;
                 halfword r = align_record_span_ptr(q);
                 halfword s = end_span;

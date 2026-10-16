@@ -15,7 +15,8 @@ local nodeinjections    = backends.nodeinjections
 local texsetattribute   = tex.setattribute
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
-local formatters        = string.formatters
+
+local formatted         = string.formatted
 
 local interfaces        = interfaces
 local implement         = interfaces.implement
@@ -36,7 +37,7 @@ local data              = effects.data
 local registered        = effects.registered
 local values            = effects.values
 
-local f_stamp           = formatters["%s:%s:%s"]
+local f_stamp           = "%s:%s:%s"
 
 storage.register("attributes/effects/registered", registered, "attributes.effects.registered")
 storage.register("attributes/effects/values",     values,     "attributes.effects.values")
@@ -82,7 +83,7 @@ local function register(specification)
         stretch       = 0
         rulethickness = 0
     end
-    local stamp = f_stamp(alternative,stretch,rulethickness)
+    local stamp = formatted(f_stamp,alternative,stretch,rulethickness)
     local n = registered[stamp]
     if not n then
         n = #values + 1

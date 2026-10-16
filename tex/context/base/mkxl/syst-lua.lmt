@@ -45,6 +45,8 @@ local getcount                 = tex.getcount
 local gettoks                  = tex.gettoks
 local gettex                   = tex.get
 
+local formatted                = string.formatted
+
       commands                 = commands or { }
 local commands                 = commands
 local context                  = context
@@ -400,7 +402,7 @@ do
     -- really is a bottleneck.
 
     local readerror = function(what,n)
-        tex.error(string.formatters["too many %s brace tokens in read from channel %i"](what,n))
+        tex.error(formatted("too many %s brace tokens in read from channel %i",what,n))
     end
 
     interfaces.implement {

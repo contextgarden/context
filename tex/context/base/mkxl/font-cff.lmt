@@ -29,12 +29,13 @@ if not modules then modules = { } end modules ['font-cff'] = {
 
 local next, type, tonumber, rawget = next, type, tonumber, rawget
 local byte, char, gmatch, sub = string.byte, string.char, string.gmatch, string.sub
-local concat, insert, remove, unpack = table.concat, table.insert, table.remove, table.unpack
+local concat, insert, remove, unpack, sort = table.concat, table.insert, table.remove, table.unpack, table.sort
 local floor, abs, round, ceil, min, max = math.floor, math.abs, math.round, math.ceil, math.min, math.max
 local P, C, R, S, C, Cs, Ct = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Ct
 local lpegmatch = lpeg.match
-local formatters = string.formatters
-local bytetable = string.bytetable
+
+local formatted         = string.formatted
+local bytetable         = string.bytetable
 
 local readers           = fonts.handlers.otf.readers
 local streamreader      = readers.streamreader
@@ -838,6 +839,8 @@ do
     local flexhints    = { }
     local ignorehint   = false
     local nofflexhints = 0
+    local hinting      = false -- keep type one hints
+    local hintsets     = false -- { at = index in result, h = { { y, dy } }, v = { { x, dx } } }
 
     local encode       = { }
     local chars        = { }
@@ -957,11 +960,106 @@ do
             return r, x1, y1
         end
 
-        pack_result_tagged = function(t,width,xoffset,yoffset)
---             local result = { encode[width] }
---             local r = 1
-            local result = { encode[width], encode[xoffset or 0], c_hmoveto }
-            local r = 3
+        -- When we keep type one hints, the stems of all sets are declared at the start,
+        -- sorted as type 2 wants it. With hint replacement each set becomes a hintmask in
+        -- front of the path element where the set starts. A stem used in more sets is not
+        -- merged: each set then gets positioned on its own, like in type one, which also
+        -- renders better.
+
+        local function sortstems(a,b)
+            if a[1] == b[1] then
+                return a[2] < b[2]
+            else
+                return a[1] < b[1]
+            end
+        end
+
+        local function collectstems(hintsets,k)
+            local stems = { }
+            local n     = 0
+            for i=1,#hintsets do
+                local set = hintsets[i][k]
+                for j=1,#set do
+                    n = n + 1 ; stems[n] = set[j]
+                end
+            end
+            sort(stems,sortstems)
+            for i=1,n do
+                stems[i][3] = i -- the index used in the masks
+            end
+            return stems, n
+        end
+
+        local function packstems(result,r,stems,op)
+            local edge = 0
+            for i=1,#stems do
+                local s = stems[i]
+                r = r + 1 ; result[r] = encode[s[1] - edge]
+                r = r + 1 ; result[r] = encode[s[2]]
+                if i % 23 == 0 then
+                    -- the width and 23 stems fit in the operand stack (48)
+                    r = r + 1 ; result[r] = chars[op]
+                    edge = 0
+                else
+                    edge = s[1] + s[2]
+                end
+            end
+            if #stems % 23 ~= 0 then
+                r = r + 1 ; result[r] = chars[op]
+            end
+            return r
+        end
+
+        local function setbits(mask,stems,offset)
+            for i=1,#stems do
+                local b = offset + stems[i][3] - 1 -- zero based
+                local m = b // 8 + 1
+                mask[m] = mask[m] | (0x80 >> (b % 8))
+            end
+        end
+
+        local function packhints(result,r,hintsets)
+            local hstems, nh = collectstems(hintsets,"h")
+            local vstems, nv = collectstems(hintsets,"v")
+            if nh + nv == 0 or nh + nv > 96 then
+                -- nothing to declare or more than type 2 permits so no hints
+                return r
+            end
+            local replace = #hintsets > 1
+            r = packstems(result,r,hstems,replace and 18 or 1) -- hstemhm or hstem
+            r = packstems(result,r,vstems,replace and 23 or 3) -- vstemhm or vstem
+            if replace then
+                local masks = { }
+                for i=1,#hintsets do
+                    local set  = hintsets[i]
+                    local mask = { }
+                    for j=1,(nh+nv+7)//8 do
+                        mask[j] = 0
+                    end
+                    setbits(mask,set.h,0)
+                    setbits(mask,set.v,nh)
+                    masks[set.at] = chars[19] .. char(unpack(mask)) -- hintmask
+                end
+                -- the first set comes before the initial (sidebearing) moveto
+                r = r + 1 ; result[r] = masks[1]
+                masks[1] = nil
+                return r, masks
+            end
+            return r
+        end
+
+        -- Type 2 has no closepath (9 is reserved): a contour is closed by the next moveto and
+        -- the last one by endchar.
+
+        pack_result_tagged = function(t,width,xoffset,yoffset,hintsets)
+            local result = { encode[width] }
+            local r      = 1
+            local masks  = false
+            if hintsets then
+                r, masks = packhints(result,r,hintsets)
+            end
+            r = r + 1 ; result[r] = encode[xoffset or 0]
+            r = r + 1 ; result[r] = c_hmoveto
             local n = #t
             local x = 0
             local y = yoffset or 0
@@ -971,17 +1069,17 @@ do
             for i=1,n do
                 local ti = t[i]
                 local tg = ti[#ti]
+                if masks and masks[i] then
+                    r = r + 1 ; result[r] = masks[i]
+                end
                 if tg == "c" then
                     r, x, y = pack_curveto(result,r,x,y,ti[5],ti[6],ti[1],ti[2],ti[3],ti[4])
                 elseif tg == "l" then
                     r, x, y = pack_lineto(result,r,x,y,ti[1],ti[2])
                 elseif tg == "m" then
                     r, x, y = pack_moveto(result,r,x,y,ti[1],ti[2])
-                elseif tg == "close" then
-                    r = r + 1 ; result[r] = c_closepath
                 end
             end
-            r = r + 1 ; result[r] = c_closepath
             r = r + 1 ; result[r] = c_endchar
             return concat(result)
         end
@@ -1007,7 +1105,6 @@ do
                     end
                 end
             end
-            r = r + 1 ; result[r] = c_closepath
             r = r + 1 ; result[r] = c_endchar
             return concat(result)
         end
@@ -1840,7 +1937,18 @@ do
         top = 0
     end
 
-    local function getstem()
+    -- Type one stems are relative to the sidebearing point (sby is zero).
+
+    local function addstems(horizontal)
+        local set  = hintsets[#hintsets]
+        local list = horizontal and set.h or set.v
+        local d    = horizontal and 0 or lsb
+        for i=1,top-1,2 do
+            list[#list+1] = { stack[i] + d, stack[i+1] }
+        end
+    end
+
+    local function getstem(t)
         if top == 0 then
             -- bad
         elseif top % 2 ~= 0 then
@@ -1848,6 +1956,9 @@ do
         end
         if trace_charstrings then
             showstate("stem")
+        end
+        if hintsets then
+            addstems(t == 1) -- hstem or vstem
         end
         stems = stems + (top // 2)
         top   = 0
@@ -1893,12 +2004,18 @@ do
         if trace_charstrings then
             showstate("vstem3")
         end
+        if hintsets then
+            addstems(false) -- three plain stems
+        end
         top = 0
     end
 
     local function gethstem3()
         if trace_charstrings then
             showstate("hstem3")
+        end
+        if hintsets then
+            addstems(true) -- three plain stems
         end
         top = 0
     end
@@ -1965,6 +2082,14 @@ do
             end
             if stack[top] == hints then
                 popped = stack[top-2]
+                if hintsets then
+                    -- hint replacement: a new set starts at the next path element
+                    local n = #hintsets
+                    if hintsets[n].at > r then
+                        n = n - 1 -- nothing drawn with the previous set
+                    end
+                    hintsets[n+1] = { at = r + 1, h = { }, v = { } }
+                end
             else
                 popped = 3 --ff no, taco yes
             end
@@ -2063,7 +2188,7 @@ do
     local function setvsindex()
         local vsindex = stack[top]
         if trace_charstrings then
-            showstate(formatters["vsindex %i"](vsindex))
+            showstate(formatted("vsindex %i",vsindex))
         end
         updateregions(vsindex)
         top = top - 1
@@ -2087,7 +2212,7 @@ do
                         new = new + stack[d+r] * factors[r]
                     end
                     stack[k] = new
-                    showstate(formatters["blend %i of %i: %s -> %s"](i,n,old,new))
+                    showstate(formatted("blend %i of %i: %s -> %s",i,n,old,new))
                 end
                 top = t
             elseif n == 1 then
@@ -2374,7 +2499,7 @@ do
 
     local function call(scope,list,bias) -- ,process)
         if top == 0 then
-            showstate(formatters["unknown %s call %s, bias %i, case %s"](scope,"?",bias-1,1))
+            showstate(formatted("unknown %s call %s, bias %i, case %s",scope,"?",bias-1,1))
             top = 0
         else
             local index = bias + stack[top]
@@ -2400,7 +2525,7 @@ do
             if tab then
                 process(tab)
             else
-                showstate(formatters["unknown %s call %s, bias %i, case %s"](scope,index,bias-1,2))
+                showstate(formatted("unknown %s call %s, bias %i, case %s",scope,index,bias-1,2))
                 top = 0
             end
             depth = depth - 1
@@ -2528,41 +2653,32 @@ do
                 elseif t == op_escape then
                     i = i + 1
                     local t = tab[i]
-                    if justpass then
-                        if t >= 34 and t <= 37 then
-                            -- cff2: hflex, flex, hflex1, flex1
-                            for i=1,top do
-                                r = r + 1 ; result[r] = encode[stack[i]]
-                            end
-                            r = r + 1 ; result[r] = c_command
-                            r = r + 1 ; result[r] = chars[t]
-                            top = 0
-                        elseif t == 6 then
-                            -- cff1: seac
-                            seacs[procidx] = {
-                                asb    = stack[1],
-                                adx    = stack[2],
-                                ady    = stack[3],
-                                base   = stack[4],
-                                accent = stack[5],
-                                width  = width,
-                                lsb    = lsb,
-                            }
-                            top = 0
-                        else
-                            -- cff1: dotsection, vstem3, hstem3, [seac,] sbw, divide, callothersubr,
-                            --       pop, setcurrentpoint
-                            --
-                            -- If we end up here something is wrong because cff0 now goes via shapes
-                            -- and opentype cff1 doesn't have this.
-                            local a = subactions[t]
-                            if a then
-                                a(t)
-                            else
-                                top = 0
-                            end
+                    if justpass and t >= 34 and t <= 37 then
+                        -- cff2: hflex, flex, hflex1, flex1
+                        for i=1,top do
+                            r = r + 1 ; result[r] = encode[stack[i]]
                         end
+                        r = r + 1 ; result[r] = c_command
+                        r = r + 1 ; result[r] = chars[t]
+                        top = 0
+                    elseif t == 6 then
+                        -- cff1: seac
+                        seacs[procidx] = {
+                            asb    = stack[1],
+                            adx    = stack[2],
+                            ady    = stack[3],
+                            base   = stack[4],
+                            accent = stack[5],
+                            width  = width,
+                            lsb    = lsb,
+                        }
+                        top = 0
                     else
+                        -- cff1: dotsection, vstem3, hstem3, [seac,] sbw, divide, callothersubr,
+                        --       pop, setcurrentpoint
+                        --
+                        -- If we end up here something is wrong because cff0 now goes via shapes
+                        -- and opentype cff1 doesn't have this.
                         local a = subactions[t]
                         if a then
                             a(t)
@@ -2825,6 +2941,7 @@ do
 
         nofflexhints = 0
         ignorehint   = false
+        hintsets     = hinting and { { at = 1, h = { }, v = { } } }
 
         xmin    = 0
         xmax    = 0
@@ -2876,7 +2993,8 @@ do
                 glyph = { }
                 glyphs[index] = glyph
             end
-            if not hasoutline(result) then
+            -- when we only calculate the boundingbox we have no result to check
+            if keepcurve and not hasoutline(result) then
                 width, boundingbox, result = makenotdef(glyph,width,units)
                 justpass = false
                 report("missing .notdef, using a rectangle instead")
@@ -2891,7 +3009,7 @@ do
                 stream = concat(result)
                 result = nil
             else
-                stream = pack_result_tagged(result,width,lsb) -- version == "cff" and -lsb or 0
+                stream = pack_result_tagged(result,width,lsb,nil,hintsets) -- version == "cff" and -lsb or 0
                 justpass = jp
             end
          -- if trace_charstrings then
@@ -2970,6 +3088,7 @@ do
         seacs        = { }
         nofflexhints = 0
         ignorehint   = false
+        hinting      = false
     end
 
     local function setwidths(private)
@@ -2989,7 +3108,7 @@ do
         return dictionary.vsindex or type(data) == "table" and data.vsindex or 0
     end
 
-    parsecharstrings = function(fontdata,data,glphs,doshapes,tversion,streams,nobias,istypeone)
+    parsecharstrings = function(fontdata,data,glphs,doshapes,tversion,streams,nobias,istypeone,keephints)
 
         local dictionary  = data.dictionaries[1]
         local charstrings = dictionary.charstrings
@@ -2997,6 +3116,7 @@ do
         keepcurve = doshapes
         version   = tversion
         typeone   = istypeone or false
+        hinting   = keephints or false
         strings   = data.strings
         globals   = data.routines or { }
         locals    = dictionary.subroutines or { }
@@ -3021,6 +3141,8 @@ do
             for index=1,#charstrings do
                 processshape(glyphs,charstrings[index],index-1,false,units)
             end
+-- print(justpass)
+-- inspect(seacs)
             if justpass and next(seacs) then
                 -- old type 1 stuff ... seacs
                 local charset = data.dictionaries[1].charset
@@ -3040,6 +3162,15 @@ do
                             --
                             local base   = bglyph.stream
                             local accent = aglyph.stream
+                            if hinting then
+                                -- hints have to come first so we use an accent without them
+                                justpass = false
+                                processshape(glyphs,charstrings[aindex+1],aindex,true,units)
+                                justpass = jp
+                                accent = pack_result_tagged(result,aglyph.width,lsb)
+                            end
+                            -- only the first operator can carry a width
+                            accent = sub(accent,#encode[aglyph.width]+1)
                             local moveto = encode[-x-v.asb+v.adx] .. chars[22] -- c_hmoveto
                                         .. encode[-y      +v.ady] .. chars[04] -- c_vmoveto
                             -- prune an endchar

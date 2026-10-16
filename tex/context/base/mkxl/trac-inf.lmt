@@ -12,13 +12,14 @@ if not modules then modules = { } end modules ['trac-inf'] = {
 -- and rawget.
 
 local type, tonumber, select = type, tonumber, select
-local format, lower, find, gsub, rep = string.format, string.lower, string.find, string.gsub, string.rep
+local lower, find, gsub, rep = string.lower, string.find, string.gsub, string.rep
 local concat, sortedhash = table.concat, table.sortedhash
 local clock  = os.gettimeofday
 
 local setmetatableindex = table.setmetatableindex
 local serialize         = table.serialize
-local formatters        = string.formatters
+
+local formatted         = string.formatted
 
 statistics              = statistics or { }
 local statistics        = statistics
@@ -54,11 +55,11 @@ function statistics.show()
         -- this code will move
         local register = statistics.register
         register("used platform", function()
-            return format("%s, type: %s, binary subtree: %s",
+            return formatted("%s, type: %s, binary subtree: %s",
                 os.platform or "unknown",os.type or "unknown", environment.texos or "unknown")
         end)
         register("used engine", function()
-            return format("%s version: %s, functionality level: %s, format id: %s, memory mode: %i, compiler: %s, cversion: %i",
+            return formatted("%s version: %s, functionality level: %s, format id: %s, memory mode: %i, compiler: %s, cversion: %i",
                 LUATEXENGINE, LUATEXVERBOSE, LUATEXFUNCTIONALITY, LUATEXFORMATID,
                 status.tex_memory_mode,
                 status.used_compiler,
@@ -69,7 +70,7 @@ function statistics.show()
             local t = status.gethashstate()
             local l = status.getlookupstate()
             local m = status.gettexstate()
-            return format("%s eqtb slots used of %s, %s control sequences, %i hash slots, %i misses, approximate memory usage: %i MB",
+            return formatted("%s eqtb slots used of %s, %s control sequences, %i hash slots, %i misses, approximate memory usage: %i MB",
                 t.top, t.max, l.ptr, m.hashslots, m.hashmisses, m.approximate // (1024 * 1024))
         end)
         register("callbacks", statistics.callbacks)
@@ -77,7 +78,7 @@ function statistics.show()
         register("lua properties",function()
          -- local hash = lua.gethashchars()
             local mask = load([[τεχ = 1]]) and "utf" or "ascii"
-            return format("engine: lua %s, format %s, used memory: %s, symbol mask: %s (%s)",
+            return formatted("engine: lua %s, format %s, used memory: %s, symbol mask: %s (%s)",
                 LUAVERSION, LUAFORMAT, statistics.memused(), mask, mask == "utf" and "τεχ" or "tex")
         end)
         register("runtime",statistics.runtime)
@@ -97,7 +98,7 @@ end
 function statistics.memused() -- no math.round yet -)
     local round    = math.round or math.floor
     local luastate = status.getluastate()
-    return format("%s MB, ctx: %s MB, max: %s MB",
+    return formatted("%s MB, ctx: %s MB, max: %s MB",
         round(collectgarbage("count")//1024),
         round(luastate.statebytes//1048576),
         luastate.statebytesmax and round(luastate.statebytesmax//1048576) or "unknown"
@@ -105,7 +106,7 @@ function statistics.memused() -- no math.round yet -)
 end
 
 function statistics.formatruntime(runtime) -- indirect so it can be overloaded and
-    return format("%s seconds", runtime)   -- indeed that happens in cure-uti.lua
+    return formatted("%s seconds", runtime)   -- indeed that happens in cure-uti.lua
 end
 
 function statistics.runtime()
@@ -140,7 +141,7 @@ function statistics.tracefunction(base,tag,...)
         local func = base[name]
         setmetatableindex(stat,function(t,k) t[k] = 0 return 0 end)
         base[name] = function(n,k,v) stat[k] = stat[k] + 1 return func(n,k,v) end
-        statistics.register(formatters["%s.%s"](tag,name),function() return serialize(stat,"calls") end)
+        statistics.register(formatted("%s.%s",tag,name),function() return serialize(stat,"calls") end)
     end
 end
 
@@ -171,7 +172,7 @@ local function show(data,fields)
             local t = { }
             for i=1,#list do
                 local n = data[list[i].."state"][f]
-                t[i] = n < 0 and formatters["%w"](11) or formatters["%11i"](n)
+                t[i] = n < 0 and formatted("%w",11) or formatted("%11i",n)
             end
             report("  %3s"..columns,f,unpack(t))
         else

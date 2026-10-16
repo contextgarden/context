@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['driv-shp'] = {
 local type, next, rawget, rawset = type, next, rawget, rawset
 
 local setmetatableindex  = table.setmetatableindex
-local formatters         = string.formatters
+local formatted          = string.formatted
 local concat             = table.concat
 local keys               = table.keys
 local insert             = table.insert
@@ -1864,10 +1864,6 @@ do
 
     local periods    = utilities.strings.newrepeater(".")
 
-    local f_detail_0 = formatters["%s %s = %s"]
-    local f_detail_1 = formatters["%i: %s %s = %s"]
-    local f_detail_2 = formatters["%i:%i: %s %s = %s"]
-
     local function showdetails(n,l,tlp,l1,l2)
         local p = properties[n]
         if p then
@@ -1886,13 +1882,13 @@ do
                     v = "<" .. tostring(v) .. ">"
                 end
                 if tlp == 3 then
-                    flushline(f_detail_2(l1,l2,p,k,v))
+                    flushline(formatted("%i:%i: %s %s = %s",l1,l2,p,k,v))
                 elseif tlp == 2 then
-                    flushline(f_detail_1(l2,p,k,v))
+                    flushline(formatted("%i: %s %s = %s",l2,p,k,v))
                 elseif tlp == 1 then
-                    flushline(f_detail_1(l1,p,k,v))
+                    flushline(formatted("%i: %s %s = %s",l1,p,k,v))
                 else
-                    flushline(f_detail_0(p,k,v))
+                    flushline(formatted("%s %s = %s",p,k,v))
                 end
             end
         end

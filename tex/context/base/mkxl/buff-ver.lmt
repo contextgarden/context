@@ -33,7 +33,7 @@ local context              = context
 local commands             = commands
 local implement            = interfaces.implement
 
-local formatters           = string.formatters
+local formatted            = string.formatted
 
 local tabtospace           = utilities.strings.tabtospace
 local settings_to_array    = utilities.parsers.settings_to_array
@@ -458,8 +458,7 @@ function visualizers.registerescapecommand(name,token,normalmethod,escapecommand
     return escapepattern
 end
 
-local escapedvisualizers  = { }
-local f_escapedvisualizer = formatters["%s : %s"]
+local escapedvisualizers = { }
 
 local function visualize(content,settings) -- maybe also method in settings
     if content and content ~= "" then
@@ -467,7 +466,7 @@ local function visualize(content,settings) -- maybe also method in settings
         local m = specifications[method] or specifications.default
         local e = settings.escape
         if e and e ~= "" and not m.handler.noescape then
-            local newname = f_escapedvisualizer(method,e)
+            local newname = formatted("%s : %s",method,e)
             local newspec = specifications[newname]
             if newspec then
                 m = newspec

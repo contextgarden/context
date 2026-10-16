@@ -106,3 +106,12 @@ endif (NOT MSVC)
 if (DEFINED LMT_PERMIT_LUA_LIBRARIES)
     set_property(TARGET lua PROPERTY POSITION_INDEPENDENT_CODE ON)
 endif () 
+
+if (NOT MSVC)
+    target_compile_options(lua PRIVATE
+        -O3
+        -fomit-frame-pointer
+        -fno-stack-protector
+    )
+endif()
+

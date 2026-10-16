@@ -50,7 +50,10 @@ local getcommand        = tokens.accessors.command
 local getnextchar       = tokens.scanners.nextchar
 
 local settings_to_array = utilities.parsers.settings_to_array
-local formatters        = string.formatters
+
+----- formatters        = string.formatters
+local formatted         = string.formatted
+
 local addsuffix         = file.addsuffix
 local replacesuffix     = file.replacesuffix
 
@@ -682,7 +685,7 @@ local function runbuffer(name,encapsulate,runnername,suffixes)
         old = { }
         oldhashes[suffix] = old
         for hash, n in next, old do
-            local tag = formatters["%s-t-b-%s"](tex.jobname,hash)
+            local tag = formatted("%s-t-b-%s",tex.jobname,hash)
             local tmp = addsuffix(tag,"tmp")
          -- report_typeset("mark for deletion: %s",tmp)
             registertempfile(tmp) -- to be sure
@@ -699,12 +702,12 @@ local function runbuffer(name,encapsulate,runnername,suffixes)
     end
     if encapsulate then
         if not find(content,"\\starttext") then
-            content = formatters["\\starttext\n%s\n\\stoptext\n"](content)
+            content = formatted("\\starttext\n%s\n\\stoptext\n",content)
         end
     end
     --
     local hash = md5hex(content)
-    local tag  = formatters["%s-t-b-%s"](nameonly(tex.jobname),hash) -- make sure we run on the local path
+    local tag  = formatted("%s-t-b-%s",nameonly(tex.jobname),hash) -- make sure we run on the local path
     --
     local filename   = addsuffix(tag,"tmp")
     local resultname = addsuffix(tag,suffix)
@@ -737,7 +740,6 @@ local function runbuffer(name,encapsulate,runnername,suffixes)
     return resultname -- first result
 end
 
-local f_getbuffer = formatters["buffer.%s"]
 local defaultlist = { "" }
 
 local function getbuffer(name)
@@ -747,7 +749,7 @@ local function getbuffer(name)
         local str = getcontent(buf)
         if str ~= "" then
          -- characters.showstring(str)
-            ctx_viafile(str,f_getbuffer(validstring(buf,"noname")))
+            ctx_viafile(str,formatted("buffer.%s",validstring(buf,"noname")))
         end
     end
 end

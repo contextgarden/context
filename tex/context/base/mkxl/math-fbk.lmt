@@ -16,7 +16,7 @@ local trace_fallbacks   = false  trackers.register("math.fallbacks", function(v)
 
 local report_fallbacks  = logs.reporter("math","fallbacks")
 
-local formatters        = string.formatters
+----- formatted         = string.formatted
 local fastcopy          = table.fastcopy
 local byte              = string.byte
 local sortedhash        = table.sortedhash
@@ -285,7 +285,7 @@ end
 --                     height   = height,
 --                     depth    = depth,
 --                 }
---                 local newnextglyph = addprivate(target,formatters["M-N-%H"](nextglyph),newnextdata)
+--                 local newnextglyph = addprivate(target,formatted("M-N-%H",nextglyph),newnextdata)
 --                 newdata.next = newnextglyph
 --                 local nextnextglyph = oldnextdata.next
 --                 if nextnextglyph == nextglyph then
@@ -315,7 +315,7 @@ end
 --                         height   = height,
 --                         depth    = depth,
 --                     }
---                     hvi.glyph = addprivate(target,formatters["M-H-%H"](oldglyph),newdata)
+--                     hvi.glyph = addprivate(target,formatted("M-H-%H",oldglyph),newdata)
 --                 else
 --                     report_fallbacks("error in fallback: no valid hparts, slot %X, index %i",oldglyph,i)
 --                 end

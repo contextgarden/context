@@ -9,9 +9,8 @@ if not modules then modules = { } end modules ['typo-brk'] = {
 -- this code dates from the beginning and is kind of experimental; it
 -- will be optimized and improved soon
 
-local next, type, tonumber, tostring = next, type, tonumber, tostring
+local tonumber, tostring = tonumber, tostring
 local utfbyte, utfchar = utf.byte, utf.char
-local format = string.format
 
 local trace_breakpoints = false  trackers.register("typesetters.breakpoints", function(v) trace_breakpoints = v end)
 

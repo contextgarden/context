@@ -7,11 +7,12 @@ if not modules then modules = { } end modules ['spac-ali'] = {
     license   = "see context related readme files"
 }
 
-local div = math.div
-local format = string.format
+local div              = math.div
 
 local tasks            = nodes.tasks
 local enableaction     = tasks.enableaction
+
+local formatted        = string.formatted
 
 local nuts             = nodes.nuts
 
@@ -129,7 +130,7 @@ interfaces.implement {
 
 statistics.register("realigning", function()
     if nofrealigned > 0 then
-        return format("%s processed",nofrealigned)
+        return formatted("%s processed",nofrealigned)
     else
         return nil
     end

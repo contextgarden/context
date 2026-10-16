@@ -12,7 +12,7 @@ if not modules then modules = { } end modules ['file-job'] = {
 local next, rawget, tostring, tonumber = next, rawget, tostring, tonumber
 local gsub, match, gmatch, ind = string.gsub, string.match, string.gmatch, string.find
 local insert, remove, concat, unique, imerged = table.insert, table.remove, table.concat, table.unique, table.imerged
-local validstring, formatters = string.valid, string.formatters
+local validstring = string.valid
 local sortedhash, copytable = table.sortedhash, table.copy
 local setmetatableindex, setmetatablenewindex = table.setmetatableindex, table.setmetatablenewindex
 local osexit = os.exit
@@ -24,6 +24,8 @@ local context           = context
 local ctx_doifelse      = commands.doifelse
 
 local implement         = interfaces.implement
+
+local formatters        = string.formatted
 
 local trace_jobfiles    = false  trackers.register("system.jobfiles",  function(v) trace_jobfiles  = v end)
 local trace_structure   = false  trackers.register("system.structure", function(v) trace_structure = v end)
@@ -192,9 +194,9 @@ implement {
     arguments = { "optional", "optional" },
     actions   = function(name,tree)
         if tree and tree ~= "" then
-            resolvers.usezipfile(formatters["zip:///%s?tree=%s"](name,tree))
+            resolvers.usezipfile(formatted("zip:///%s?tree=%s",name,tree))
         else
-            resolvers.usezipfile(formatters["zip:///%s"](name))
+            resolvers.usezipfile(formatted("zip:///%s",name))
         end
     end
 }
@@ -1074,7 +1076,7 @@ local function convertexamodes(str)
             local data = xml.text(e)
             local mode = match(label,"^mode:(.+)$")
             if mode then
-                context.enablemode { formatters["%s:%s"](mode,data) }
+                context.enablemode { formatted("%s:%s",mode,data) }
             end
             context.setvariable("exa:variables",label,(gsub(data,"([{}])","\\%1")))
         end

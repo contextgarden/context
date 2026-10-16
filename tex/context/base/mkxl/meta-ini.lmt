@@ -7,7 +7,6 @@ if not modules then modules = { } end modules ['meta-ini'] = {
 }
 
 local tonumber = tonumber
-local format = string.format
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local P, Cs, R, S, C, Cc = lpeg.P, lpeg.Cs, lpeg.R, lpeg.S, lpeg.C, lpeg.Cc
 
@@ -82,25 +81,13 @@ do
 
     local ctx_mathematics = context.mathematics
 
-    -- function metapost.formatnumber(f,n) -- just lua format
-    --     f = gsub(f,"@(%d)","%%.%1")
-    --     f = gsub(f,"@","%%")
-    --     f = format(f,tonumber(n) or 0)
-    --     f = gsub(f,"e([%+%-%d]+)",function(s)
-    --         return format("\\times10^{%s}",tonumber(s) or s) -- strips leading zeros
-    --     end)
-    --     context.mathematics(f)
-    -- end
-
-    -- formatters["\\times10^{%N}"](s) -- strips leading zeros too
-
     local one = Cs((P("@")/"%%." * (R("09")^1) + P("@")/"%%" + 1)^0)
     local two = Cs((P("e")/"" * ((S("+-")^0 * R("09")^1) / function(s)
-     -- return format("\\times10^{%s}",tonumber(s) or s)
+        -- why tonumber here:
         return "\\times10^{" .. (tonumber(s) or s) .."}"
     end) + 1)^1)
 
-    -- local two = Cs((P("e")/"" * ((S("+-")^0 * R("09")^1) / formatters["\\times10^{%N}"]) + 1)^1)
+    local format = string.format -- string.formatted
 
     function metapost.formatnumber(fmt,n) -- just lua format
         ctx_mathematics(lpegmatch(two,format(lpegmatch(one,fmt),n)))

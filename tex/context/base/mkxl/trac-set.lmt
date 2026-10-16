@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['trac-set'] = { -- might become u
 local type, next, tostring, tonumber = type, next, tostring, tonumber
 local print = print
 local concat, sortedhash = table.concat, table.sortedhash
-local formatters, find, lower, gsub, topattern = string.formatters, string.find, string.lower, string.gsub, string.topattern
+local find, lower, gsub, topattern = string.find, string.lower, string.gsub, string.topattern
 local is_boolean = string.is_boolean
 local settings_to_hash = utilities.parsers.settings_to_hash
 local allocate = utilities.storage.allocate
@@ -21,6 +21,8 @@ local utilities   = utilities
 
 local setters     = utilities.setters or { }
 utilities.setters = setters
+
+local formatted = string.formatted
 
 local data        = { }
 
@@ -39,19 +41,20 @@ local function initialize_setter(filename,name,values) -- filename only for diag
      -- trace_initialize = true
         local data = setter.data
         if data then
+            local report = trace_initialize and setter.report or false
             for key, newvalue in sortedhash(values) do
                 local newvalue = is_boolean(newvalue,newvalue,true) -- strict
                 local functions = data[key]
                 if functions then
                     local oldvalue = functions.value
                     if functions.frozen then
-                        if trace_initialize then
-                            setter.report("%s: %a is %s to %a",filename,key,"frozen",oldvalue)
+                        if report then
+                            report("%s: %a is %s to %a",filename,key,"frozen",oldvalue)
                         end
                     elseif #functions > 0 and not oldvalue then
---                     elseif #functions > 0 and oldvalue == nil then
-                        if trace_initialize then
-                            setter.report("%s: %a is %s to %a",filename,key,"set",newvalue)
+                 -- elseif #functions > 0 and oldvalue == nil then
+                        if report then
+                            report("%s: %a is %s to %a",filename,key,"set",newvalue)
                         end
                         for i=1,#functions do
                             functions[i](newvalue)
@@ -59,8 +62,8 @@ local function initialize_setter(filename,name,values) -- filename only for diag
                         functions.value = newvalue
                         functions.frozen = functions.frozen or frozen
                     else
-                        if trace_initialize then
-                            setter.report("%s: %a is %s as %a",filename,key,"kept",oldvalue)
+                        if report then
+                            report("%s: %a is %s as %a",filename,key,"kept",oldvalue)
                         end
                     end
                 else
@@ -68,8 +71,8 @@ local function initialize_setter(filename,name,values) -- filename only for diag
                     -- list as it might be an obsolete entry
                     functions = { default = newvalue, frozen = frozen }
                     data[key] = functions
-                    if trace_initialize then
-                        setter.report("%s: %a is %s to %a",filename,key,"defaulted",newvalue)
+                    if report then
+                        report("%s: %a is %s to %a",filename,key,"defaulted",newvalue)
                     end
                 end
             end
@@ -205,6 +208,14 @@ local function reset_setter(t)
     reset(t)
 end
 
+local function set_setter(setter,what,value) -- only boolean
+    if value then
+        enable_setter(setter,what,value)
+    else
+        disable_setter(setter,what,value)
+    end
+end
+
 local function list_setter(t) -- pattern
     local list = table.sortedkeys(t.data)
     local user, system = { }, { }
@@ -266,7 +277,7 @@ end
 
 function setters.report(setter,fmt,...)
     if fmt then
-        print(formatters["%-15s : %s"](setter.name,formatters[fmt](...)))
+        print(formatted("%-15s : %s",setter.name,formatted(fmt,...)))
     else
         print("")
     end
@@ -296,6 +307,7 @@ local function new_setter(name) -- we could use foo:bar syntax (but not used tha
         enable   = function(...)         enable_setter  (setter,...) end,
         disable  = function(...)         disable_setter (setter,...) end,
         reset    = function(...)         reset_setter   (setter,...) end, -- can be dangerous
+        set      = function(...)         set_setter     (setter,...) end, -- boolean
         register = function(...)         register_setter(setter,...) end,
         list     = function(...)  return list_setter    (setter,...) end,
         show     = function(...)         show_setter    (setter,...) end,

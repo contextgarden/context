@@ -6,6 +6,9 @@ if not modules then modules = { } end modules ['s-languages-goodies'] = {
     license   = "see context related readme files"
 }
 
+local lpegmatch = lpeg.match
+local formatted = string.formatted
+
 moduledata.languages         = moduledata.languages         or { }
 moduledata.languages.goodies = moduledata.languages.goodies or { }
 
@@ -43,8 +46,6 @@ function moduledata.languages.goodies.show(specification)
     end
 end
 
-local lpegmatch = lpeg.match
-
 moduledata.languages.goodies.ligaturehandlers = { }
 
 function moduledata.languages.goodies.ligatures(specification)
@@ -71,7 +72,7 @@ function moduledata.languages.goodies.ligatures(specification)
 
         languages.installhandler(language,"moduledata.languages.goodies.ligaturehandlers." .. language .. "")
 
-        statistics.register(string.formatters["'% t' ligatures checked for language %a"](table.sortedkeys(hash), language), function()
+        statistics.register(formatted("'% t' ligatures checked for language %a",table.sortedkeys(hash), language), function()
             return next(checked) and table.concat(table.sortedkeys(checked)," ") or nil
         end)
 
@@ -80,10 +81,10 @@ function moduledata.languages.goodies.ligatures(specification)
         trackers.enable("languages.applied")
 
         if applied then
-            statistics.register(string.formatters["options applied for language %a"](language), function()
+            statistics.register(formatted("options applied for language %a",language), function()
                 return next(applied) and table.concat(table.sortedkeys(applied)," ") or nil
             end)
-            statistics.register(string.formatters["missed ligatures for language %a"](language), function()
+            statistics.register(formatted("missed ligatures for language %a",language), function()
                 for k, v in next, applied do
                     checked[k] = nil
                 end

@@ -1,0 +1,105 @@
+if not modules then modules = { } end modules ['util-for'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local rawget    = rawget
+local rawset    = rawset
+local formatted = sequencer.format
+local patterns  = lpeg.patterns
+local lpegmatch = lpeg.match
+
+local P, C, S, Cs, Cc = lpeg.P, lpeg.C, lpeg.S, lpeg.Cs, lpeg.Cc
+
+local map = {
+    ["%.1N"]                  = "%\x01", -- soh
+    ["%.2N"]                  = "%\x02", -- stx
+    ["%.3N"]                  = "%\x03", -- etx
+    ["%.4N"]                  = "%\x04", -- eot
+    ["%.5N"]                  = "%\x05", -- enq
+    ["%.6N"]                  = "%\x06", -- ack
+    ["%.7N"]                  = "%\x07", -- bel
+    ["%.8N"]                  = "%\x08", -- bs
+    ["%.9N"]                  = "%\x09", -- ht
+                                         -- lf    -- keep for %t (for now)
+    ["%02i"]                  = "%\x0B", -- vt
+    ["%03i"]                  = "%\x0C", -- ff
+                                         -- cr    -- keep for %t (for now)
+    ["%04i"]                  = "%\x0E", -- so
+    ["%05i"]                  = "%\x0F", -- si
+
+    ["%02X"]                  = "%\x10", -- dle
+    ["%03X"]                  = "%\x11", -- dc1
+    ["%04X"]                  = "%\x12", -- dc2
+    ["%05X"]                  = "%\x13", -- dc3
+    ["%06X"]                  = "%\x14", -- dc4
+    ["%07X"]                  = "%\x15", -- nak
+    ["%08X"]                  = "%\x16", -- syn
+
+    ["(%.6N,%.6N)"]           = "%\x17", -- etb
+    ["(%.6N,%.6N,%.6N)"]      = "%\x18", -- can
+    ["(%.3N)"]                = "%\x19", -- em
+    ["(%.3N,%.3N,%.3N)"]      = "%\x1A", -- sub
+    ["(%.3N,%.3N,%.3N,%.3N)"] = "%\x1B", -- esc
+
+ -- ["%-15s"]                 = "%\x1C", -- fs
+ -- ["%-15s > %s"]            = "%\x1D", -- gs
+ -- ["%--t"]                  = "%\x1E", -- rs
+ -- ["\\%s"]                  = "%\x1F", -- us
+}
+
+local anything   = patterns.anything
+local pattern    = Cs(((lpeg.utfchartabletopattern(map)/map) + 1)^0)
+
+local formatting = function(s) return lpegmatch(pattern,s) end
+
+local formatters = setmetatable(
+    { },
+    {
+        __index = function(t,k)
+            local f = lpegmatch(pattern,k)
+            local v = function(...)
+                -- stack frame reuse + fast move of ... block
+                return formatted(f,...)
+            end
+            rawset(t,k,v)
+            return v
+        end,
+        __newindex = function()
+            -- nothing
+        end,
+        __call = function(t,...)
+            return formatted(...)
+        end,
+    }
+)
+
+local extensions = sequencer.extensions
+
+setmetatable(extensions, {
+    __newindex = function(t,k,v)
+        if rawget(t,k) then
+            -- forget about it
+        else
+            rawset(t,k,v)
+        end
+    end
+})
+
+patterns.xmlescape = Cs((P("<")/"&lt;" + P(">")/"&gt;" + P("&")/"&amp;" + P('"')/"&quot;" + anything)^0)
+patterns.texescape = Cs((C(S("#$%\\{}"))/"\\%1" + anything)^0)
+patterns.ctxescape = Cs((C(S("#$%\\{}|"))/"\\%1" + anything)^0)
+patterns.luaescape = Cs(((1-S('"\n'))^1 + P('"')/'\\"' + P('\n')/'\\n"')^0) -- maybe also \0
+patterns.luaquoted = Cs(Cc('"') * ((1-S('"\n'))^1 + P('"')/'\\"' + P('\n')/'\\n"')^0 * Cc('"'))
+
+extensions.xml = function(s) return lpegmatch(patterns.xmlescape,s) end
+extensions.tex = function(s) return lpegmatch(patterns.texescape,s) end
+extensions.lua = function(s) return lpegmatch(patterns.luaescape,s) end
+
+string.formatters = formatters
+string.formatting = formatting
+string.formatter  = function(str,...) return formatters[str](...) end
+string.formatted  = formatted

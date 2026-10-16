@@ -30,7 +30,7 @@ local function initializer()
     tobesaved = jobpasses.tobesaved
 end
 
-job.register('job.passes.collected', tobesaved, initializer, nil)
+job.register('job.passes.collected', tobesaved, initializer)
 
 function jobpasses.getcollected(id)
     return collected[id] or { }

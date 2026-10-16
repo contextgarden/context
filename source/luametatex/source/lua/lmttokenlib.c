@@ -1384,7 +1384,7 @@ static int tokenlib_scandimension(lua_State *L)
     int mu = lua_toboolean(L, 2);
     int eq = lua_toboolean(L, 3);
     halfword order = normal_glue_order;
-    halfword val = tex_scan_dimension(mu, inf, 0, eq, &order, NULL);
+    scaled val = tex_scan_dimension(mu, inf, 0, eq, &order, NULL);
     lua_pushinteger(L, val);
     tokenlib_aux_unsave_tex_scanner(texstate);
     if (inf) {
@@ -2518,6 +2518,7 @@ static int tokenlib_future_expand(lua_State *L)
                     tokenlib_aux_unsave_tex_scanner(texstate);
                     return 0;
                 }
+                FALLTHROUGH
             default:
                 tex_back_input(t);
                 if (spa && lua_toboolean(L, 2)) {

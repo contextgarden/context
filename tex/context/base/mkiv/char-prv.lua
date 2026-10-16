@@ -219,5 +219,3 @@ characters.private={
   unicodeslot=0xFE957,
  },
 }
-
--- print(table.serialize(characters.private,"characters.private", { hexify = true, noquotes = true }))

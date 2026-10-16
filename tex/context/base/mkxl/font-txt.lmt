@@ -82,6 +82,8 @@ local nodes            = nodes
 
 local utfchar          = utf.char
 
+local formatted        = string.formatted
+
 local nuts             = nodes.nuts
 
 local getnext          = nuts.getnext
@@ -536,7 +538,6 @@ do
     local report_text = logs.reporter("otf plugin","text")
     local nofruns     = 0
     local nofsnippets = 0
-    local f_unicode   = string.formatters["%U"]
 
     local function showtext(head,font,dynamic,rlmode,start,stop,list,before,after)
         if list then
@@ -545,7 +546,7 @@ do
             for i=1,#list do
                 local u = list[i]
                 list[i] = utfchar(u)
-                plus[i] = f_unicode(u)
+                plus[i] = formatted("%U",u)
             end
             report_text("%03i : [%s] %t [%s]-> % t", nofsnippets, before and "+" or "-", list, after and "+" or "-", plus)
         else

@@ -680,7 +680,7 @@ static void mp_double_pyth_add(MP mp, mp_number *ret, const mp_number *a_orig, c
     double a = fabs(a_orig->data.dval);
     double b = fabs(b_orig->data.dval);
     errno = 0;
-    ret->data.dval = hypot(a, b);
+    ret->data.dval = lmt_hypot(a, b);
     if (errno) {
         mp->arithmic_error = mp_error_code(mp, 3);
         ret->data.dval = EL_GORDO;

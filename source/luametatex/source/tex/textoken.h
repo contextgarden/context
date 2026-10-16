@@ -580,7 +580,7 @@ extern strnumber  tex_the_convert_string          (halfword c, int i);
 extern strnumber  tex_tokens_to_string            (halfword p);
 extern char      *tex_tokenlist_to_tstring        (int p, int inhibit_par, int *siz, int skip, int nospace, int strip, int wipe, int single);
 
-extern halfword   tex_get_tex_dimension_register  (int j, int internal);
+extern scaled     tex_get_tex_dimension_register  (int j, int internal);
 extern halfword   tex_get_tex_skip_register       (int j, int internal);
 extern halfword   tex_get_tex_muskip_register     (int j, int internal);
 extern halfword   tex_get_tex_count_register      (int j, int internal);
@@ -589,7 +589,7 @@ extern halfword   tex_get_tex_attribute_register  (int j, int internal);
 extern halfword   tex_get_tex_box_register        (int j, int internal);
 extern halfword   tex_get_tex_toks_register       (int j, int internal);
 
-extern int        tex_set_tex_dimension_register  (int j, halfword v, int flags, int internal);
+extern int        tex_set_tex_dimension_register  (int j, scaled   v, int flags, int internal);
 extern int        tex_set_tex_skip_register       (int j, halfword v, int flags, int internal);
 extern int        tex_set_tex_muskip_register     (int j, halfword v, int flags, int internal);
 extern int        tex_set_tex_count_register      (int j, halfword v, int flags, int internal);

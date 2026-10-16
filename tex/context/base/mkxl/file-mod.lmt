@@ -12,7 +12,7 @@ if not modules then modules = { } end modules ['file-mod'] = {
 -- It is more convenient to manipulate filenames (paths) in Lua than in TeX. The
 -- methods below have counterparts at the TeX end.
 
-local format, find, concat, tonumber = string.format, string.find, table.concat, tonumber
+local find, concat, tonumber = string.find, table.concat, tonumber
 local sortedhash = table.sortedhash
 local basename = file.basename
 
@@ -20,6 +20,8 @@ local trace_modules     = false  trackers  .register("modules.loading",         
 local permit_unprefixed = false  directives.register("modules.permitunprefixed", function(v) permit_unprefixed = v end)
 
 local report            = logs.reporter("modules")
+
+local formatted         = string.formatted
 
 local context           = context
 local implement         = interfaces.implement
@@ -243,11 +245,11 @@ statistics.register("loaded tex modules", function()
             end
         end
         if nf == 0 then
-            return format("%s requested, all found (%s)",nt,concat(t," "))
+            return formatted("%s requested, all found (%s)",nt,concat(t," "))
         elseif nt == 0 then
-            return format("%s requested, all missing (%s)",nf,concat(f," "))
+            return formatted("%s requested, all missing (%s)",nf,concat(f," "))
         else
-            return format("%s requested, %s found (%s), %s missing (%s)",nt+nf,nt,concat(t," "),nf,concat(f," "))
+            return formatted("%s requested, %s found (%s), %s missing (%s)",nt+nf,nt,concat(t," "),nf,concat(f," "))
         end
     else
         return nil

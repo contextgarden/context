@@ -1,28 +1,16 @@
+# cmake/tex.cmake
+
 if (DEFINED luametatex_use_helpers)
     set(tex_sources_helpers source/lua/lmthelperlib.c)
 endif()
 
 set(tex_sources
-
-    source/utilities/auxmemory.c
-    source/utilities/auxzlib.c
-    source/utilities/auxsparsearray.c
-    source/utilities/auxsystem.c
-    source/utilities/auxunistring.c
-    source/utilities/auxfile.c
-    source/utilities/auxposit.c
-    source/utilities/auxbytemaps.c
-    source/utilities/auxkdtree2d.c
-    source/utilities/auxkdtree3d.c
-
-    source/libraries/hnj/hnjhyphen.c
-
+    # Lua engine interface
     source/lua/lmtinterface.c
     source/lua/lmtlibrary.c
     source/lua/lmtcallbacklib.c
     source/lua/lmtlanguagelib.c
     source/lua/lmtlualib.c
-  # source/lua/lmtluaclib.c
     source/lua/lmttexiolib.c
     source/lua/lmttexlib.c
     source/lua/lmttokenlib.c
@@ -31,41 +19,9 @@ set(tex_sources
     source/lua/lmtenginelib.c
     source/lua/lmtfontlib.c
     source/lua/lmtstatuslib.c
-
     source/lua/lmthelperlib.c
 
-    source/luaoptional/lmtoptional.c
-
-    source/luarest/lmtfilelib.c
-    source/luarest/lmtpdfelib.c
-    source/luarest/lmtiolibext.c
-    source/luarest/lmtoslibext.c
-    source/luarest/lmtstrlibext.c
-    source/luarest/lmtdecodelib.c
-    source/luarest/lmtsha2lib.c
-    source/luarest/lmtmd5lib.c
-    source/luarest/lmtaeslib.c
-    source/luarest/lmtbasexxlib.c
-    source/luarest/lmtxmathlib.c
-    source/luarest/lmtxcomplexlib.c
-    source/luarest/lmtziplib.c
-    source/luarest/lmtsparselib.c
-    source/luarest/lmtbitsetlib.c
-    source/luarest/lmtposit.c
-    source/luarest/lmtpotrace.c
-    source/luarest/lmtqrcodegen.c
-    source/luarest/lmtnanojpeg.c
-    source/luarest/lmtseriallib.c
-    source/luarest/lmtprocesslib.c
-    source/luarest/lmttimerlib.c
-    source/luarest/lmtvectorlib.c
-    source/luarest/lmtbytemaplib.c
-    source/luarest/lmteffectslib.c
-    source/luarest/lmtzbufferlib.c
-    source/luarest/lmtkdtreelib.c
-  # source/luarest/lmtspecificlib.c
-    source/luarest/lmtclientlib.c
-
+    # Core TeX engine routines
     source/tex/texalign.c
     source/tex/texarithmetic.c
     source/tex/texbuildpage.c
@@ -105,13 +61,27 @@ set(tex_sources
     source/tex/textoken.c
     source/tex/texrules.c
     source/tex/texbalance.c
-
 )
 
 add_library(tex STATIC ${tex_sources})
 
+if (MSVC)
+    target_compile_options(tex PRIVATE
+        /fp:strict    # Strict floating-point model
+        /W4           # High warning level
+    )
+else()
+    target_compile_options(tex PRIVATE
+        -O3
+        -fomit-frame-pointer
+        -ffp-contract=off
+        -fno-fast-math
+        -fno-strict-aliasing
+        -Wall -Wextra
+    )
+endif()
+
 target_compile_definitions(tex PUBLIC
-  # LUAI_HASHLIMIT=6 # obsolete
     ZLIB_CONST=1
     MINIZ_NO_ARCHIVE_APIS=1
     MINIZ_NO_STDIO=1
@@ -131,6 +101,4 @@ target_include_directories(tex PRIVATE
     source/libraries/qrcodegen
     source/libraries/nanojpeg
     source/libraries/triangles
-
-  # source/libraries/qhull/src/libqhull_r
 )

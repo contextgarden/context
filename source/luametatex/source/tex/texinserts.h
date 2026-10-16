@@ -78,8 +78,8 @@ extern insert_state_info lmt_insert_state;
 extern scaled   tex_get_insert_limit         (halfword i);
 extern halfword tex_get_insert_multiplier    (halfword i);
 extern halfword tex_get_insert_penalty       (halfword i);
-extern halfword tex_get_insert_distance      (halfword i);
-extern halfword tex_get_insert_maxdepth      (halfword i);
+extern scaled   tex_get_insert_distance      (halfword i);
+extern scaled   tex_get_insert_maxdepth      (halfword i);
 extern scaled   tex_get_insert_height        (halfword i);
 extern scaled   tex_get_insert_depth         (halfword i);
 extern scaled   tex_get_insert_width         (halfword i);
@@ -94,8 +94,8 @@ extern halfword tex_get_insert_direction     (halfword i);
 extern void     tex_set_insert_limit         (halfword i, scaled v);
 extern void     tex_set_insert_multiplier    (halfword i, halfword v);
 extern void     tex_set_insert_penalty       (halfword i, halfword v);
-extern void     tex_set_insert_distance      (halfword i, halfword v);
-extern void     tex_set_insert_maxdepth      (halfword i, halfword v);
+extern void     tex_set_insert_distance      (halfword i, scaled v);
+extern void     tex_set_insert_maxdepth      (halfword i, scaled v);
 extern void     tex_set_insert_height        (halfword i, scaled v);
 extern void     tex_set_insert_depth         (halfword i, scaled v);
 extern void     tex_set_insert_width         (halfword i, scaled v);
@@ -125,7 +125,7 @@ extern void     tex_undump_insert_data       (dumpstream f);
 extern halfword lmt_get_insert_distance      (halfword i, int first, int top, int dis); /* callback */
 extern halfword lmt_set_insert_distance      (halfword i, halfword head);               /* callback */
 
-extern halfword tex_get_insert_progress      (halfword i);
+extern scaled   tex_get_insert_progress      (halfword i);
 
 extern void     tex_insert_store             (halfword i, halfword n);
 extern void     tex_insert_restore           (halfword n);

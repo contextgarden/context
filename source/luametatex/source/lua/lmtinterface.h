@@ -72,6 +72,10 @@ typedef enum security_actions {
     security_load_library     = 0x0E,
     /* */
     security_open_database    = 0x0F,
+    /* */
+    security_launch_command   = 0x10,
+    /* */
+    security_http_request     = 0x11,
 } security_actions;
 
 typedef enum security_targets {
@@ -81,15 +85,24 @@ typedef enum security_targets {
     security_executable = 0x03,
     security_library    = 0x04,
     security_loadable   = 0x05,
+    security_launchable = 0x06,
+    security_client     = 0x07,
 } security_targets;
 
-# define n_of_security_targets 6
+typedef enum security_states {
+    security_state_unset,
+    security_state_set,
+    security_state_frozen,
+} security_states;
+
+# define n_of_security_targets 8
 
 typedef struct lua_state_info {
     lua_State   *lua_instance;
     lua_State   *mps_instance;
     luaL_Buffer *used_buffer;
     int          security_checkers[n_of_security_targets];
+    int          security_states[n_of_security_targets];
     int          used_bytes;
     int          used_bytes_max;
     int          function_table_id;
@@ -146,6 +159,7 @@ extern int  luaopen_sha2        (lua_State *L);
 extern int  luaopen_sio         (lua_State *L);
 extern int  luaopen_socket_core (lua_State *L);
 extern int  luaopen_bitset      (lua_State *L);
+extern int  luaopen_sequencer   (lua_State *L);
 extern int  luaopen_sparse      (lua_State *L);
 extern int  luaopen_status      (lua_State *L);
 extern int  luaopen_tex         (lua_State *L);
@@ -164,6 +178,7 @@ extern int  luaopen_vector      (lua_State *L);
 extern int  luaopen_zbuffer     (lua_State *L);
 //     int  luaopen_specific    (lua_State *L);
 extern int  luaopen_client      (lua_State *L);
+extern int  luaopen_server      (lua_State *L);
 
 extern int  luaextend_io        (lua_State *L);
 extern int  luaextend_os        (lua_State *L);
@@ -898,6 +913,7 @@ make_lua_key(L, glueset);\
 make_lua_key(L, gluesign);\
 make_lua_key(L, gluespec);\
 make_lua_key(L, glyph);\
+make_lua_key(L, glyphscale);\
 make_lua_key(L, group);\
 make_lua_key(L, h);\
 make_lua_key(L, halign);\

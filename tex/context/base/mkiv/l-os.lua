@@ -29,7 +29,8 @@ local os = os
 local date, time, difftime = os.date, os.time, os.difftime
 local find, format, gsub, upper, gmatch = string.find, string.format, string.gsub, string.upper, string.gmatch
 local concat = table.concat
-local random, ceil, randomseed, modf = math.random, math.ceil, math.randomseed, math.modf
+local floor, ceil, abs, modf = math.floor, math.ceil, math.abs, math.modf
+local random, randomseed = math.random, math.randomseed
 local type, setmetatable, tonumber, tostring = type, setmetatable, tonumber, tostring
 
 -- This check needs to happen real early on. Todo: we can pick it up from the commandline
@@ -442,42 +443,32 @@ end
 do
 
     -- this is fragile because it depends on time and so we only check once during
-    -- a run (the computer doesn't move zones) .. Michal Vlasák made a better one
+    -- a run (the computer doesn't move zones)
 
- -- local d
- --
- -- function os.timezone()
- --     d = d or ((tonumber(date("%H")) or 0) - (tonumber(date("!%H")) or 0))
- --     if d > 0 then
- --         return format("+%02i:00",d)
- --     else
- --         return format("-%02i:00",-d)
- --     end
- -- end
+    local td, tz
 
-    local hour, min
-
-    function os.timezone(difference)
-        if not hour then
-            -- somehow looks too complex:
+    local function timezone(difference)
+        if not td then
             local current   = time()
             local utcdate   = date("!*t", current)
             local localdate = date("*t", current)
             localdate.isdst = false
-            local timediff  = difftime(time(localdate), time(utcdate))
-            hour, min = modf(timediff / 3600)
-            min = min * 60
+            local timediff  = difftime(time(localdate),time(utcdate))
+            local sign      = timediff < 0 and "-" or "+"
+            local absdiff   = abs(timediff)
+            local hour      = floor( absdiff / 3600)
+            local minute    = floor((absdiff % 3600) / 60)
+            td = (timediff < 0 and -hour or hour), minute
+            tz = format("%s%02d:%02d",sign,hour,minute)
         end
-        if difference then
-            return hour, min
-        else
-            return format("%+03d:%02d",hour,min) -- %+ means: always show sign
-        end
+        return difference and td or tz
     end
+
+    os.timezone = timezone
 
     -- localtime with timezone: 2021-10-22 10:22:54+02:00
 
-    local timeformat = format("%%s%s",os.timezone())
+    local timeformat = format("%%s%s",timezone())
     local dateformat = "%Y-%m-%d %H:%M:%S"
     local lasttime   = nil
     local lastdate   = nil

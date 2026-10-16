@@ -162,7 +162,7 @@ local function processjob()
         report_system("processing as lua: %s",filename)
 
         context.starttext()
-            context.ctxlua(string.format('dofile("%s")',filename))
+            context.ctxlua(string.formatted('dofile("%s")',filename))
         context.stoptext()
 
     elseif suffix == "mp" or arguments.forcemp then

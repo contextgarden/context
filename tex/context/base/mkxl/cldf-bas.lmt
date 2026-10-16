@@ -24,7 +24,7 @@ if not modules then modules = { } end modules ['cldf-bas'] = {
 
 local tonumber      = tonumber
 local type          = type
-local format        = string.format
+local formatted     = string.formatted
 local utfchar       = utf.char
 local concat        = table.concat
 
@@ -185,7 +185,7 @@ ctxcore.endvbox = ctx_egroup -- \egroup
 ctxcore.endvtop = ctx_egroup -- \egroup
 
 local function allocate(name,what,cmd)
-    local a = format("c_syst_last_allocated_%s",what)
+    local a = formatted("c_syst_last_allocated_%s",what)
     local n = texgetcount(a) + 1
     if n <= texgetcount("c_syst_max_allocated_register") then
         texsetcount(a,n)

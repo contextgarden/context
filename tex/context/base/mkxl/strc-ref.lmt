@@ -19,8 +19,10 @@ local floor = math.floor
 local rawget, tonumber, type, next = rawget, tonumber, type, next
 local lpegmatch = lpeg.match
 local insert, remove, copytable, sortedhash = table.insert, table.remove, table.copy, table.sortedhash
-local formatters = string.formatters
 local P, Cs, lpegmatch = lpeg.P, lpeg.Cs, lpeg.match
+
+----- formatters = string.formatters
+local formatted  = string.formatted
 
 local allocate           = utilities.storage.allocate
 local mark               = utilities.storage.mark
@@ -767,7 +769,7 @@ function urls.get(name)
     if u then
         local url, file = u[1], u[2]
         if file and file ~= "" then
-            return formatters["%s/%s"](url,file)
+            return formatted("%s/%s",url,file)
         else
             return url
         end
@@ -2106,11 +2108,10 @@ end
 
 references.identify = identify
 
-local valid   do
+local valid  do
 
     local unknowns    = { }
     local nofunknowns = 0
-    local f_valid     = formatters["[%s][%s]"]
 
     valid = function(prefix,reference,specification,silent)
         local set, bug = identify(prefix,reference)
@@ -2118,7 +2119,7 @@ local valid   do
         if unknown then
             currentreference = nil -- will go away
             if not silent then
-                local str = f_valid(prefix,reference)
+                local str = formatted("[%s][%s]",prefix,reference)
                 local u = unknowns[str]
                 if not u then
                  -- if somefound and not silent then
@@ -2150,7 +2151,7 @@ local valid   do
     logs.registerfinalactions(function()
         if nofunknowns > 0 then
             statistics.register("cross referencing", function()
-                return format("%s identified, %s unknown",nofidentified,nofunknowns)
+                return formatted("%s identified, %s unknown",nofidentified,nofunknowns)
             end)
             local sortedhash = table.sortedhash
             logs.startfilelogging(report,"missing references")

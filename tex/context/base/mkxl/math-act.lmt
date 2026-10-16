@@ -16,7 +16,7 @@ if not modules then modules = { } end modules ['math-act'] = {
 
 local type, next, tonumber, tostring, rawget = type, next, tonumber, tostring, rawget
 local fastcopy, copytable, insert, remove, concat = table.fastcopy, table.copy, table.insert, table.remove, table.concat
-local formatters, gsub, lower = string.formatters, string.gsub, string.lower
+local gsub, lower = string.gsub, string.lower
 local byte = string.byte
 local max = math.max
 local setmetatableindex, sortedkeys, sortedhash, concat = table.setmetatableindex, table.sortedkeys, table.sortedhash, table.concat
@@ -28,6 +28,9 @@ local trace_tweaking   = false  trackers.register("math.tweaks",     function(v)
 
 local report_math      = logs.reporter("mathematics","initializing")
 local report_mathtweak = logs.reporter("mathematics","tweak")
+
+local formatting       = string.formatting
+local formatted        = string.formatted
 
 local getfontoffamily  = tex.getfontoffamily
 local texget           = tex.get
@@ -374,13 +377,11 @@ mathematics.tweaks   = mathtweaks
 
 -- can be a common helper:
 
-local f_u = formatters["%U"]
-
 local function unicodecharlist(t)
     local r = { }
     local n = 0
     for u in sortedhash(t) do
-        n = n + 1 ; r[n] = f_u(u)
+        n = n + 1 ; r[n] = formatted("%U",u)
     end
     return concat(r," ")
 end
@@ -396,7 +397,7 @@ local function report_tweak(fmt,target,original,...)
                 metadata and metadata.fontname or "unknown",
                 parameters.size or 655360,
                 parameters.mathsize or 1,
-                formatters[fmt](...)
+                formatted(fmt,...)
             )
         else
             print("something is wrong")
@@ -1771,7 +1772,7 @@ do
     -- the private namespace.
 
     -- local addprivate = fonts.helpers.addprivate
-    -- local newnextglyph = addprivate(target,formatters["M-N-%H"](nextglyph),newnextdata)
+    -- local newnextglyph = addprivate(target,formatted("M-N-%H",nextglyph),newnextdata)
 
     local nps = fonts.helpers.newprivateslot
 
@@ -2258,19 +2259,21 @@ do
 
             end
         else
-            local f_normal = formatters["M-NORMAL-%H"](unicode)
-         -- local p_normal = hasprivate(main,f_normal)
-            p_normal = addprivate(target,f_normal,{
-                height   = height,
-                width    = width,
-                commands = {
-                 -- { "offset", lshift, 0, unicode },
-                    push,
-                    leftcommand[lshift],
-                    slotcommand[0][unicode],
-                    pop,
-                },
-            })
+            p_normal = addprivate(
+                target,
+                formatted("M-NORMAL-%H",unicode),
+                {
+                    height   = height,
+                    width    = width,
+                    commands = {
+                     -- { "offset", lshift, 0, unicode },
+                        push,
+                        leftcommand[lshift],
+                        slotcommand[0][unicode],
+                        pop,
+                    },
+                }
+            )
          -- local step = width/2
             local step = .8*width
             minus.parts = {
@@ -2309,8 +2312,10 @@ do
 
     local force = false  experiments.register("math.arrows", function(v) force = v end)
 
+    local f_tighten = formatting("math tightened %U %.3N %.3N %.3N %.3N")
+
     local function tighten(target,unicode,left,right,squeeze,yoffset)
-        local name = formatters["math tightened %U %.3N %.3N %.3N %.3N"](unicode,left,right,squeeze,yoffset)
+        local name = formatted(f_tighten,unicode,left,right,squeeze,yoffset)
         local slot = privateslot(target,name)
         if not slot then
             local characters = target.characters
@@ -3060,7 +3065,7 @@ local cdata = characters.data
     -- offset    factor   0.9|calculated
     -- squeeze   factor   0.1|calculated
 
-    local f_flat = formatters["flat accent %05X"]
+    local f_flat = formatting("flat accent %05X")
 
     function mathtweaks.flattenaccents(target,original,parameters)
         local characters = target.characters
@@ -3074,7 +3079,7 @@ local cdata = characters.data
             local last  = characters[stretching]
             while last do
                 if force or not last.flataccent then
-                    local slot   = nps(f_flat(code))
+                    local slot   = nps(formatted(f_flat,code))
                     local height = last.height or 0
                     characters[slot] = {
                         width        = last.width,
@@ -3161,7 +3166,7 @@ do
         local slot = parameters.slot or parameters.unicode
         if slot then
             -- todo: show unicode
-            report_math(formatters["%C data:"](slot))
+            report_math(formatted("%C data:",slot))
             inspect(characters[slot])
         end
     end

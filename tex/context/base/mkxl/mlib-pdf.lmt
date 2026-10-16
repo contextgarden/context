@@ -12,7 +12,10 @@ local sqrt, round = math.sqrt, math.round
 local setmetatable, rawset, tostring, tonumber, type = setmetatable, rawset, tostring, tonumber, type
 local P, S, C, Ct, Cc, Cg, Cf, Carg = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.Cg, lpeg.Cf, lpeg.Carg
 local lpegmatch = lpeg.match
-local formatters = string.formatters
+
+----- formatters = string.formatters
+local formatting = string.formatting
+local formatted  = string.formatted
 
 local report_metapost = logs.reporter("metapost")
 
@@ -46,17 +49,17 @@ local state_single  <const> = 3
 
 local mpsliteral        = nodes.pool.originliteral
 
-local f_f  = formatters["%.6N"]
-local f_m  = formatters["%.6N %.6N m"]
-local f_c  = formatters["%.6N %.6N %.6N %.6N %.6N %.6N c"]
-local f_l  = formatters["%.6N %.6N l"]
-local f_cm = formatters["%.6N %.6N %.6N %.6N %.6N %.6N cm"]
-local f_M  = formatters["%.6N M"]
-local f_j  = formatters["%i j"]
-local f_J  = formatters["%i J"]
-local f_d  = formatters["[%s] %.6N d"]
-local f_w  = formatters["%.6N w"]
-local f_r  = formatters["%.6N %.6N %.6N %.6N re"]
+local f_f  = formatting("%.6N")
+local f_m  = formatting("%.6N %.6N m")
+local f_c  = formatting("%.6N %.6N %.6N %.6N %.6N %.6N c")
+local f_l  = formatting("%.6N %.6N l")
+local f_cm = formatting("%.6N %.6N %.6N %.6N %.6N %.6N cm")
+local f_M  = formatting("%.6N M")
+local f_j  = formatting("%i j")
+local f_J  = formatting("%i J")
+local f_d  = formatting("[%s] %.6N d")
+local f_w  = formatting("%.6N w")
+local f_r  = formatting("%.6N %.6N %.6N %.6N re")
 
 directives.register("metapost.savetable",function(v)
     if type(v) == "string" then
@@ -88,9 +91,9 @@ end
 
 function pdfflusher.tocomment(message)
     if message then
-        return formatters["%% mps graphic %s: %s"](metapost.n,message)
+        return formatted("%% mps graphic %s: %s",metapost.n,message)
     else
-        return formatters["%% mps graphic %s"](metapost.n)
+        return formatted("%% mps graphic %s",metapost.n)
     end
 end
 
@@ -98,26 +101,15 @@ end
 -- in a nested context function call but ... we can actually expand the
 -- macro directly.
 
--- function pdfflusher.startfigure(n,llx,lly,urx,ury,message,figure,plugmode)
---     metapost.n = metapost.n + 1
---     -- context(... start timing ...)
---     context.startMPLIBtoPDF(f_f(llx),f_f(lly),f_f(urx),f_f(ury),plugmode and "1" or "0")
--- end
---
--- function pdfflusher.stopfigure(message)
---     context.stopMPLIBtoPDF()
---     -- context(... stop timing ...)
--- end
-
 local expandmacro = token.expandmacro
 
 function pdfflusher.startfigure(n,llx,lly,urx,ury,message,figure,plugmode)
     metapost.n = metapost.n + 1
     expandmacro("startMPLIBtoPDF",
-        true,f_f(llx),
-        true,f_f(lly),
-        true,f_f(urx),
-        true,f_f(ury),
+        true,formatted(f_f,llx),
+        true,formatted(f_f,lly),
+        true,formatted(f_f,urx),
+        true,formatted(f_f,ury),
         true,plugmode and "1" or "0"
     )
 end
@@ -172,7 +164,7 @@ local function flushrectangularpath(path,t)
     local p3x = p3.x_coord
     local p3y = p3.y_coord
     --
-    t[#t+1] = f_r(p1x,p1y,p3x-p1x,p3y-p1y)
+    t[#t+1] = formatted(f_r,p1x,p1y,p3x-p1x,p3y-p1y)
     return t
 end
 
@@ -186,7 +178,7 @@ local function flushrectangularlist(path,t)
     local p3x = p[5]
     local p3y = p[6]
     --
-    t[#t+1] = f_r(p1x,p1y,p3x-p1x,p3y-p1y)
+    t[#t+1] = formatted(f_r,p1x,p1y,p3x-p1x,p3y-p1y)
     return t
 end
 
@@ -213,7 +205,7 @@ local function flushnormalpath(path,t,open,tolerance,reduce)
             local p3y = p3.y_coord
             if p1y == p2.y_coord and p1x == p4.x_coord and p2.x_coord == p3x and p3y == p4.y_coord then
                 nt = nt + 1
-                t[nt] = f_r(p1x,p1y,p3x-p1x,p3y-p1y)
+                t[nt] = formatted(f_r,p1x,p1y,p3x-p1x,p3y-p1y)
                 path.rectangle = true
                 return t
             end
@@ -234,12 +226,12 @@ local function flushnormalpath(path,t,open,tolerance,reduce)
             local state = pth.state
             if not ith or state == state_begin or state == state_single then
                 nt = nt + 1
-                t[nt] = f_m(x,y)
+                t[nt] = formatted(f_m,x,y)
                 lastx = x
                 lasty = y
                 if state == state_single then
                     nt = nt + 1
-                    t[nt] = f_l(x,y)
+                    t[nt] = formatted(f_l,x,y)
                     lastm = true -- check this
                     lastdx = "stay"
                     lastdy = "stay"
@@ -250,7 +242,7 @@ local function flushnormalpath(path,t,open,tolerance,reduce)
                 end
             elseif pth.curved then -- curved(ith,pth,tolerance)
                 nt = nt + 1
-                t[nt] = f_c(ith.right_x,ith.right_y,pth.left_x,pth.left_y,x,y)
+                t[nt] = formatted(f_c,ith.right_x,ith.right_y,pth.left_x,pth.left_y,x,y)
                 lastx = false
                 lasty = false
                 lastm = false
@@ -271,14 +263,14 @@ local function flushnormalpath(path,t,open,tolerance,reduce)
                     dy = "stay"
                 end
                 if dy == "stay" and lastdx == dx then
-                    t[nt] = f_l(x,y)
+                    t[nt] = formatted(f_l,x,y)
                     lastx = x
                 elseif dx == "stay" and lasty == dy then
-                    t[nt] = f_l(x,y)
+                    t[nt] = formatted(f_l,x,y)
                     lasty = y
                 else
                     nt = nt + 1
-                    t[nt] = f_l(x,y)
+                    t[nt] = formatted(f_l,x,y)
                     lastx = x
                     lasty = y
                 end
@@ -286,7 +278,7 @@ local function flushnormalpath(path,t,open,tolerance,reduce)
                 lastdy = dy
             else
                 nt = nt + 1
-                t[nt] = f_l(x,y)
+                t[nt] = formatted(f_l,x,y)
                 lastx = x
                 lasty = y
             end
@@ -301,15 +293,15 @@ local function flushnormalpath(path,t,open,tolerance,reduce)
             local x     = pth.x_coord
             local y     = pth.y_coord
             if not ith or state == state_begin or state == state_single then
-                t[nt] = f_m(x,y)
+                t[nt] = formatted(f_m,x,y)
                 if state == state_single then
                     nt = nt + 1
-                    t[nt] = f_l(x,y)
+                    t[nt] = formatted(f_l,x,y)
                 end
             elseif pth.curved then -- curved(ith,pth,tolerance)
-                t[nt] = f_c(ith.right_x,ith.right_y,pth.left_x,pth.left_y,x,y)
+                t[nt] = formatted(f_c,ith.right_x,ith.right_y,pth.left_x,pth.left_y,x,y)
             else
-                t[nt] = f_l(x,y)
+                t[nt] = formatted(f_l,x,y)
             end
             ith = pth
         end
@@ -325,22 +317,22 @@ local function flushnormalpath(path,t,open,tolerance,reduce)
             local x = one.x_coord
             local y = one.y_coord
             if state == state_begin then
-                t[nt] = f_m(x,y)
+                t[nt] = formatted(f_m,x,y)
             elseif state == state_single then
-                t[nt] = f_m(x,y)
+                t[nt] = formatted(f_m,x,y)
                 nt = nt + 1
-                t[nt] = f_l(x,y)
+                t[nt] = formatted(f_l,x,y)
             elseif one.curved then -- curved(pth,one,tolerance)
-                t[nt] = f_c(pth.right_x,pth.right_y,one.left_x,one.left_y,x,y)
+                t[nt] = formatted(f_c,pth.right_x,pth.right_y,one.left_x,one.left_y,x,y)
             else
-                t[nt] = f_l(x,y)
+                t[nt] = formatted(f_l,x,y)
             end
         end
     elseif length == 1 then
         -- special case .. draw point
         local one = path[1]
         nt = nt + 1
-        t[nt] = f_l(one.x_coord,one.y_coord)
+        t[nt] = formatted(f_l,one.x_coord,one.y_coord)
     end
     return t
 end
@@ -349,13 +341,13 @@ local function flushnormallist(path,length,t,open)
     local n = #t
     local x = path[1]
     local y = path[2]
-    n = n + 1 ; t[n] = f_m(x,y)
+    n = n + 1 ; t[n] = formatted(f_m,x,y)
     for i=3,length,2 do
-        n = n + 1 ; t[n] = f_l(path[i],path[i+1])
+        n = n + 1 ; t[n] = formatted(f_l,path[i],path[i+1])
     end
  -- if not open or length == 2 then -- also handles dot
     if length == 2 then -- dot
-        n = n + 1 ; t[nt] = f_l(x,y)
+        n = n + 1 ; t[nt] = formatted(f_l,x,y)
     end
 end
 
@@ -370,7 +362,7 @@ local function flushconcatpath(path,t,open,tolerance,transform)
     end
     if transform then
         nt = nt + 1
-        t[nt] = f_cm(sx,rx,ry,sy,tx,ty)
+        t[nt] = formatted(f_cm,sx,rx,ry,sy,tx,ty)
     end
     for i=1,length do
         nt = nt + 1
@@ -379,17 +371,17 @@ local function flushconcatpath(path,t,open,tolerance,transform)
         -- here concat for all x y
         local x, y  = mpconcat(pth.x_coord,pth.y_coord)
         if not ith or state == state_begin or state == state_single then
-            t[nt] = f_m(x,y)
+            t[nt] = formatted(f_m,x,y)
             if state == state_single then
                 nt = nt + 1
-                t[nt] = f_l(x,y)
+                t[nt] = formatted(f_l,x,y)
             end
         elseif pth.curved then -- curved(ith,pth,tolerance)
             local a, b = mpconcat(ith.right_x,ith.right_y)
             local c, d = mpconcat(pth.left_x,pth.left_y)
-            t[nt] = f_c(a,b,c,d,x,y)
+            t[nt] = formatted(f_c,a,b,c,d,x,y)
         else
-           t[nt] = f_l(x,y)
+           t[nt] = formatted(f_l,x,y)
         end
         ith = pth
     end
@@ -405,20 +397,20 @@ local function flushconcatpath(path,t,open,tolerance,transform)
             local y     = one.y_coord
             -- here concat for some x y ...
             if state == state_begin then
-                t[nt] = f_m(x,y)
+                t[nt] = formatted(f_m,x,y)
             elseif state == state_single then
-                t[nt] = f_m(x,y)
+                t[nt] = formatted(f_m,x,y)
                 nt = nt + 1
-                t[nt] = f_l(x,y)
+                t[nt] = formatted(f_l,x,y)
             else
                 -- ... like here:
                 x, y = mpconcat(x,y)
                 if one.curved then -- curved(pth,one,tolerance)
                     local a, b = mpconcat(pth.right_x,pth.right_y)
                     local c, d = mpconcat(one.left_x,one.left_y)
-                    t[nt] = f_c(a,b,c,d,x,y)
+                    t[nt] = formatted(f_c,a,b,c,d,x,y)
                 else
-                    t[nt] = f_l(x,y)
+                    t[nt] = formatted(f_l,x,y)
                 end
             end
         end
@@ -426,7 +418,7 @@ local function flushconcatpath(path,t,open,tolerance,transform)
         -- special case .. draw point
         nt = nt + 1
         local one = path[1]
-        t[nt] = f_l(mpconcat(one.x_coord,one.y_coord))
+        t[nt] = formatted(f_l,mpconcat(one.x_coord,one.y_coord))
     end
     return t
 end
@@ -748,17 +740,17 @@ function metapost.flush(specification,result)
                                                     local ml = object.miterlimit
                                                     if ml and ml ~= miterlimit then
                                                         miterlimit = ml
-                                                        result[#result+1] = f_M(ml)
+                                                        result[#result+1] = formatted(f_M,ml)
                                                     end
                                                     local lj = object.linejoin
                                                     if lj and lj ~= linejoin then
                                                         linejoin = lj
-                                                        result[#result+1] = f_j(lj)
+                                                        result[#result+1] = formatted(f_j,lj)
                                                     end
                                                     local lc = object.linecap
                                                     if lc and lc ~= linecap then
                                                         linecap = lc
-                                                        result[#result+1] = f_J(lc)
+                                                        result[#result+1] = formatted(f_J,lc)
                                                     end
                                                     if both then
                                                         if dashed ~= false then -- was just dashed test
@@ -768,7 +760,7 @@ function metapost.flush(specification,result)
                                                     else
                                                         local dl = object.dash
                                                         if dl then
-                                                            local d = f_d(concat(dl.dashes or {}," "),dl.offset)
+                                                            local d = formatted(f_d,concat(dl.dashes or {}," "),dl.offset)
                                                             if d ~= dashed then
                                                                 dashed = d
                                                                 result[#result+1] = d
@@ -798,7 +790,7 @@ function metapost.flush(specification,result)
                                                         if pen and pen.type == "elliptical" or outline then
                                                             transformed, penwidth = pen_characteristics(object.peninfo) -- boolean, value
                                                             if penwidth ~= linewidth then
-                                                                result[#result+1] = f_w(penwidth)
+                                                                result[#result+1] = formatted(f_w,penwidth)
                                                                 linewidth = penwidth
                                                             end
                                                         end
@@ -839,7 +831,7 @@ function metapost.flush(specification,result)
                                                            if pen.type == "elliptical" or outline then
                                                                 transformed, penwidth = pen_characteristics(object.peninfo) -- boolean, value
                                                                 if penwidth ~= linewidth then
-                                                                    result[#result+1] = f_w(penwidth)
+                                                                    result[#result+1] = formatted(f_w,penwidth)
                                                                     linewidth = penwidth
                                                                 end
                                                                 if objecttype == "fill" then
@@ -1001,7 +993,7 @@ function metapost.flush(specification,result)
                                          -- if objecttype == "text" then
                                          --     result[#result+1] = "q"
                                          --     local ot = object.transform -- 3,4,5,6,1,2
-                                         --     result[#result+1] = f_cm(ot[3],ot[4],ot[5],ot[6],ot[1],ot[2])
+                                         --     result[#result+1] = formatted(f_cm,ot[3],ot[4],ot[5],ot[6],ot[1],ot[2])
                                          --     flushfigure(result) -- flush accumulated literals
                                          --     result = { }
                                          --     textfigure(object.font,object.dsize,object.text,object.width,object.height,object.depth)

@@ -9,8 +9,7 @@ if not modules then modules = { } end modules ['typo-cap'] = {
 
 -- see typo-cap.lua for a word traverser variant
 
-local next, type, tonumber = next, type, tonumber
-local format, insert = string.format, table.insert
+local type, tonumber = type, tonumber
 local div, getrandom, random = math.div, utilities.randomizer.get, math.random
 
 local trace_casing = false  trackers.register("typesetters.casing", function(v) trace_casing = v end)

@@ -260,7 +260,7 @@ static inline scaled tex_aux_snap_dimen(scaled amount, halfword local_factor, ha
     return amount;
 }
 
-void tex_snapping_done(halfword *ht, halfword *dp, halfword snapping)
+void tex_snapping_done(scaled *ht, scaled *dp, halfword snapping)
 {
     if (snapping && specification_count(snapping) > 0) {
         int options = tex_get_line_snapping_options(snapping, 1);

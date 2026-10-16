@@ -117,14 +117,14 @@ static void fontlib_aux_read_lua_parameters(lua_State *L, int f)
             */
             for (int i = 1; i <= maxindex; i++) {
                 if (lua_rawgeti(L, -1, i) == LUA_TNUMBER) {
-                    halfword value = lmt_roundnumber(L, -1);
+                    scaled value = lmt_roundnumber(L, -1);
                     tex_set_font_parameter(f, i, value);
                 }
                 lua_pop(L, 1);
             }
             lua_pushnil(L);
             while (lua_next(L, -2)) {
-                halfword value = lua_type(L, -1) == LUA_TNUMBER ? lmt_roundnumber(L, -1) : 0;
+                scaled value = lua_type(L, -1) == LUA_TNUMBER ? lmt_roundnumber(L, -1) : 0;
                 switch (lua_type(L, -2)) {
                     case LUA_TSTRING:
                         {

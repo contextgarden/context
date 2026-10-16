@@ -539,6 +539,7 @@ syntax.halign = newsyntax {
         optional(sequence(keyword("attr"),s_integer,o_equal,s_integer)),
         optional(sequence(keyword("callback"),s_integer)),
         optional(sequence(keyword("callbacks"),s_integer)),
+        optional(keyword("combine")),
         optional(keyword("discard")),
         optional(sequence(keyword("gluemode"),s_integer)),
         optional(sequence(keyword("mindepth"),s_dimension)),

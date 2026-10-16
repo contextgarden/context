@@ -3796,7 +3796,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 20908, stripped down to: 10884
+-- original size: 20768, stripped down to: 11065
 
 if not modules then modules={} end modules ['l-os']={
  version=1.001,
@@ -3809,7 +3809,8 @@ local os=os
 local date,time,difftime=os.date,os.time,os.difftime
 local find,format,gsub,upper,gmatch=string.find,string.format,string.gsub,string.upper,string.gmatch
 local concat=table.concat
-local random,ceil,randomseed,modf=math.random,math.ceil,math.randomseed,math.modf
+local floor,ceil,abs,modf=math.floor,math.ceil,math.abs,math.modf
+local random,randomseed=math.random,math.randomseed
 local type,setmetatable,tonumber,tostring=type,setmetatable,tonumber,tostring
 do
  local selfdir=os.selfdir
@@ -4076,24 +4077,25 @@ do
  end
 end
 do
- local hour,min
- function os.timezone(difference)
-  if not hour then
+ local td,tz
+ local function timezone(difference)
+  if not td then
    local current=time()
    local utcdate=date("!*t",current)
    local localdate=date("*t",current)
    localdate.isdst=false
    local timediff=difftime(time(localdate),time(utcdate))
-   hour,min=modf(timediff/3600)
-   min=min*60
+   local sign=timediff<0 and "-" or "+"
+   local absdiff=abs(timediff)
+   local hour=floor(absdiff/3600)
+   local minute=floor((absdiff%3600)/60)
+   td=(timediff<0 and -hour or hour),minute
+   tz=format("%s%02d:%02d",sign,hour,minute)
   end
-  if difference then
-   return hour,min
-  else
-   return format("%+03d:%02d",hour,min) 
-  end
+  return difference and td or tz
  end
- local timeformat=format("%%s%s",os.timezone())
+ os.timezone=timezone
+ local timeformat=format("%%s%s",timezone())
  local dateformat="%Y-%m-%d %H:%M:%S"
  local lasttime=nil
  local lastdate=nil
@@ -6557,7 +6559,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 50000, stripped down to: 26375
+-- original size: 50843, stripped down to: 26951
 
 if not modules then modules={} end modules ['util-str']={
  version=1.001,
@@ -6569,7 +6571,7 @@ if not modules then modules={} end modules ['util-str']={
 utilities=utilities or {}
 utilities.strings=utilities.strings or {}
 local strings=utilities.strings
-local format,gsub,rep,sub,find,char,byte=string.format,string.gsub,string.rep,string.sub,string.find,string.char,string.byte
+local format,gsub,match,rep,sub,find,char,byte=string.format,string.gsub,string.match,string.rep,string.sub,string.find,string.char,string.byte
 local load,dump=load,string.dump
 local tonumber,type,tostring,next,setmetatable,rawset=tonumber,type,tostring,next,setmetatable,rawset
 local unpack,concat=table.unpack,table.concat
@@ -7021,6 +7023,10 @@ local environment={
  stripzeros=patterns.stripzeros,
  escapedquotes=string.escapedquotes,
  FORMAT=string.f6,
+ FD=string.fd,
+ FD3=string.fd3,
+ FD6=string.fd6,
+ FD9=string.fd9,
  nspaces=hashes.spaces,
  X00=hashes.X00,
  X02=false,
@@ -7295,7 +7301,30 @@ local format_n=function()
  n=n+1
  return format("((a%s %% 1 == 0) and format('%%i',a%s) or tostring(a%s))",n,n,n)
 end
-local format_N  if environment.FORMAT then
+local format_N
+if environment.FD then
+ format_N=function(f)
+  n=n+1
+  if not f or f=="" then
+   return format("FD(a%s,9)",n)
+  end
+  if type(f)=="string" then
+   f=tonumber(match(f,"[^%d]*([%d+])f?"))
+  end
+  if type(f)=="number" then
+   if f==3 then
+    return format("FD3(a%s)",n)
+   elseif f==6 then
+    return format("FD6(a%s)",n)
+   elseif f==9 then
+    return format("FD9(a%s)",n)
+   elseif f>=1 and f<=20 then
+    return format("FD(a%s,%i)",n,f//1)
+   end
+  end
+  return format("FD(a%s)",n)
+ end
+elseif environment.FORMAT then
  format_N=function(f)
   n=n+1
   if not f or f=="" then
@@ -10294,7 +10323,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-soc-imp-copas"] = package.loaded["util-soc-imp-copas"] or true
 
--- original size: 26186, stripped down to: 14893
+-- original size: 26187, stripped down to: 14893
 
 
 local socket=socket or require("socket")
@@ -13306,7 +13335,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 16046, stripped down to: 11072
+-- original size: 16265, stripped down to: 11248
 
 if not modules then modules={} end modules ['trac-log']={
  version=1.001,
@@ -13347,6 +13376,10 @@ formatters.add (
  formatters,"chruni",
  [[utfchar(%s) .. " (U+" .. format("%%05X",%s) .. ")"]]
 )
+if sequencer then
+ sequencer.extensions.unichr=function(s) return formatters["%U (%C)"](s) end
+ sequencer.extensions.chruni=function(s) return formatters["%C (%U)"](s) end
+end
 local function ignore() end
 setmetatableindex(logs,function(t,k) t[k]=ignore;return ignore end)
 local report,subreport,status,settarget,setformats,settranslations
@@ -22084,7 +22117,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tmp"] = package.loaded["data-tmp"] or true
 
--- original size: 17023, stripped down to: 12085
+-- original size: 17391, stripped down to: 12369
 
 if not modules then modules={} end modules ['data-tmp']={
  version=1.100,
@@ -22378,18 +22411,28 @@ function caches.is_writable(filepath,filename)
  local tmaname,tmcname=setluanames(filepath,filename)
  return is_writable(tmaname)
 end
-local saveoptions={ compact=true,accurate=not JITSUPPORTED }
-function caches.savedata(filepath,filename,data,fast)
- local tmaname,tmcname=setluanames(filepath,filename)
- data.cache_uuid=osuuid()
- if fast or fast_cache then
-  savedata(tmaname,fastserialize(data,true))
- elseif direct_cache then
-  savedata(tmaname,serialize(data,true,saveoptions))
- else
-  serializetofile(tmaname,data,true,saveoptions)
+if sequencer then
+ serialize=sequencer.serialize
+ function caches.savedata(filepath,filename,data,fast)
+  local tmaname,tmcname=setluanames(filepath,filename)
+  data.cache_uuid=osuuid()
+  savedata(tmaname,serialize(data,true))
+  compilelua(tmaname,tmcname)
  end
- compilelua(tmaname,tmcname)
+else
+ local saveoptions={ compact=true,accurate=not JITSUPPORTED }
+ function caches.savedata(filepath,filename,data,fast)
+  local tmaname,tmcname=setluanames(filepath,filename)
+  data.cache_uuid=osuuid()
+  if fast or fast_cache then
+   savedata(tmaname,fastserialize(data,true))
+  elseif direct_cache then
+   savedata(tmaname,serialize(data,true,saveoptions))
+  else
+   serializetofile(tmaname,data,true,saveoptions)
+  end
+  compilelua(tmaname,tmcname)
+ end
 end
 local content_state={}
 function caches.contentstate()
@@ -22633,7 +22676,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 71248, stripped down to: 45449
+-- original size: 71513, stripped down to: 45545
 
 if not modules then modules={} end modules ['data-res']={
  version=1.001,
@@ -23577,37 +23620,40 @@ local function find_analyze(filename,askedformat,allresults)
  local filetype=""
  local filesuffix=suffixonly(filename)
  local wantedfiles={}
- wantedfiles[#wantedfiles+1]=filename
- if askedformat=="" then
-  if filesuffix=="" or not suffixmap[filesuffix] then
-   local defaultsuffixes=resolvers.defaultsuffixes
-   for i=1,#defaultsuffixes do
-    local forcedname=filename.."."..defaultsuffixes[i]
-    wantedfiles[#wantedfiles+1]=forcedname
-    filetype=formatofsuffix(forcedname)
+ if filename and filename~="" and filename~="." then
+  wantedfiles[#wantedfiles+1]=filename
+  if askedformat=="" then
+   if filesuffix=="" or not suffixmap[filesuffix] then
+    local defaultsuffixes=resolvers.defaultsuffixes
+    for i=1,#defaultsuffixes do
+     local forcedname=filename.."."..defaultsuffixes[i]
+     wantedfiles[#wantedfiles+1]=forcedname
+     filetype=formatofsuffix(forcedname)
+     if trace_locating then
+      report_resolving("forcing filetype %a",filetype)
+     end
+    end
+   else
+    filetype=formatofsuffix(filename)
     if trace_locating then
-     report_resolving("forcing filetype %a",filetype)
+     report_resolving("using suffix based filetype %a",filetype)
     end
    end
   else
-   filetype=formatofsuffix(filename)
+   if filesuffix=="" or not suffixmap[filesuffix] then
+    local format_suffixes=suffixes[askedformat]
+    if format_suffixes then
+     for i=1,#format_suffixes do
+      wantedfiles[#wantedfiles+1]=filename.."."..format_suffixes[i]
+     end
+    end
+   end
+   filetype=askedformat
    if trace_locating then
-    report_resolving("using suffix based filetype %a",filetype)
+    report_resolving("using given filetype %a",filetype)
    end
   end
  else
-  if filesuffix=="" or not suffixmap[filesuffix] then
-   local format_suffixes=suffixes[askedformat]
-   if format_suffixes then
-    for i=1,#format_suffixes do
-     wantedfiles[#wantedfiles+1]=filename.."."..format_suffixes[i]
-    end
-   end
-  end
-  filetype=askedformat
-  if trace_locating then
-   report_resolving("using given filetype %a",filetype)
-  end
  end
  return filetype,wantedfiles
 end
@@ -26840,8 +26886,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua util-tmr.lua trac-tmr.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua util-sig.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua util-jsn.lua
 -- skipped libraries : -
--- original bytes    : 1075393
--- stripped bytes    : 429372
+-- original bytes    : 1076949
+-- stripped bytes    : 429615
 
 -- end library merge
 

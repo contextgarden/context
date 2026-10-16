@@ -6,13 +6,13 @@ if not modules then modules = { } end modules ['math-mps'] = {
     license   = "see context related readme files"
 }
 
-local tostring = tostring
+local tostring  = tostring
+local formatted = string.formatted
+local takebox   = tex.takebox
 
-local takebox = tex.takebox
+local trace     = false ; trackers.register("math.mp.extensibles", function(v) trace = v end)
 
-local trace  = false ; trackers.register("math.mp.extensibles", function(v) trace = v end)
-
-local report = logs.reporter("mpextensible")
+local report    = logs.reporter("mpextensible")
 
 -- In principle we could use the slot number and make more complex left/right driven
 -- shapes but not for now.
@@ -20,14 +20,14 @@ local report = logs.reporter("mpextensible")
 local function renderextensible(target,fnt,chr,size,width,height,depth,linewidth,axis,exheight,emwidth)
     local properties = mathematics.getextensibledata(target)
     if properties then
-if trace then
-    report("rendering: %s",table.sequences(properties)) -- todo : more
-end
+        if trace then
+            report("rendering: %s",table.sequences(properties)) -- todo : more
+        end
         local mp = properties.mp
         if mp and mp ~= "" then
             local uc = properties.unicode
             if uc then
-                mp = string.formatters["%s:%05X"](mp,uc)
+                mp = formatted("%s:%05X",mp,uc)
             end
             token.expandmacro(
                 "math_extensible_mp",

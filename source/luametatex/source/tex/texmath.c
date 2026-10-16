@@ -669,7 +669,7 @@ int tex_math_has_class_option(halfword cls, int option)
         return 0;
     }
     halfword value = count_parameter(first_math_options_code + cls);
-    if (value == no_class_options) {
+    if (value == (halfword) no_class_options) {
         unsigned parent = (unsigned) count_parameter(first_math_parent_code + cls);
         cls = (parent >> 16) & 0xFF;
         if (! valid_math_class_code(cls)) {
@@ -686,7 +686,7 @@ int tex_math_has_class_parent(halfword cls)
         return 0;
     }
     halfword value = count_parameter(first_math_options_code + cls);
-    if (value == no_class_options) {
+    if (value == (halfword) no_class_options) {
         unsigned parent = (unsigned) count_parameter(first_math_parent_code + cls);
         return (parent >> 16) & 0xFF;
     }
@@ -1852,8 +1852,9 @@ static void tex_aux_enter_display_math(halfword cmd, int where)
         } else {
             tex_line_break(math_display_group, math_par_context, 1);
          // size = tex_actual_box_width(lmt_linebreak_state.just_box, tex_x_over_n_factor(tex_get_font_em_width(cur_font_par)) * math_pre_display_gap_factor_par);
-            size = tex_actual_box_width(lmt_linebreak_state.just_box, tex_get_font_em_width(cur_font_par) * math_pre_display_gap_factor_par / scaling_factor);
+         // size = tex_actual_box_width(lmt_linebreak_state.just_box, tex_get_font_em_width(cur_font_par) * math_pre_display_gap_factor_par / scaling_factor);
          // size = tex_actual_box_width(lmt_linebreak_state.just_box, scaledround(tex_get_font_em_width(cur_font_par) * math_pre_display_gap_factor_par / scaling_factor_double));
+            size = tex_actual_box_width(lmt_linebreak_state.just_box, tex_xn_over_1000(tex_get_font_em_width(cur_font_par), math_pre_display_gap_factor_par));
         }
         /*tex
             Now we are in vertical mode, working on the list that will contain the display. A displayed
@@ -1875,7 +1876,7 @@ static void tex_aux_enter_display_math(halfword cmd, int where)
                 indent = 0;
             }
         } else if ((hang_indent_par != 0) && (((hang_after_par >= 0) && (cur_list.prev_graf + 2 > hang_after_par)) || (cur_list.prev_graf + 1 < -hang_after_par))) {
-            halfword hangindent = swap_hang_indent(pre_display_direction_par, hang_indent_par);
+            scaled hangindent = swap_hang_indent(pre_display_direction_par, hang_indent_par);
             width = hsize_par - abs(hangindent);
             indent = hangindent > 0 ? hangindent : 0;
         } else {
@@ -3124,7 +3125,10 @@ void tex_run_math_modifier(void)
                         noad_options(tail) = unset_option(noad_options(tail), noad_option_limits);
                         noad_options(tail) |= noad_option_no_limits;
                         break;
+                    default:
+                        break;
                 }
+                break;
             default:
                 switch (node_type(tail)) {
                     case accent_noad:
@@ -3134,6 +3138,8 @@ void tex_run_math_modifier(void)
                                     noad_options(tail) |= noad_option_source_on_nucleus;
                                 }
                                 noad_source(tail) = tex_scan_integer(0, NULL, NULL);
+                                break;
+                            default:
                                 break;
                         }
 
@@ -4359,7 +4365,7 @@ void tex_run_math_fraction(void)
         halfword symbolattrlist = null;
         fullword options = 0;
         halfword mathclass = fraction_noad_subtype;
-        halfword rulethickness = preset_rule_thickness;
+        scaled rulethickness = preset_rule_thickness;
         int ruledone = 0;
         fraction_h_factor(fraction) = scaling_factor;
         fraction_v_factor(fraction) = scaling_factor;
@@ -5905,7 +5911,7 @@ void tex_run_math_shift(void)
 
 */
 
-void tex_finish_display_alignment(halfword head, halfword tail, halfword prevdepth)
+void tex_finish_display_alignment(halfword head, halfword tail, scaled prevdepth)
 {
     tex_handle_assignments();
   AGAIN:
@@ -6054,19 +6060,29 @@ static void tex_aux_define_all_math_parameters(int size, int param, scaled value
 
 # define math_parameter(a,b) ((font_math_parameter_count(a) >= b) ? font_math_parameter(a,b) : undefined_math_parameter)
 
+# if lmt_float_math
+
+    static inline scaled tex_aux_get_font_math_quantity(scaled scale, halfword v)
+    {
+        return (v && scale) ? scaledround(0.001 * (double) scale * (double) v) : 0;
+    }
+
+# else
+
+    static inline scaled tex_aux_get_font_math_quantity(scaled scale, halfword v)
+    {
+        return (v && scale) ? tex_aux_scale_1000(v, scale) : 0;
+    }
+
+# endif
+
 static inline scaled tex_aux_get_font_math_parameter(scaled scale, halfword f, int id)
 {
     scaled v = math_parameter(f, id);
     if (v == undefined_math_parameter) {
-        return v;
-    } else {
-        return v ? scaledround(0.001 * scale * v) : 0;
+        return undefined_math_parameter;
     }
-}
-
-static inline scaled tex_aux_get_font_math_quantity(scaled scale, halfword v)
-{
-    return v ? scaledround(0.001 * scale * v) : 0;
+    return tex_aux_get_font_math_quantity(scale, v);
 }
 
 /*tex
@@ -6591,16 +6607,40 @@ static inline scaled tex_aux_max_scale(int style, int param)
 
 */
 
+static int tex_aux_math_parameter_okay(int param)
+{
+    if (ignore_math_parameter(param) == 1) {
+        if (tracing_math_par > 1) {
+            tex_begin_diagnostic();
+            tex_print_format("%l[math: parameter, name %s, ignored]", lmt_name_of_math_parameter(param));
+            tex_end_diagnostic();
+        }
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
 scaled tex_get_math_quad_style(int style)
 {
-    scaled scale = tex_aux_max_scale(style, math_parameter_x_scale);
+    if (! tex_aux_math_parameter_okay(math_parameter_quad)) {
+        return 0;
+    }
     scaled value = tex_get_math_parameter(style, math_parameter_quad, NULL);
     if (value == undefined_math_parameter) {
         tex_aux_math_parameter_error(style, -1, "quad");
         return 0;
-    } else {
-        return scaledround(0.001 * value * scale);
     }
+    if (! value) {
+        return 0;
+    }
+# if lmt_float_math
+    scaled scale = tex_aux_max_scale(style, math_parameter_x_scale);
+    return scaledround(0.001 * (double) value * (double) scale);
+# else
+    scaled scale = tex_aux_max_scale(style, math_parameter_x_scale);
+    return tex_aux_scale_1000(value, scale);
+# endif
 }
 
 /*tex
@@ -6671,20 +6711,6 @@ scaled tex_get_math_quad_size_unscaled(int size) /* used in cur_mu */
     return scaledround(tex_get_math_parameter(size, math_parameter_quad, NULL) / 18.0);
 }
 
-static int tex_aux_math_parameter_okay(int param)
-{
-    if (ignore_math_parameter(param) == 1) {
-        if (tracing_math_par > 1) {
-            tex_begin_diagnostic();
-            tex_print_format("%l[math: parameter, name %s, ignored]", lmt_name_of_math_parameter(param));
-            tex_end_diagnostic();
-        }
-        return 0;
-    } else {
-        return 1;
-    }
-}
-
 scaled tex_get_math_parameter_checked(int style, int param)
 {
     if (tex_aux_math_parameter_okay(param)) {
@@ -6722,141 +6748,268 @@ void tex_run_math_italic_correction(void) {
 
 /* */
 
-scaled tex_get_math_x_parameter(int style, int param)
-{
-    if (tex_aux_math_parameter_okay(param)) {
-        scaled scale = tex_aux_max_scale(style, math_parameter_x_scale);
+# if lmt_float_math
+
+    static inline scaled tex_aux_math_scale_x_value(scaled value, scaled scale)
+    {
+        if (! value || ! scale) return 0;
+        double gs = glyph_scale_par   ? glyph_scale_par   : 1000.0;
+        double gx = glyph_x_scale_par ? glyph_x_scale_par : 1000.0;
+        return scaledround(0.000000001 * gs * gx * (double)value * (double)scale);
+    }
+
+    static inline scaled tex_aux_math_scale_y_value(scaled value, scaled scale)
+    {
+        if (! value || ! scale) return 0;
+        double gs = glyph_scale_par   ? glyph_scale_par   : 1000.0;
+        double gy = glyph_y_scale_par ? glyph_y_scale_par : 1000.0;
+        return scaledround(0.000000001 * gs * gy * (double)value * (double)scale);
+    }
+
+    scaled tex_get_math_x_parameter(int style, int param)
+    {
+        if (! tex_aux_math_parameter_okay(param)) {
+            return 0;
+        }
         scaled value = tex_get_math_parameter(style, param, NULL);
         if (value == undefined_math_parameter) {
-            return value;  // ?? scaledround(value * scale * 0.001);
-        } else {
-            return value ? scaledround(0.000000001 * glyph_scale_par * glyph_x_scale_par * value * scale) : 0;
+            return undefined_math_parameter;
         }
-    } else {
-        return 0;
-    }
-}
-
-scaled tex_get_math_x_parameter_checked(int style, int param)
-{
-    if (tex_aux_math_parameter_okay(param)) {
         scaled scale = tex_aux_max_scale(style, math_parameter_x_scale);
+        return tex_aux_math_scale_x_value(value, scale);
+    }
+
+    scaled tex_get_math_x_parameter_checked(int style, int param)
+    {
+        if (! tex_aux_math_parameter_okay(param)) {
+            return 0;
+        }
         scaled value = tex_get_math_parameter(style, param, NULL);
         if (value == undefined_math_parameter) {
             tex_aux_math_parameter_error(style, param, lmt_name_of_math_parameter(param));
             return 0;
-        } else {
-            return value ? scaledround(0.000000001 * glyph_scale_par * glyph_x_scale_par * value * scale) : 0;
         }
-    } else {
-        return 0;
-    }
-}
-
-scaled tex_get_math_x_parameter_default(int style, int param, scaled dflt)
-{
-    if (tex_aux_math_parameter_okay(param)) {
         scaled scale = tex_aux_max_scale(style, math_parameter_x_scale);
+        return tex_aux_math_scale_x_value(value, scale);
+    }
+
+    scaled tex_get_math_x_parameter_default(int style, int param, scaled dflt)
+    {
+        if (! tex_aux_math_parameter_okay(param)) {
+            return dflt;
+        }
         scaled value = tex_get_math_parameter(style, param, NULL);
         if (value == undefined_math_parameter) {
             return dflt;
-        } else{
-            return value ? scaledround(0.000000001 * glyph_scale_par * glyph_x_scale_par * value * scale) : 0;
         }
-    } else {
-        return dflt;
+        scaled scale = tex_aux_max_scale(style, math_parameter_x_scale);
+        return tex_aux_math_scale_x_value(value, scale);
     }
-}
 
-scaled tex_get_math_y_parameter(int style, int param)
-{
-    if (tex_aux_math_parameter_okay(param)) {
-        scaled scale = tex_aux_max_scale(style, math_parameter_y_scale);
+    scaled tex_get_math_y_parameter(int style, int param)
+    {
+        if (! tex_aux_math_parameter_okay(param)) {
+            return 0;
+        }
         scaled value = tex_get_math_parameter(style, param, NULL);
         if (value == undefined_math_parameter) {
-            return value;
-        } else{
-            return value ? scaledround(0.000000001 * glyph_scale_par * glyph_y_scale_par * value * scale) : 0;
+            return undefined_math_parameter;
         }
-    } else {
-        return 0;
-    }
-}
-
-scaled tex_get_math_y_parameter_checked(int style, int param)
-{
-    if (tex_aux_math_parameter_okay(param)) {
         scaled scale = tex_aux_max_scale(style, math_parameter_y_scale);
+        return tex_aux_math_scale_y_value(value, scale);
+    }
+
+    scaled tex_get_math_y_parameter_checked(int style, int param)
+    {
+        if (! tex_aux_math_parameter_okay(param)) {
+            return 0;
+        }
         scaled value = tex_get_math_parameter(style, param, NULL);
         if (value == undefined_math_parameter) {
             tex_aux_math_parameter_error(style, param, lmt_name_of_math_parameter(param));
             return 0;
-        } else {
-            return value ? scaledround(0.000000001 * glyph_scale_par * glyph_y_scale_par * value * scale) : 0;
         }
-    } else {
-        return 0;
-    }
-}
-
-scaled tex_get_math_y_parameter_default(int style, int param, scaled dflt)
-{
-    if (tex_aux_math_parameter_okay(param)) {
         scaled scale = tex_aux_max_scale(style, math_parameter_y_scale);
+        return tex_aux_math_scale_y_value(value, scale);
+    }
+
+    scaled tex_get_math_y_parameter_default(int style, int param, scaled dflt)
+    {
+        if (! tex_aux_math_parameter_okay(param)) {
+            return dflt;
+        }
         scaled value = tex_get_math_parameter(style, param, NULL);
         if (value == undefined_math_parameter) {
             return dflt;
-        } else {
-            return value ? scaledround(0.000000001 * glyph_scale_par * glyph_y_scale_par * value * scale) : 0;
         }
-    } else {
-        return dflt;
+        scaled scale = tex_aux_max_scale(style, math_parameter_y_scale);
+        return tex_aux_math_scale_y_value(value, scale);
     }
-}
 
-scaled tex_get_font_math_parameter(int font, int size, int param)
-{
-    scaled scale = tex_get_math_font_scale(font, size);
-    scaled value = tex_aux_get_font_math_parameter(scale, font, param);
-    if (value == undefined_math_parameter) {
-        return undefined_math_parameter;
-    } else {
-        return value ? scaledround(0.001 * glyph_scale_par * value) : 0;
+    scaled tex_get_font_math_parameter(int font, int size, int param)
+    {
+        scaled scale = tex_get_math_font_scale(font, size);
+        scaled value = tex_aux_get_font_math_parameter(scale, font, param);
+        if (value == undefined_math_parameter) {
+            return undefined_math_parameter;
+        }
+        if (! value) {
+            return 0;
+        }
+        double gs = glyph_scale_par ? glyph_scale_par : 1000.0;
+        return scaledround(0.001 * gs * (double)value);
     }
-}
 
-/* maybe more precission, so multiply all and divide by 0.000000001 */
-
-scaled tex_get_font_math_y_parameter(int font, int size, int param)
-{
-    scaled scale = tex_get_math_font_scale(font, size);
-    scaled value = tex_aux_get_font_math_parameter(scale, font, param);
-    if (value == undefined_math_parameter) {
-        return undefined_math_parameter;
-    } else {
-        return value ? scaledround(0.000001 * glyph_scale_par * glyph_y_scale_par * value) : 0;
+    scaled tex_get_font_math_y_parameter(int font, int size, int param)
+    {
+        scaled scale = tex_get_math_font_scale(font, size);
+        scaled value = tex_aux_get_font_math_parameter(scale, font, param);
+        if (value == undefined_math_parameter) {
+            return undefined_math_parameter;
+        }
+        if (! value) {
+            return 0;
+        }
+        double gs = glyph_scale_par   ? glyph_scale_par   : 1000.0;
+        double gy = glyph_y_scale_par ? glyph_y_scale_par : 1000.0;
+        return scaledround(0.000001 * gs * gy * (double) value);
     }
-}
 
-scaled tex_get_font_math_x_parameter(int font, int size, int param)
-{
-    scaled scale = tex_get_math_font_scale(font, size);
-    scaled value = tex_aux_get_font_math_parameter(scale, font, param);
-    if (value == undefined_math_parameter) {
-        return undefined_math_parameter;
-    } else {
-        return value ? scaledround(0.000001 * glyph_scale_par * glyph_x_scale_par * value) : 0;
+    scaled tex_get_font_math_x_parameter(int font, int size, int param)
+    {
+        scaled scale = tex_get_math_font_scale(font, size);
+        scaled value = tex_aux_get_font_math_parameter(scale, font, param);
+        if (value == undefined_math_parameter) {
+            return undefined_math_parameter;
+        }
+        if (! value) {
+            return 0;
+        }
+        double gs = glyph_scale_par   ? glyph_scale_par   : 1000.0;
+        double gx = glyph_x_scale_par ? glyph_x_scale_par : 1000.0;
+        return scaledround(0.000001 * gs * gx * (double) value);
     }
-}
+
+# else
+
+    static inline scaled tex_aux_math_scale_x_value(scaled value, scaled scale)
+    {
+        if (! value || ! scale) return 0;
+        return tex_aux_scale_1e9(value, glyph_scale_par, glyph_x_scale_par, scale);
+    }
+
+    static inline scaled tex_aux_math_scale_y_value(scaled value, scaled scale)
+    {
+        if (! value || ! scale) return 0;
+        return tex_aux_scale_1e9(value, glyph_scale_par, glyph_y_scale_par, scale);
+    }
+
+    scaled tex_get_math_x_parameter(int style, int param)
+    {
+        if (! tex_aux_math_parameter_okay(param)) return 0;
+        scaled value = tex_get_math_parameter(style, param, NULL);
+        if (value == undefined_math_parameter) return undefined_math_parameter;
+        scaled scale = tex_aux_max_scale(style, math_parameter_x_scale);
+        return tex_aux_math_scale_x_value(value, scale);
+    }
+
+    scaled tex_get_math_x_parameter_checked(int style, int param)
+    {
+        if (! tex_aux_math_parameter_okay(param)) return 0;
+        scaled value = tex_get_math_parameter(style, param, NULL);
+        if (value == undefined_math_parameter) {
+            tex_aux_math_parameter_error(style, param, lmt_name_of_math_parameter(param));
+            return 0;
+        }
+        scaled scale = tex_aux_max_scale(style, math_parameter_x_scale);
+        return tex_aux_math_scale_x_value(value, scale);
+    }
+
+    scaled tex_get_math_x_parameter_default(int style, int param, scaled dflt)
+    {
+        if (! tex_aux_math_parameter_okay(param)) return dflt;
+        scaled value = tex_get_math_parameter(style, param, NULL);
+        if (value == undefined_math_parameter) return dflt;
+        scaled scale = tex_aux_max_scale(style, math_parameter_x_scale);
+        return tex_aux_math_scale_x_value(value, scale);
+    }
+
+    scaled tex_get_math_y_parameter(int style, int param)
+    {
+        if (! tex_aux_math_parameter_okay(param)) return 0;
+        scaled value = tex_get_math_parameter(style, param, NULL);
+        if (value == undefined_math_parameter) return undefined_math_parameter;
+        scaled scale = tex_aux_max_scale(style, math_parameter_y_scale);
+        return tex_aux_math_scale_y_value(value, scale);
+    }
+
+    scaled tex_get_math_y_parameter_checked(int style, int param)
+    {
+        if (! tex_aux_math_parameter_okay(param)) return 0;
+        scaled value = tex_get_math_parameter(style, param, NULL);
+        if (value == undefined_math_parameter) {
+            tex_aux_math_parameter_error(style, param, lmt_name_of_math_parameter(param));
+            return 0;
+        }
+        scaled scale = tex_aux_max_scale(style, math_parameter_y_scale);
+        return tex_aux_math_scale_y_value(value, scale);
+    }
+
+    scaled tex_get_math_y_parameter_default(int style, int param, scaled dflt)
+    {
+        if (! tex_aux_math_parameter_okay(param)) return dflt;
+        scaled value = tex_get_math_parameter(style, param, NULL);
+        if (value == undefined_math_parameter) return dflt;
+        scaled scale = tex_aux_max_scale(style, math_parameter_y_scale);
+        return tex_aux_math_scale_y_value(value, scale);
+    }
+
+    scaled tex_get_font_math_parameter(int font, int size, int param)
+    {
+        scaled scale = tex_get_math_font_scale(font, size);
+        scaled value = tex_aux_get_font_math_parameter(scale, font, param);
+        if (value == undefined_math_parameter) return undefined_math_parameter;
+        if (! value) return 0;
+        return tex_aux_scale_1000_default(value, glyph_scale_par);
+    }
+
+    scaled tex_get_font_math_y_parameter(int font, int size, int param)
+    {
+        scaled scale = tex_get_math_font_scale(font, size);
+        scaled value = tex_aux_get_font_math_parameter(scale, font, param);
+        if (value == undefined_math_parameter) {
+            return undefined_math_parameter;
+        }
+        if (! value) {
+            return 0;
+        }
+        return tex_aux_scale_1e6(value, glyph_scale_par, glyph_y_scale_par);
+    }
+
+    scaled tex_get_font_math_x_parameter(int font, int size, int param)
+    {
+        scaled scale = tex_get_math_font_scale(font, size);
+        scaled value = tex_aux_get_font_math_parameter(scale, font, param);
+        if (value == undefined_math_parameter) {
+            return undefined_math_parameter;
+        }
+        if (! value) {
+            return 0;
+        }
+        return tex_aux_scale_1e6(value, glyph_scale_par, glyph_x_scale_par);
+    }
+
+# endif
 
 halfword tex_to_math_spacing_parameter(halfword left, halfword right)
 {
     if (valid_math_class_code(left) && valid_math_class_code(right)) {
-        halfword param = math_parameter_spacing_pair(left,right);
-        return (param >= math_parameter_atom_pairs_first && param <= math_parameter_atom_pairs_last) ? param : -1;
-    } else {
-        return -1;
+        halfword param = math_parameter_spacing_pair(left, right);
+        if (param >= math_parameter_atom_pairs_first && param <= math_parameter_atom_pairs_last) {
+            return param;
+        }
     }
+    return -1;
 }
 
 halfword tex_to_math_rules_parameter(halfword left, halfword right)

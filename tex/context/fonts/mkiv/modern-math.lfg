@@ -38,7 +38,7 @@ return {
          -- PrimeRaisePercent                    =   0, -- set to 0 in math-act
          -- PrimeRaiseComposedPercent            =   0, -- set to 0 in math-act
             RadicalDisplayStyleVerticalGap       = 120,--"RadicalVerticalGap" too small, 148, 50
-            -- RadicalVerticalGap                   =  50,-- Going smaller looks too cramped
+         -- RadicalVerticalGap                   =  50,-- Going smaller looks too cramped
         },
         tweaks = {
             aftercopying = {

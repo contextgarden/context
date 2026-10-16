@@ -34,6 +34,8 @@ local tonumber, tostring, rawset, type, next = tonumber, tostring, rawset, type,
 local json      = utilities.json or { }
 utilities.json  = json
 
+local formatted = string.formatted
+
 do
 
     -- \\ \/ \b \f \n \r \t \uHHHH
@@ -120,29 +122,29 @@ do
 
     local escaper
 
-    local f_start_hash      = formatters[         '%w{' ]
-    local f_start_array     = formatters[         '%w[' ]
-    local f_start_hash_new  = formatters[ "\n" .. '%w{' ]
-    local f_start_array_new = formatters[ "\n" .. '%w[' ]
-    local f_start_hash_key  = formatters[ "\n" .. '%w"%s" : {' ]
-    local f_start_array_key = formatters[ "\n" .. '%w"%s" : [' ]
+    local f_start_hash      =         '%w{'
+    local f_start_array     =         '%w['
+    local f_start_hash_new  = "\n" .. '%w{'
+    local f_start_array_new = "\n" .. '%w['
+    local f_start_hash_key  = "\n" .. '%w"%s" : {'
+    local f_start_array_key = "\n" .. '%w"%s" : ['
 
-    local f_stop_hash       = formatters[ "\n" .. '%w}' ]
-    local f_stop_array      = formatters[ "\n" .. '%w]' ]
+    local f_stop_hash       = "\n" .. '%w}'
+    local f_stop_array      = "\n" .. '%w]'
 
-    local f_key_val_seq     = formatters[ "\n" .. '%w"%s" : %s'    ]
-    local f_key_val_str     = formatters[ "\n" .. '%w"%s" : "%s"'  ]
+    local f_key_val_seq     = "\n" .. '%w"%s" : %s'
+    local f_key_val_str     = "\n" .. '%w"%s" : "%s"'
     local f_key_val_num     = f_key_val_seq
-    local f_key_val_yes     = formatters[ "\n" .. '%w"%s" : true'  ]
-    local f_key_val_nop     = formatters[ "\n" .. '%w"%s" : false' ]
-    local f_key_val_null    = formatters[ "\n" .. '%w"%s" : null'  ]
+    local f_key_val_yes     = "\n" .. '%w"%s" : true'
+    local f_key_val_nop     = "\n" .. '%w"%s" : false'
+    local f_key_val_null    = "\n" .. '%w"%s" : null'
 
-    local f_val_num         = formatters[ "\n" .. '%w%s'    ]
-    local f_val_str         = formatters[ "\n" .. '%w"%s"'  ]
-    local f_val_yes         = formatters[ "\n" .. '%wtrue'  ]
-    local f_val_nop         = formatters[ "\n" .. '%wfalse' ]
-    local f_val_null        = formatters[ "\n" .. '%wnull'  ]
-    local f_val_empty       = formatters[ "\n" .. '%w{ }'  ]
+    local f_val_num         = "\n" .. '%w%s'
+    local f_val_str         = "\n" .. '%w"%s"'
+    local f_val_yes         = "\n" .. '%wtrue'
+    local f_val_nop         = "\n" .. '%wfalse'
+    local f_val_null        = "\n" .. '%wnull'
+    local f_val_empty       = "\n" .. '%w{ }'
     local f_val_seq         = f_val_num
 
     -- no empty tables because unknown if table or hash
@@ -194,9 +196,9 @@ do
             n = n + 1
             if level == 0 then
                 if indexed then
-                    t[n] = f_start_array(depth)
+                    t[n] = formatted(f_start_array,depth)
                 else
-                    t[n] = f_start_hash(depth)
+                    t[n] = formatted(f_start_hash,depth)
                 end
             elseif name then
                 if tn == "string" then
@@ -205,15 +207,15 @@ do
                     name = tostring(name)
                 end
                 if indexed then
-                    t[n] = f_start_array_key(depth,name)
+                    t[n] = formatted(f_start_array_key,depth,name)
                 else
-                    t[n] = f_start_hash_key(depth,name)
+                    t[n] = formatted(f_start_hash_key,depth,name)
                 end
             else
                 if indexed then
-                    t[n] = f_start_array_new(depth)
+                    t[n] = formatted(f_start_array_new,depth)
                 else
-                    t[n] = f_start_hash_new(depth)
+                    t[n] = formatted(f_start_hash_new,depth)
                 end
             end
             depth = depth + 1
@@ -225,32 +227,32 @@ do
                     local v  = root[i]
                     local tv = type(v)
                     if tv == "number" then
-                        n = n + 1 t[n] = f_val_num(depth,v)
+                        n = n + 1 t[n] = formatted(f_val_num,depth,v)
                     elseif tv == "string" then
                         v = lpegmatch(escaper,v) or v
-                        n = n + 1 t[n] = f_val_str(depth,v)
+                        n = n + 1 t[n] = formatted(f_val_str,depth,v)
                     elseif tv == "table" then
                         if next(v) then
                             local st = is_simple_table(v)
                             if st then
-                                n = n + 1 t[n] = f_val_seq(depth,st)
+                                n = n + 1 t[n] = formatted(f_val_seq,depth,st)
                             else
                                 tojsonpp(v,nil,depth,level+1,#v)
                             end
                         else
                             n = n + 1
-                            t[n] = f_val_empty(depth)
+                            t[n] = formatted(f_val_empty,depth)
                         end
                     elseif tv == "boolean" then
                         n = n + 1
                         if v then
-                            t[n] = f_val_yes(depth,v)
+                            t[n] = formatted(f_val_yes,depth,v)
                         else
-                            t[n] = f_val_nop(depth,v)
+                            t[n] = formatted(f_val_nop,depth,v)
                         end
                     else
                         n = n + 1
-                        t[n] = f_val_null(depth)
+                        t[n] = formatted(f_val_null,depth)
                     end
                 end
             elseif next(root) then
@@ -265,19 +267,19 @@ do
                     local tk = type(k)
                     if tv == "number" then
                         if tk == "number" then
-                            n = n + 1 t[n] = f_key_val_num(depth,k,v)
+                            n = n + 1 t[n] = formatted(f_key_val_num,depth,k,v)
                         elseif tk == "string" then
                             k = lpegmatch(escaper,k) or k
-                            n = n + 1 t[n] = f_key_val_num(depth,k,v)
+                            n = n + 1 t[n] = formatted(f_key_val_num,depth,k,v)
                         end
                     elseif tv == "string" then
                         if tk == "number" then
                             v = lpegmatch(escaper,v) or v
-                            n = n + 1 t[n] = f_key_val_str(depth,k,v)
+                            n = n + 1 t[n] = formatted(f_key_val_str,depth,k,v)
                         elseif tk == "string" then
                             k = lpegmatch(escaper,k) or k
                             v = lpegmatch(escaper,v) or v
-                            n = n + 1 t[n] = f_key_val_str(depth,k,v)
+                            n = n + 1 t[n] = formatted(f_key_val_str,depth,k,v)
                         elseif i > 1 then
                             n = n - 1
                         end
@@ -288,10 +290,10 @@ do
                             if not st then
                                 tojsonpp(v,k,depth,level+1,l)
                             elseif tk == "number" then
-                                n = n + 1 t[n] = f_key_val_seq(depth,k,st)
+                                n = n + 1 t[n] = formatted(f_key_val_seq,depth,k,st)
                             elseif tk == "string" then
                                 k = lpegmatch(escaper,k) or k
-                                n = n + 1 t[n] = f_key_val_seq(depth,k,st)
+                                n = n + 1 t[n] = formatted(f_key_val_seq,depth,k,st)
                             end
                         elseif next(v) then
                             tojsonpp(v,k,depth,level+1,0)
@@ -303,17 +305,17 @@ do
                         if tk == "number" then
                             n = n + 1
                             if v then
-                                t[n] = f_key_val_yes(depth,k)
+                                t[n] = formatted(f_key_val_yes,depth,k)
                             else
-                                t[n] = f_key_val_nop(depth,k)
+                                t[n] = formatted(f_key_val_nop,depth,k)
                             end
                         elseif tk == "string" then
                             k = lpegmatch(escaper,k) or k
                             n = n + 1
                             if v then
-                                t[n] = f_key_val_yes(depth,k)
+                                t[n] = formatted(f_key_val_yes,depth,k)
                             else
-                                t[n] = f_key_val_nop(depth,k)
+                                t[n] = formatted(f_key_val_nop,depth,k)
                             end
                         elseif i > 1 then
                             n = n - 1
@@ -321,11 +323,11 @@ do
                     else
                         if tk == "number" then
                             n = n + 1
-                            t[n] = f_key_val_null(depth,k)
+                            t[n] = formatted(f_key_val_null,depth,k)
                         elseif tk == "string" then
                             k = lpegmatch(escaper,k) or k
                             n = n + 1
-                            t[n] = f_key_val_null(depth,k)
+                            t[n] = formatted(f_key_val_null,depth,k)
                         elseif i > 1 then
                             n = n - 1
                         end
@@ -334,9 +336,9 @@ do
             end
             n = n + 1
             if indexed then
-                t[n] = f_stop_array(depth-1)
+                t[n] = formatted(f_stop_array,depth-1)
             else
-                t[n] = f_stop_hash(depth-1)
+                t[n] = formatted(f_stop_hash,depth-1)
             end
         end
     end

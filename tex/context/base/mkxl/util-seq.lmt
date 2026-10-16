@@ -23,7 +23,9 @@ utilities               = utilities or { }
 local tables            = utilities.tables
 local allocate          = utilities.storage.allocate
 
-local formatters        = string.formatters
+----- formatters        = string.formatters
+local formatted         = string.formatted
+
 local replacer          = utilities.templates.replacer
 
 local trace_used        = false
@@ -279,19 +281,19 @@ local function construct(t)
                     if type(action) == "function" then
                         local name = localize(tostring(action))
                         functions[name] = action
-                        action = formatters["utilities.sequencers.functions.%s"](name)
+                        action = formatted("utilities.sequencers.functions.%s",name)
                         localized = localize(name) -- shorter than action
                     else
                         localized = localize(action)
                     end
                     n = n + 1
-                    variables[n] = formatters["local %s = %s"](localized,action)
+                    variables[n] = formatted("local %s = %s",localized,action)
                     if not returnvalues then
-                        calls[n] = formatters["%s(%s)"](localized,arguments)
+                        calls[n] = formatted("%s(%s)",localized,arguments)
                     elseif n == 1 then
-                        calls[n] = formatters["local %s = %s(%s)"](returnvalues,localized,arguments)
+                        calls[n] = formatted("local %s = %s(%s)",returnvalues,localized,arguments)
                     else
-                        calls[n] = formatters["%s = %s(%s)"](returnvalues,localized,arguments)
+                        calls[n] = formatted("%s = %s(%s)",returnvalues,localized,arguments)
                     end
                 end
             end
@@ -305,9 +307,9 @@ local function construct(t)
         variables = concat(variables,"\n")
         calls = concat(calls,"\n")
         if results then
-            t.compiled = formatters["%s\nreturn function(%s)\n%s\nreturn %s\nend"](variables,arguments,calls,results)
+            t.compiled = formatted("%s\nreturn function(%s)\n%s\nreturn %s\nend",variables,arguments,calls,results)
         else
-            t.compiled = formatters["%s\nreturn function(%s)\n%s\nend"](variables,arguments,calls)
+            t.compiled = formatted("%s\nreturn function(%s)\n%s\nend",variables,arguments,calls)
         end
     end
     return t.compiled -- also stored so that we can trace
@@ -364,7 +366,6 @@ function sequencers.nodeprocessor(t,nofarguments)
     local aliases   = { }
     local ncalls    = 0
     local naliases  = 0
-    local f_alias   = formatters["local %s = %s"]
     --
     local list  = t.list
     local order = t.order
@@ -377,7 +378,7 @@ function sequencers.nodeprocessor(t,nofarguments)
     usedcount   = usedcount + 1
     if trace_details then
         naliases = naliases + 1
-        aliases[naliases] = formatters["local report = logs.reporter('sequencer',%q)"](name)
+        aliases[naliases] = formatted("local report = logs.reporter('sequencer',%q)",name)
         ncalls = ncalls + 1
         calls[ncalls] = [[report("start")]]
     end
@@ -396,13 +397,13 @@ function sequencers.nodeprocessor(t,nofarguments)
                     end
                     if trace_details then
                         ncalls = ncalls + 1
-                        calls[ncalls] = formatters[ [[report("  step %a, action %a")]] ](steps,tostring(action))
+                        calls[ncalls] = formatted([[report("  step %a, action %a")]], steps,tostring(action))
                     end
                     local localized = localize(action)
                     local onestep   = replacers[kind[action]] or step
                     naliases = naliases + 1
                     ncalls   = ncalls + 1
-                    aliases[naliases] = f_alias(localized,action)
+                    aliases[naliases] = formatted("local %s = %s",localized,action)
                     calls  [ncalls]   = onestep {
                         action    = localized,
                         attribute = attr[action],

@@ -22,11 +22,14 @@ if not modules then modules = { } end modules ['lpdf-ano'] = {
 -- much without looking critical at how it performs.
 
 local next, tostring, tonumber, rawget, type = next, tostring, tonumber, rawget, type
-local rep, format, find, match = string.rep, string.format, string.find, string.match
+local rep, find, match = string.rep, string.find, string.match
 local min, max = math.min, math.max
 local lpegmatch = lpeg.match
-local formatters = string.formatters
 local sortedkeys, concat, swapped = table.sortedkeys, table.concat, table.swapped
+
+----- formatters = string.formatters
+local formatting = string.formatting
+local formatted  = string.formatted
 
 local trace_references        = false  trackers.register("references.references",   function(v) trace_references   = v end)
 local trace_destinations      = false  trackers.register("references.destinations", function(v) trace_destinations = v end)
@@ -527,45 +530,49 @@ local c_realpageno  <const> = tex.iscount("realpageno")
 
 local destinationactions, defaultaction  do
 
-    local f_xyz   = formatters["<< /D [ %i 0 R /XYZ %.6N %.6N null ] >>"]
-    local f_fit   = formatters["<< /D [ %i 0 R /Fit ] >>"]
-    local f_fitb  = formatters["<< /D [ %i 0 R /FitB ] >>"]
-    local f_fith  = formatters["<< /D [ %i 0 R /FitH %.6N ] >>"]
-    local f_fitv  = formatters["<< /D [ %i 0 R /FitV %.6N ] >>"]
-    local f_fitbh = formatters["<< /D [ %i 0 R /FitBH %.6N ] >>"]
-    local f_fitbv = formatters["<< /D [ %i 0 R /FitBV %.6N ] >>"]
-    local f_fitr  = formatters["<< /D [ %i 0 R /FitR %.6N %.6N %.6N %.6N ] >>"]
+    local f_xyz   = formatting("<< /D [ %i 0 R /XYZ %.6N %.6N null ] >>")
+    local f_fit   = formatting("<< /D [ %i 0 R /Fit ] >>")
+    local f_fitb  = formatting("<< /D [ %i 0 R /FitB ] >>")
+    local f_fith  = formatting("<< /D [ %i 0 R /FitH %.6N ] >>")
+    local f_fitv  = formatting("<< /D [ %i 0 R /FitV %.6N ] >>")
+    local f_fitbh = formatting("<< /D [ %i 0 R /FitBH %.6N ] >>")
+    local f_fitbv = formatting("<< /D [ %i 0 R /FitBV %.6N ] >>")
+    local f_fitr  = formatting("<< /D [ %i 0 R /FitR %.6N %.6N %.6N %.6N ] >>")
 
     destinationactions = {
         -- local left,top with no zoom
         [v_standard] = function(r,w,h,d,o)
             local tx, ty = getpos()
-            return f_xyz(r,tx*factor,(ty+h+2*o)*factor)
+            return formatted(f_xyz,r,tx*factor,(ty+h+2*o)*factor)
         end,
         -- fit rectangle in window
         [v_frame] = function(r,w,h,d,o)
-            return f_fitr(r,pdfrectangle(w,h,d,o))
+            return formatted(f_fitr,r,pdfrectangle(w,h,d,o))
         end,
         -- top coordinate, fit width of page in window
         [v_width] = function(r,w,h,d,o)
-            return f_fith(r,(getvpos()+h+o)*factor)
+            return formatted(f_fith,r,(getvpos()+h+o)*factor)
         end,
         -- top coordinate, fit width of content in window
         [v_minwidth] = function(r,w,h,d,o)
-            return f_fitbh(r,(getvpos()+h+o)*factor)
+            return formatted(f_fitbh,r,(getvpos()+h+o)*factor)
         end,
         -- left coordinate, fit height of page in window
         [v_height] = function(r,w,h,d,o)
-            return f_fitv(r,(gethpos())*factor)
+            return formatted(f_fitv,r,(gethpos())*factor)
         end,
         -- left coordinate, fit height of content in window
         [v_minheight] = function(r,w,h,d,o)
-            return f_fitbv(r,(gethpos())*factor)
+            return formatted(f_fitbv,r,(gethpos())*factor)
         end,
         -- fit content in window
-        [v_tight] = f_fitb,
+        [v_tight] = function(r)
+            return formatted(f_fitb,r)
+        end,
         -- fit content in window
-        [v_fit] = f_fit,
+        [v_fit] = function(r)
+            return formatted(f_fit,r)
+        end,
     }
 
     defaultaction = destinationactions[defaultview]
@@ -574,46 +581,46 @@ end
 
 local xdestinationactions, xdefaultaction  do
 
-    local f_xyz   = formatters["<< /D [ %i 0 R /XYZ %.6N %.6N null ] /SD [ %i 0 R /XYZ %.6N %.6N null ] >>"]
-    local f_fit   = formatters["<< /D [ %i 0 R /Fit ] /SD [ %i 0 R /Fit ] >>"]
-    local f_fitb  = formatters["<< /D [ %i 0 R /FitB ] /SD [ %i 0 R /FitB ] >>"]
-    local f_fith  = formatters["<< /D [ %i 0 R /FitH %.6N ] /SD [ %i 0 R /FitH %.6N ] >>"]
-    local f_fitv  = formatters["<< /D [ %i 0 R /FitV %.6N ] /SD[ %i 0 R /FitV %.6N ] >>"]
-    local f_fitbh = formatters["<< /D [ %i 0 R /FitBH %.6N ] /SD [ %i 0 R /FitBH %.6N ] >>"]
-    local f_fitbv = formatters["<< /D [ %i 0 R /FitBV %.6N ] /SD [ %i 0 R /FitBV %.6N ] >>"]
-    local f_fitr  = formatters["<< /D [ %i 0 R /FitR %.6N %.6N %.6N %.6N ] /SD [ %i 0 R /FitR %.6N %.6N %.6N %.6N ] >>"]
+    local f_xyz   = formatting("<< /D [ %i 0 R /XYZ %.6N %.6N null ] /SD [ %i 0 R /XYZ %.6N %.6N null ] >>")
+    local f_fit   = formatting("<< /D [ %i 0 R /Fit ] /SD [ %i 0 R /Fit ] >>")
+    local f_fitb  = formatting("<< /D [ %i 0 R /FitB ] /SD [ %i 0 R /FitB ] >>")
+    local f_fith  = formatting("<< /D [ %i 0 R /FitH %.6N ] /SD [ %i 0 R /FitH %.6N ] >>")
+    local f_fitv  = formatting("<< /D [ %i 0 R /FitV %.6N ] /SD[ %i 0 R /FitV %.6N ] >>")
+    local f_fitbh = formatting("<< /D [ %i 0 R /FitBH %.6N ] /SD [ %i 0 R /FitBH %.6N ] >>")
+    local f_fitbv = formatting("<< /D [ %i 0 R /FitBV %.6N ] /SD [ %i 0 R /FitBV %.6N ] >>")
+    local f_fitr  = formatting("<< /D [ %i 0 R /FitR %.6N %.6N %.6N %.6N ] /SD [ %i 0 R /FitR %.6N %.6N %.6N %.6N ] >>")
 
     xdestinationactions = {
         [v_standard] = function(r,w,h,d,o,s)
             local tx, ty = getpos()
             local x = tx*factor
             local y = (ty+h+2*o)*factor
-            return f_xyz(r,x,y,s,x,y)
+            return formatted(f_xyz,r,x,y,s,x,y)
         end,
         [v_frame] = function(r,w,h,d,o,s)
-            return f_fitr(r,pdfrectangle(w,h,d,o),s,pdfrectangle(w,h,d,o))
+            return formatted(f_fitr,r,pdfrectangle(w,h,d,o),s,pdfrectangle(w,h,d,o))
         end,
         [v_width] = function(r,w,h,d,o,s)
             local v = (getvpos()+h+o)*factor
-            return f_fith(r,v,s,v)
+            return formatted(f_fith,r,v,s,v)
         end,
         [v_minwidth] = function(r,w,h,d,o,s)
             local h = (getvpos()+h+o)*factor
-            return f_fitbh(r,h,s,h)
+            return formatted(f_fitbh,r,h,s,h)
         end,
         [v_height] = function(r,w,h,d,o,s)
             local v = gethpos()*factor
-            return f_fitv(r,v,s,v)
+            return formatted(f_fitv,r,v,s,v)
         end,
         [v_minheight] = function(r,w,h,d,o,s)
             local h = gethpos()*factor
-            return f_fitbv(r,h,s,h)
+            return formatted(f_fitbv,r,h,s,h)
         end,
         [v_tight] = function(r,w,h,d,o,s)
-            return f_fitb(r,s)
+            return formatted(f_fitb,r,s)
         end,
         [v_fit] = function(r,w,h,d,o,s)
-            return f_fit(r,s)
+            return formatted(f_fit,r,s)
         end,
     }
 
@@ -629,10 +636,10 @@ end)
 -- end up with a mix. A previous versions just output multiple destinations but now
 -- that we moved all to here we can be more sparse.
 
-local f_fit = formatters["<< /D [ %i 0 R /Fit ] >>"]
+local f_fit = formatting("<< /D [ %i 0 R /Fit ] >>")
 
 local pagedestinations = setmetatableindex(function(t,k) -- not the same as the one above!
-    local v = pdfdelayedobject(f_fit(k))
+    local v = pdfdelayedobject(formatted(f_fit,k))
     t[k] = v
     return v
 end)
@@ -1132,8 +1139,8 @@ local share      = true
 
 local refobjects = { }
 
-local f_annot    = formatters["<< /Type /Annot %s /Rect [ %.6N %.6N %.6N %.6N ] >>"]
-local f_quadp    = formatters["<< /Type /Annot %s /QuadPoints [ %s ] /Rect [ %.6N %.6N %.6N %.6N ] >>"]
+local f_annot    = formatting("<< /Type /Annot %s /Rect [ %.6N %.6N %.6N %.6N ] >>")
+local f_quadp    = formatting("<< /Type /Annot %s /QuadPoints [ %s ] /Rect [ %.6N %.6N %.6N %.6N ] >>")
 
 directives.register("references.sharelinks", function(v)
     share = v
@@ -1383,7 +1390,7 @@ local finishreference  do
 
     statistics.register("meshed up references", function()
         if count > 0 then
-            return format("%i seen, %i valid, %i total",count,valid,total)
+            return formatted("%i seen, %i valid, %i total",count,valid,total)
         else
             return nil
         end
@@ -1426,9 +1433,9 @@ local finishreference  do
             quadpoints = { { { x1, y1 }, { x2, y2 }, { x3, y3 }, { x4, y4 } } }
         end
         if quadpoints and #quadpoints > 0 then
-            prerolled = f_quadp(prerolled,toquadpoints(quadpoints,bugged),llx,lly,urx,ury)
+            prerolled = formatted(f_quadp,prerolled,toquadpoints(quadpoints,bugged),llx,lly,urx,ury)
         else
-            prerolled = f_annot(prerolled,llx,lly,urx,ury)
+            prerolled = formatted(f_annot,prerolled,llx,lly,urx,ury)
         end
         return prerolled
     end
@@ -1489,7 +1496,7 @@ local function finishannotation(specification)
     if type(prerolled) ~= "string" then
         prerolled = prerolled()
     end
-    local annot = f_annot(prerolled,pdfrectangle(specification.width,specification.height,specification.depth))
+    local annot = formatted(f_annot,prerolled,pdfrectangle(specification.width,specification.height,specification.depth))
     if objref then
         pdfdelayedobject(annot,objref)
     else
@@ -1577,7 +1584,7 @@ lpdf.registerpagefinalizer(lpdf.annotationspecification,"finalize annotations")
 
 statistics.register("pdf annotations", function()
     if nofused > 0 or nofspecial > 0 then
-        return format("%s links (%s unique), %s special",nofused,nofunique,nofspecial)
+        return formatted("%s links (%s unique), %s special",nofused,nofunique,nofspecial)
     else
         return nil
     end

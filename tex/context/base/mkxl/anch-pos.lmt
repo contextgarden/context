@@ -41,7 +41,7 @@ if not modules then modules = { } end modules ['anch-pos'] = {
 
 local tostring, next, setmetatable, tonumber, rawget, rawset = tostring, next, setmetatable, tonumber, rawget, rawset
 local sort, sortedhash = table.sort, table.sortedhash
-local format, gmatch = string.format, string.gmatch
+local gmatch = string.gmatch
 local P, R, C, Cc, lpegmatch = lpeg.P, lpeg.R, lpeg.C, lpeg.Cc, lpeg.match
 local insert, remove = table.insert, table.remove
 local allocate = utilities.storage.allocate
@@ -49,6 +49,8 @@ local setmetatableindex, setmetatablenewindex = table.setmetatableindex, table.s
 local fromposit = posit.fromposit
 
 local report            = logs.reporter("positions")
+
+local formatted         = string.formatted
 
 local scanstring        = tokens.scanners.string
 
@@ -101,7 +103,8 @@ local v_column          <const> = interfaces.variables.column
 
 local pt                <const> = number.dimenfactors.pt
 
-local formatters        = string.formatters
+----- formatters        = string.formatters
+local formatted         = string.formatted
 
 local collected         = allocate()
 local tobesaved         = allocate()
@@ -139,15 +142,15 @@ local default = { -- not r and paragraphs etc
     }
 }
 
-local f_b_tag      = formatters["b:%s"]
-local f_e_tag      = formatters["e:%s"]
-local f_p_tag      = formatters["p:%s"]
------ f_w_tag      = formatters["w:%s"]
+local f_b_tag      = "b:%s"
+local f_e_tag      = "e:%s"
+local f_p_tag      = "p:%s"
+----- f_w_tag      = "w:%s"
 
-local f_region     = formatters["region:%s"]
+local f_region     = "region:%s"
 
-local f_tag_three  = formatters["%s:%s:%s"]
-local f_tag_two    = formatters["%s:%s"]
+local f_tag_three  = "%s:%s:%s"
+local f_tag_two    = "%s:%s"
 
 local c_realpageno        <const> = texiscount("realpageno")
 local d_strutht           <const> = texisdimen("strutht")
@@ -685,7 +688,7 @@ v.i = nil
 
         statistics.register("positions", function()
             if nofpositions > 0 then
-                return format("%s collected, %i deltas, %i shared partials, %i partial entries",
+                return formatted("%s collected, %i deltas, %i shared partials, %i partial entries",
                     nofpositions, nofdeltas, nofpartials,
                     x_y_w_h_size + y_w_h_d_size + x_h_d_size + x_h_d_hs_size
                 )
@@ -787,7 +790,7 @@ else
 
         statistics.register("positions", function()
             if nofpositions > 0 then
-                return format("%s collected",nofpositions)
+                return formatted("%s collected",nofpositions)
             else
                 return nil
             end
@@ -1325,7 +1328,7 @@ do
         actions = function()
             nofparagraphs = nofparagraphs + 1
             texsetcount("global",c_anch_positions_paragraph,nofparagraphs)
-            local name = f_p_tag(nofparagraphs)
+            local name = formatted(f_p_tag,nofparagraphs)
             local h = texgetdimen(d_strutht)
             local d = texgetdimen(d_strutdp)
             --
@@ -1542,7 +1545,7 @@ end
 
 function jobpositions.getreserved(tag,n)
     if tag == v_column then
-        local fulltag = f_tag_three(tag,texgetcount(c_realpageno),n or 1)
+        local fulltag = formatted(f_tag_three,tag,texgetcount(c_realpageno),n or 1)
         local data = collected[fulltag]
         if data then
             return data, fulltag
@@ -1550,7 +1553,7 @@ function jobpositions.getreserved(tag,n)
         tag = v_text
     end
     if tag == v_text then
-        local fulltag = f_tag_two(tag,texgetcount(c_realpageno))
+        local fulltag = formatted(f_tag_two,tag,texgetcount(c_realpageno))
         return collected[fulltag] or false, fulltag
     end
     return collected[tag] or false, tag
@@ -2248,7 +2251,7 @@ implement {
 local function MPpardata(id)
     local t = collected[id]
     if not t then
-        local tag = f_p_tag(id)
+        local tag = formatted(f_p_tag,id)
         t = collected[tag]
     end
     if t then
@@ -2277,10 +2280,10 @@ implement {
 --     arguments = "argument",
 --     public    = true,
 --     actions   = function(name)
---         local b = f_b_tag(name)
---         local e = f_e_tag(name)
---         local w = f_w_tag(name)
---         local p = f_p_tag(getparagraph(b))
+--         local b = formatted(f_b_tag,name)
+--         local e = formatted(f_e_tag,name)
+--         local w = formatted(f_w_tag,name)
+--         local p = formatted(f_p_tag,getparagraph(b))
 --         MPpos(b) context(",") MPpos(e) context(",") MPpos(w) context(",") MPpos(p) context(",") MPpardata(p)
 --     end
 -- }
@@ -2497,7 +2500,7 @@ implement {
     public  = true,
     actions = function()
         nofregions = nofregions + 1
-        context(f_region(nofregions))
+        context(formatted(f_region,nofregions))
     end
 }
 

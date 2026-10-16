@@ -14,10 +14,12 @@ local node, nodes, fonts, characters = node, nodes, fonts, characters
 local file, lpeg, table, string = file, lpeg, table, string
 
 local type, next, tonumber, toboolean = type, next, tonumber, toboolean
-local round = math.round
-local gmatch = string.gmatch
-local fastcopy = table.fastcopy
-local formatters = string.formatters
+
+local round              = math.round
+local gmatch             = string.gmatch
+local fastcopy           = table.fastcopy
+
+local formatted          = string.formatted
 
 local nuts               = nodes.nuts
 
@@ -413,7 +415,7 @@ end
 
 local function monoslot(font,char,parent,factor)
     local tfmdata     = fontdata[font]
-    local privatename = formatters["faked mono %s"](char)
+    local privatename = formatted("faked mono %s",char)
     local privateslot = hasprivate(tfmdata,privatename)
     if privateslot then
         return privateslot

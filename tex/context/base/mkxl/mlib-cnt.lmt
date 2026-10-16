@@ -54,10 +54,13 @@ local stoptiming        = statistics.stoptiming
 local resettiming       = statistics.resettiming
 local elapsedtiming     = statistics.elapsed
 
-local formatters        = string.formatters
 local setmetatableindex = table.setmetatableindex
 local sortedkeys        = table.sortedkeys
 local sequenced         = table.sequenced
+
+----- formatters        = string.formatters
+local formatting        = string.formatting
+local formatted         = string.formatted
 
 local metapost          = metapost or { }
 local mp                = mp or { }
@@ -77,7 +80,7 @@ local version           = 0.007
 
 -- we iterate using integers so that we get a better behaviour at zero
 
-local f_function_n = formatters [ [[
+local f_function_n = [[
     local math  = math
     local round = math.round
     %s
@@ -96,9 +99,9 @@ local f_function_n = formatters [ [[
         end
         return 0
     end
-]] ]
+]]
 
-local f_function_y = formatters [ [[
+local f_function_y = [[
     local math  = math
     local round = math.round
     local nan   = NaN
@@ -134,9 +137,9 @@ local f_function_y = formatters [ [[
         end
         return er
     end
-]] ]
+]]
 
-local f_color = formatters [ [[
+local f_color = [[
     local math = math
     local min  = math.min
     local max  = math.max
@@ -162,7 +165,7 @@ local f_color = formatters [ [[
         color_value = l
         return %s
     end
-]] ]
+]]
 
 local inbetween = attributes and attributes.colors.helpers.inbetween
 
@@ -186,7 +189,7 @@ mp.lmt_color_functions = {
     end,
 }
 
-local f_box = formatters [ [[draw rawtexbox("contour",%s) xysized (%s,%s) ;]] ]
+local f_box = [[draw rawtexbox("contour",%s) xysized (%s,%s) ;]]
 
 local n_box = 0
 
@@ -210,7 +213,7 @@ local function prepare(p)
         h[f] = p[f]
     end
     local hash = md5.HEX(sequenced(h))
-    local name = formatters["%s-m-c-%03i.lua"](tex.jobname,nofcontours)
+    local name = formatted("%s-m-c-%03i.lua",tex.jobname,nofcontours)
     return name, hash
 end
 
@@ -292,7 +295,7 @@ function mp.lmt_contours_start()
             end
             return c, f
         else
-            local tcolor = f_color(levels,minz,maxz,preamble,color)
+            local tcolor = formatted(f_color,levels,minz,maxz,preamble,color)
             local colors = { }
             local fcolor = load(tcolor)
             if type(fcolor) ~= "function" then
@@ -356,8 +359,7 @@ function mp.lmt_contours_start()
     local ny    = nymax - nymin + 1
 
     local function executed(data,code)
-        local fcode = p.check and f_function_y or f_function_n
-        fcode = fcode(preamble,code)
+        local fcode = formatted(p.check and f_function_y or f_function_n,preamble,code)
         fcode = load(fcode)
         if type(fcode) == "function" then
             fcode = fcode()
@@ -627,7 +629,7 @@ function mp.lmt_contours_bitmap_get()
     local box    = nodes.hpack(graphics.bitmaps.flush(bitmap))
     n_box = n_box + 1
     nodes.boxes.savenode("contour",tostring(n_box),box)
-    return f_box(n_box,bitmap.xsize,bitmap.ysize)
+    return formatted(f_box,n_box,bitmap.xsize,bitmap.ysize)
 end
 
 function mp.lmt_contours_cleanup()
@@ -1374,8 +1376,11 @@ function mp.lmt_contours_maxz     (i) return getparameterset().result.maxz end
 function mp.lmt_contours_minmean  (i) return getparameterset().result.minmean end
 function mp.lmt_contours_maxmean  (i) return getparameterset().result.maxmean end
 
-function mp.lmt_contours_xrange   ()  local p = getparameterset() mpstring(formatters["x = [%.3N,%.3N] ;"](p.xmin,p.xmax)) end
-function mp.lmt_contours_yrange   ()  local p = getparameterset() mpstring(formatters["y = [%.3N,%.3N] ;"](p.ymin,p.ymax)) end
+local f_x_range = formatting("x = [%.3N,%.3N] ;")
+local f_y_range = formatting("y = [%.3N,%.3N] ;")
+
+function mp.lmt_contours_xrange   ()  local p = getparameterset() mpstring(formatted(f_x_range,p.xmin,p.xmax)) end
+function mp.lmt_contours_yrange   ()  local p = getparameterset() mpstring(formatted(f_y_range,p.ymin,p.ymax)) end
 
 function mp.lmt_contours_format()
     local p = getparameterset()
@@ -1395,7 +1400,7 @@ function mp.lmt_contours_range()
     elseif #r == 1 then
         return mpstring(r[1])
     else
-        return mpstring(formatters["z = [%s,%s]"](r[1],r[2]))
+        return mpstring(formatted("z = [%s,%s]",r[1],r[2]))
     end
 end
 
@@ -1792,23 +1797,23 @@ end
 
 local sqrt, sin, cos = math.sqrt, math.sin, math.cos
 
-local f_fill_rgb = formatters["F (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N) ;"]
-local f_draw_rgb = formatters["D (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor %.3F ;"]
-local f_mesh_rgb = formatters["U (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N) ;"]
-local f_fill_cmy = formatters["F (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N,0) ;"]
-local f_draw_cmy = formatters["D (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor %.3F ;"]
-local f_mesh_cmy = formatters["U (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N,0) ;"]
+local f_fill_rgb = formatting("F (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N) ;")
+local f_draw_rgb = formatting("D (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor %.3F ;")
+local f_mesh_rgb = formatting("U (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N) ;")
+local f_fill_cmy = formatting("F (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N,0) ;")
+local f_draw_cmy = formatting("D (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor %.3F ;")
+local f_mesh_cmy = formatting("U (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N,0) ;")
 
-local f_function_n = formatters [ [[
+local f_function_n = [[
     local math  = math
     local round = math.round
     %s
     return function(x,y)
         return %s
     end
-]] ]
+]]
 
-local f_function_y = formatters [ [[
+local f_function_y = [[
     local math  = math
     local round = math.round
     local nan   = NaN
@@ -1835,16 +1840,9 @@ local f_function_y = formatters [ [[
     end
     return n, er
 end
-]] ]
+]]
 
--- local f_color = formatters [ [[
---     local math = math
---     return function(f)
---         return %s
---     end
--- ]] ]
-
-local f_color = formatters [ [[
+local f_color = [[
      local math = math
      local min  = math.min
      local max  = math.max
@@ -1871,7 +1869,7 @@ local f_color = formatters [ [[
          local function_value    = z
          return %s
      end
-]] ]
+]]
 
 function mp.lmt_surface_do()
     --
@@ -1931,7 +1929,7 @@ function mp.lmt_surface_do()
     --
     -- similar as contours but no data loop here
     --
-    local fcode = load((p.check and f_function_y or f_function_n)(preamble,code))
+    local fcode = load(formatted(p.check and f_function_y or f_function_n,preamble,code))
     local func  = type(fcode) == "function" and fcode()
     if type(func) ~= "function" then
         return false -- fatal error
@@ -1988,7 +1986,7 @@ function mp.lmt_surface_do()
     local range   = maxf - minf
     local cl      = linecolor or 1
     local enforce = attributes.colors.model == "cmyk"
-    local ccode   = load(f_color(minz,maxz,preamble,colorcode))
+    local ccode   = load(formatted(f_color,minz,maxz,preamble,colorcode))
     local color   = type(ccode) == "function" and ccode()
     if type(color) ~= "function" then
         return false -- fatal error
@@ -2034,20 +2032,20 @@ function mp.lmt_surface_do()
                 cr, cg, cb = 1 - cr, 1 - cg, 1 - cb
                 r = r + 1
                 if lines then
-                    result[r] = f_fill_cmy(z11,z12,z21,z22,z31,z32,z41,z42,cr,cg,cb)
+                    result[r] = formatted(f_fill_cmy,z11,z12,z21,z22,z31,z32,z41,z42,cr,cg,cb)
                     r = r + 1
-                    result[r] = f_draw_cmy(z11,z12,z21,z22,z31,z32,z41,z42,cl)
+                    result[r] = formatted(f_draw_cmy,z11,z12,z21,z22,z31,z32,z41,z42,cl)
                 else
-                    result[r] = f_mesh_cmy(z11,z12,z21,z22,z31,z32,z41,z42,cr,cg,cb)
+                    result[r] = formatted(f_mesh_cmy,z11,z12,z21,z22,z31,z32,z41,z42,cr,cg,cb)
                 end
             else
                 r = r + 1
                 if lines then
-                    result[r] = f_fill_rgb(z11,z12,z21,z22,z31,z32,z41,z42,cr,cg,cb)
+                    result[r] = formatted(f_fill_rgb,z11,z12,z21,z22,z31,z32,z41,z42,cr,cg,cb)
                     r = r + 1
-                    result[r] = f_draw_rgb(z11,z12,z21,z22,z31,z32,z41,z42,cl)
+                    result[r] = formatted(f_draw_rgb,z11,z12,z21,z22,z31,z32,z41,z42,cl)
                 else
-                    result[r] = f_mesh_rgb(z11,z12,z21,z22,z31,z32,z41,z42,cr,cg,cb)
+                    result[r] = formatted(f_mesh_rgb,z11,z12,z21,z22,z31,z32,z41,z42,cr,cg,cb)
                 end
             end
         end

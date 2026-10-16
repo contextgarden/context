@@ -1,5 +1,7 @@
 set(luaoptional_sources
 
+    source/luaoptional/lmtoptional.c
+
     source/luaoptional/lmtsqlite.c
     source/luaoptional/lmtmysql.c
     source/luaoptional/lmtpostgress.c
@@ -29,3 +31,9 @@ target_include_directories(luaoptional PRIVATE
     source/libraries/mimalloc/include
 )
 
+if (NOT MSVC)
+    target_compile_options(luaoptional PRIVATE
+        -O3
+        -Wno-unused-parameter # FFI/Binding layers often have unused wrapper params
+    )
+endif()

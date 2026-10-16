@@ -1246,7 +1246,7 @@ int filelib_loadfilex(
 static int filelib_setloadshebang(lua_State *L)
 {
     if (lmt_engine_state.permit_shebang != load_shebang_blocked) {
-        int permission = lua_tointeger(L, 1);
+        int permission = lmt_tointeger(L, 1);
         switch (permission) {
             case load_shebang_disabled:
             case load_shebang_enabled:

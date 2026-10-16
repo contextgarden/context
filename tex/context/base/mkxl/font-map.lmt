@@ -9,10 +9,9 @@ if not modules then modules = { } end modules ['font-map'] = {
 
 local next, type = next, type
 
-local match, format, find, concat, gsub, lower = string.match, string.format, string.find, table.concat, string.gsub, string.lower
+----- match, concat, gsub = string.match, table.concat, string.gsub
 local P, R, S, C, Ct, Cc, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.match
-local formatters = string.formatters
-local utfbyte = utf.byte
+----- utfbyte = utf.byte
 local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
 local hextointeger, dectointeger = string.hextointeger, string.dectointeger
 
@@ -20,6 +19,9 @@ local trace_loading = false  trackers.register("fonts.loading", function(v) trac
 local trace_mapping = false  trackers.register("fonts.mapping", function(v) trace_mapping = v end)
 
 local report_fonts  = logs.reporter("fonts","loading") -- not otf only
+
+----- formatters    = string.formatters
+local formatted     = string.formatted
 
 -- force_ligatures was true for a while so that these emoji's with bad names work too
 
@@ -56,101 +58,106 @@ local function makenameparser(str)
     end
 end
 
-local f_single  = formatters["%04X"]
-local f_double  = formatters["%04X%04X"]
-local s_unknown = "FFFD"
+mappings.makenameparser = makenameparser
 
-local function tounicode16(unicode)
-    if unicode < 0xD7FF or (unicode > 0xDFFF and unicode <= 0xFFFF) then
-        return f_single(unicode)
-    elseif unicode >= 0x00E000 and unicode <= 0x00F8FF then
-        return s_unknown
-    elseif unicode >= 0x0F0000 and unicode <= 0x0FFFFF then
-        return s_unknown
-    elseif unicode >= 0x100000 and unicode <= 0x10FFFF then
-        return s_unknown
-    elseif unicode >= 0x00D800 and unicode <= 0x00DFFF then
-        return s_unknown
-    else
-        unicode = unicode - 0x10000
-        return f_double((unicode//0x400)+0xD800,unicode%0x400+0xDC00)
-    end
-end
+-- local f_single  = formatters["%04X"]
+-- local f_double  = formatters["%04X%04X"]
+-- local s_unknown = "FFFD"
+--
+-- local function tounicode16(unicode)
+--     if unicode < 0xD7FF or (unicode > 0xDFFF and unicode <= 0xFFFF) then
+--         return f_single(unicode)
+--     elseif unicode >= 0x00E000 and unicode <= 0x00F8FF then
+--         return s_unknown
+--     elseif unicode >= 0x0F0000 and unicode <= 0x0FFFFF then
+--         return s_unknown
+--     elseif unicode >= 0x100000 and unicode <= 0x10FFFF then
+--         return s_unknown
+--     elseif unicode >= 0x00D800 and unicode <= 0x00DFFF then
+--         return s_unknown
+--     else
+--         unicode = unicode - 0x10000
+--         return f_double((unicode//0x400)+0xD800,unicode%0x400+0xDC00)
+--     end
+-- end
+--
+-- local function tounicode16sequence(unicodes)
+--     local t = { }
+--     for l=1,#unicodes do
+--         local u = unicodes[l]
+--         if u < 0xD7FF or (u > 0xDFFF and u <= 0xFFFF) then
+--             t[l] = f_single(u)
+--         elseif unicode >= 0x00E000 and unicode <= 0x00F8FF then
+--             t[l] = s_unknown
+--         elseif unicode >= 0x0F0000 and unicode <= 0x0FFFFF then
+--             t[l] = s_unknown
+--         elseif unicode >= 0x100000 and unicode <= 0x10FFFF then
+--             t[l] = s_unknown
+--      -- elseif unicode >= 0x00D800 and unicode <= 0x00DFFF then
+--         elseif unicode >= 0x00D7FF and unicode <= 0x00DFFF then
+--             t[l] = s_unknown
+--         else
+--             u = u - 0x10000
+--             t[l] = f_double((u//0x400)+0xD800,u%0x400+0xDC00)
+--         end
+--     end
+--     return concat(t)
+-- end
+--
+-- local hash = { }
+-- local conc = { }
+--
+-- table.setmetatableindex(hash,function(t,k)
+--     local v
+--     if k < 0xD7FF or (k > 0xDFFF and k <= 0xFFFF) then
+--         v = f_single(k)
+--     else
+--         local k = k - 0x10000
+--         v = f_double((k//0x400)+0xD800,k%0x400+0xDC00)
+--     end
+--     t[k] = v
+--     return v
+-- end)
+--
+-- local function tounicode(k)
+--     local t = type(k)
+--     if t == "table" then
+--         local n = #k
+--         for l=1,n do
+--             conc[l] = hash[k[l]]
+--         end
+--         return concat(conc,"",1,n)
+--     elseif t == "string" then
+--         return hash[utfbyte(k)]
+--     elseif t ~= "number" then
+--         return s_unknown
+--     elseif k >= 0x00E000 and k <= 0x00F8FF then
+--         return s_unknown
+--     elseif k >= 0x0F0000 and k <= 0x0FFFFF then
+--         return s_unknown
+--     elseif k >= 0x100000 and k <= 0x10FFFF then
+--         return s_unknown
+--  -- elseif k >= 0x00D800 and k <= 0x00DFFF then
+--     elseif k >= 0x00D7FF and k <= 0x00DFFF then
+--         return s_unknown
+--     else
+--         return hash[k]
+--     end
+-- end
 
-local function tounicode16sequence(unicodes)
-    local t = { }
-    for l=1,#unicodes do
-        local u = unicodes[l]
-        if u < 0xD7FF or (u > 0xDFFF and u <= 0xFFFF) then
-            t[l] = f_single(u)
-        elseif unicode >= 0x00E000 and unicode <= 0x00F8FF then
-            t[l] = s_unknown
-        elseif unicode >= 0x0F0000 and unicode <= 0x0FFFFF then
-            t[l] = s_unknown
-        elseif unicode >= 0x100000 and unicode <= 0x10FFFF then
-            t[l] = s_unknown
-     -- elseif unicode >= 0x00D800 and unicode <= 0x00DFFF then
-        elseif unicode >= 0x00D7FF and unicode <= 0x00DFFF then
-            t[l] = s_unknown
-        else
-            u = u - 0x10000
-            t[l] = f_double((u//0x400)+0xD800,u%0x400+0xDC00)
-        end
-    end
-    return concat(t)
-end
+mappings.tounicode           = string.tounicode16
+--------.tounicode16         = tounicode16
+--------.tounicode16sequence = tounicode16sequence
 
-
-local hash = { }
-local conc = { }
-
-table.setmetatableindex(hash,function(t,k)
-    local v
-    if k < 0xD7FF or (k > 0xDFFF and k <= 0xFFFF) then
-        v = f_single(k)
-    else
-        local k = k - 0x10000
-        v = f_double((k//0x400)+0xD800,k%0x400+0xDC00)
-    end
-    t[k] = v
-    return v
-end)
-
-local function tounicode(k)
-    local t = type(k)
-    if t == "table" then
-        local n = #k
-        for l=1,n do
-            conc[l] = hash[k[l]]
-        end
-        return concat(conc,"",1,n)
-    elseif t == "string" then
-        return hash[utfbyte(k)]
-    elseif t ~= "number" then
-        return s_unknown
-    elseif k >= 0x00E000 and k <= 0x00F8FF then
-        return s_unknown
-    elseif k >= 0x0F0000 and k <= 0x0FFFFF then
-        return s_unknown
-    elseif k >= 0x100000 and k <= 0x10FFFF then
-        return s_unknown
- -- elseif k >= 0x00D800 and k <= 0x00DFFF then
-    elseif k >= 0x00D7FF and k <= 0x00DFFF then
-        return s_unknown
-    else
-        return hash[k]
-    end
-end
-
-local function fromunicode16(str)
-    if #str == 4 then
-        return hextointeger(str)
-    else
-        local l, r = match(str,"(....)(....)")
-        return 0x10000 + (hextointeger(l)-0xD800)*0x400  + hextointeger(r) - 0xDC00
-    end
-end
-
+-- local function fromunicode16(str)
+--     if #str == 4 then
+--         return hextointeger(str)
+--     else
+--         local l, r = match(str,"(....)(....)")
+--         return 0x10000 + (hextointeger(l)-0xD800)*0x400  + hextointeger(r) - 0xDC00
+--     end
+-- end
+--
 -- Slightly slower:
 --
 -- local p = C(4) * (C(4)^-1) / function(l,r)
@@ -165,11 +172,7 @@ end
 --     return lpegmatch(p,str)
 -- end
 
-mappings.makenameparser      = makenameparser
-mappings.tounicode           = tounicode
-mappings.tounicode16         = tounicode16
-mappings.tounicode16sequence = tounicode16sequence
-mappings.fromunicode16       = fromunicode16
+mappings.fromunicode16 = string.fromunicode16
 
 -- mozilla emoji has bad lig names: name = gsub(name,"(u[a-f0-9_]+)%-([a-f0-9_]+)","%1_%2")
 
@@ -493,7 +496,7 @@ function mappings.addtounicode(data,filename,checklookups,forceligatures)
                 if type(unicode) == "table" then
                     local unicodes = { }
                     for i=1,#unicode do
-                        unicodes[i] = formatters("%U",unicode[i])
+                        unicodes[i] = formatted("%U",unicode[i])
                     end
                     report_fonts("internal slot %U, name %a, unicode %U, tounicode % t",index,name,du,unicodes)
                 else

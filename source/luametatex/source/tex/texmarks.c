@@ -153,7 +153,7 @@ halfword tex_new_mark(quarterword subtype, halfword index, halfword ptr)
 static void tex_aux_print_mark(const char *s, halfword t)
 {
     if (t) {
-        /* todo: proper indentation */
+        /* todo: proper indentation when we are in a node list */
         tex_print_token_list(s, token_link(t));
     }
 }
@@ -164,7 +164,7 @@ void tex_show_marks()
         tex_begin_diagnostic();
         for (halfword m = lmt_mark_state.min_used; m <= lmt_mark_state.max_used; m++) {
             if (tex_has_mark(m)) {
-                tex_print_format("%l[mark: index %i, page state]",m);
+                tex_print_format("%l[mark: index %i, page state]", m);
                 tex_aux_print_mark("top",         tex_get_mark(m, top_marks_code));
                 tex_aux_print_mark("first",       tex_get_mark(m, first_marks_code));
                 tex_aux_print_mark("bot",         tex_get_mark(m, bot_marks_code));

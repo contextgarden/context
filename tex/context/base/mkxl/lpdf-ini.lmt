@@ -61,15 +61,18 @@ if not modules then modules = { } end modules ['lpdf-ini'] = {
 
 local setmetatable, getmetatable, type, next, tostring, tonumber, rawset = setmetatable, getmetatable, type, next, tostring, tonumber, rawset
 local concat, setmetatableindex = table.concat, table.setmetatableindex
-local char, byte, format, sub, tohex = string.char, string.byte, string.format, string.sub, string.tohex
+local char, byte, sub, tohex = string.char, string.byte, string.sub, string.tohex
 local utfchar, utfbyte, utfvalues = utf.char, utf.byte, utf.values
 local sind, cosd, max, min = math.sind, math.cosd, math.max, math.min
 local sort, sortedhash = table.sort, table.sortedhash
 local P, C, R, S, Cc, Cs, V = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc, lpeg.Cs, lpeg.V
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
-local formatters = string.formatters
 local isboolean = string.is_boolean
 local hextointeger, octtointeger = string.hextointeger,string.octtointeger
+
+----- formatters = string.formatters
+local formatting = string.formatting
+local formatted  = string.formatted
 
 local report_userdata   = logs.reporter("backend","userdata")
 local report_objects    = logs.reporter("backend","objects")
@@ -103,41 +106,6 @@ local trace_finalizers = false  trackers.register("backend.finalizers", function
 local trace_resources  = false  trackers.register("backend.resources",  function(v) trace_resources  = v end)
 
 -- helpers
-
--- local f_hex_4 = formatters["%04X"]
--- local f_hex_2 = formatters["%02X"]
-
--- local h_hex_4 = table.setmetatableindex(function(t,k) -- we already have this somewhere
---     if k < 0 then
---       --report("fatal h_hex_4 error: %i",k)
---         return "0000"
---     elseif k < 256 then -- maybe 512
---         -- not sparse in this range
---         for i=0,255 do
---             t[i] = f_hex_4(i)
---         end
---         return t[k]
---     else
---         local v = f_hex_4(k)
---         t[k] = v
---         return v
---     end
--- end)
-
--- local h_hex_2 = table.setmetatableindex(function(t,k) -- we already have this somewhere
---     if type(k) == "string" then
---         local v = f_hex_2(byte(k))
---         t[k] = v
---         return v
---     elseif k < 0 or k > 255 then
---      -- report("fatal h_hex_2 error: %i",k)
---         return "00"
---     else
---         local v = f_hex_2(k)
---         t[k] = v
---         return v
---     end
--- end)
 
 local h_hex_2 = string.hashes.X02
 local h_hex_4 = string.hashes.X04
@@ -300,27 +268,29 @@ local tosixteen, fromsixteen, topdfdoc, frompdfdoc, toeight, fromeight
 
 do
 
-    local cache = setmetatableindex(function(t,k) -- can be made weak
-        local v = utfbyte(k)
-        if v < 0x10000 then
-            v = format("%04x",v)
-        else
-            v = v - 0x10000
-            v = format("%04x%04x",(v>>10)+0xD800,v%1024+0xDC00)
-        end
-        t[k] = v
-        return v
-    end)
+ -- local cache = setmetatableindex(function(t,k) -- can be made weak
+ --     local v = utfbyte(k)
+ --     if v < 0x10000 then
+ --         v = formatted("%04x",v)
+ --     else
+ --         v = v - 0x10000
+ --         v = formatted("%04x%04x",(v>>10)+0xD800,v%1024+0xDC00)
+ --     end
+ --     t[k] = v
+ --     return v
+ -- end)
+ --
+ -- local unified = Cs(Cc("<feff") * (lpeg.patterns.utf8character/cache)^1 * Cc(">"))
+ --
+ -- tosixteen = function(str) -- an lpeg might be faster (no table)
+ --     if not str or str == "" then
+ --         return "<feff>" -- not () as we want an indication that it's unicode
+ --     else
+ --         return lpegmatch(unified,str)
+ --     end
+ -- end
 
-    local unified = Cs(Cc("<feff") * (lpeg.patterns.utf8character/cache)^1 * Cc(">"))
-
-    tosixteen = function(str) -- an lpeg might be faster (no table)
-        if not str or str == "" then
-            return "<feff>" -- not () as we want an indication that it's unicode
-        else
-            return lpegmatch(unified,str)
-        end
-    end
+    tosixteen = string.topdfsixteen
 
     -- we could make a helper for this
 
@@ -390,13 +360,15 @@ do
     if not toregime   then topdfdoc   = function(s) return s end end
     if not fromregime then frompdfdoc = function(s) return s end end
 
-    toeight = function(str)
-        if not str or str == "" then
-            return "()"
-        else
-            return lpegmatch(escaped,str)
-        end
-    end
+ -- toeight = function(str)
+ --     if not str or str == "" then
+ --         return "()"
+ --     else
+ --         return lpegmatch(escaped,str)
+ --     end
+ -- end
+
+    toeight = string.topdfeight
 
     -- use an oct hash
 
@@ -582,66 +554,53 @@ local tostring_a, tostring_d
 
 do
 
-    local f_key_null       = formatters["%s null"]
-    local f_key_value      = formatters["%s %s"]
- -- local f_key_dictionary = formatters["%s << % t >>"]
- -- local f_dictionary     = formatters["<< % t >>"]
-    local f_key_dictionary = formatters["%s << %s >>"]
-    local f_dictionary     = formatters["<< %s >>"]
- -- local f_key_array      = formatters["%s [ % t ]"]
- -- local f_array          = formatters["[ % t ]"]
-    local f_key_array      = formatters["%s [ %s ]"]
-    local f_array          = formatters["[ %s ]"]
-    local f_key_number     = formatters["%s %N"]  -- always with max 9 digits and integer is possible
-    local f_tonumber       = formatters["%N"]     -- always with max 9 digits and integer is possible
+    local f_key_null       = formatting("%s null")
+    local f_key_value      = formatting("%s %s")
+    local f_key_dictionary = formatting("%s << %s >>")
+    local f_dictionary     = formatting("<< %s >>")
+    local f_key_array      = formatting("%s [ %s ]")
+    local f_array          = formatting("[ %s ]")
+    local f_key_number     = formatting("%s %N")
+    local p_tonumber       = string.fd9
 
     tostring_d = function(t,contentonly,key)
         if next(t) then
             local r = { }
             local n = 0
             local e
-            for k, v in next, t do
+            for k, v in sortedhash(t) do
                 if k == "__extra__" then
                     e = v
                 elseif k == "__stream__" then
                     -- do nothing (yet)
                 else
-                    n = n + 1
-                    r[n] = k
-                end
-            end
-            if n > 1 then
-                sort(r)
-            end
-            for i=1,n do
-                local k  = r[i]
-                local v  = t[k]
-                local tv = type(v)
-                -- mostly tables
-                --
-                k = pdfescaped(k,true)
-                --
-                if tv == "table" then
-                 -- local mv = getmetatable(v)
-                 -- if mv and mv.__lpdftype then
-                    if v.__lpdftype__ then
-                     -- if v == t then
-                     --     report_objects("ignoring circular reference in dictionary")
-                     --     r[i] = f_key_null(k)
-                     -- else
-                            r[i] = f_key_value(k,tostring(v))
-                     -- end
-                    elseif v[1] then
-                        r[i] = f_key_value(k,tostring_a(v))
+                    local tv = type(v)
+                    -- mostly tables
+                    --
+                    local k = pdfescaped(k,true)
+                    --
+                    if tv == "table" then
+                     -- local mv = getmetatable(v)
+                     -- if mv and mv.__lpdftype then
+                        if v.__lpdftype__ then
+                         -- if v == t then
+                         --     report_objects("ignoring circular reference in dictionary")
+                         --     n = n + 1 ; r[n] = formatted(f_key_null,k)
+                         -- else
+                                n = n + 1 ; r[n] = formatted(f_key_value,k,tostring(v))
+                         -- end
+                        elseif v[1] then
+                            n = n + 1 ; r[n] = formatted(f_key_value,k,tostring_a(v))
+                        else
+                            n = n + 1 ; r[n] = formatted(f_key_value,k,tostring_d(v))
+                        end
+                    elseif tv == "string" then
+                        n = n + 1 ; r[n] = formatted(f_key_value,k,toeight(v))
+                    elseif tv == "number" then
+                        n = n + 1 ; r[n] = formatted(f_key_number,k,v)
                     else
-                        r[i] = f_key_value(k,tostring_d(v))
+                        n = n + 1 ; r[n] = formatted(f_key_value,k,tostring(v))
                     end
-                elseif tv == "string" then
-                    r[i] = f_key_value(k,toeight(v))
-                elseif tv == "number" then
-                    r[i] = f_key_number(k,v)
-                else
-                    r[i] = f_key_value(k,tostring(v))
                 end
             end
             if e then
@@ -651,9 +610,9 @@ do
             if contentonly then
                 return r
             elseif key then
-                return f_key_dictionary(pdfescaped(key,true),r)
+                return formatted(f_key_dictionary,pdfescaped(key,true),r)
             else
-                return f_dictionary(r)
+                return formatted(f_dictionary,r)
             end
         elseif contentonly then
             return ""
@@ -674,7 +633,7 @@ do
                     if v == 0 then
                         r[k] = 0
                     else
-                        r[k] = f_tonumber(v)
+                        r[k] = p_tonumber(v)
                     end
                 elseif tv == "table" then
                  -- local mv = getmetatable(v)
@@ -705,9 +664,9 @@ do
             if contentonly then
                 return r
             elseif key then
-                return f_key_array(pdfescaped(key,true),r)
+                return formatted(f_key_array,pdfescaped(key,true),r)
             else
-                return f_array(r)
+                return formatted(f_array,r)
             end
         elseif contentonly then
             return ""
@@ -718,14 +677,13 @@ do
 
 end
 
-local f_tonumber = formatters["%N"]
+local p_tonumber = string.fd9
 
 local tostring_x = function(t) return concat(t," ")       end
 local tostring_s = function(t) return toeight(t[1])       end
 local tostring_p = function(t) return topdfdoc(t[1],t[2]) end
 local tostring_u = function(t) return tosixteen(t[1])     end
------ tostring_n = function(t) return tostring(t[1])      end -- tostring not needed
-local tostring_n = function(t) return f_tonumber(t[1])    end -- tostring not needed
+local tostring_n = function(t) return p_tonumber(t[1])    end -- tostring not needed
 local tostring_c = function(t) return t[1]                end -- already prefixed (hashed)
 local tostring_z = function()  return "null"              end
 local tostring_t = function()  return "true"              end
@@ -827,34 +785,39 @@ do
 
     -- these can become helpers
 
-    local find = string.find
+ -- local find = string.find
+ --
+ -- local tostring_u1 = function(t)
+ --     local s = t[1]
+ --     if #s == 0 then
+ --         return "()"
+ --     elseif find(s,"[\x00-\x1F\x80-\xBF]") then
+ --         -- control codes             : 0x00 .. 0x1F
+ --         -- utf continuation bytes    : 0x80 .. 0xBF
+ --         return tosixteen(s)
+ --     else
+ --         return toeight(s)
+ --     end
+ -- end
+ --
+ -- local tostring_u2 = function(t)
+ --     local s = t[1]
+ --     if #s == 0 then
+ --         return "()"
+ --     elseif find(s,"[\x00-\x1F]") then
+ --         return tosixteen(s)
+ --     elseif find(s,"[\x80-\xBF]") then
+ --      -- return "(\xEF\xBB\xBF" .. s .. ")"
+ --         return toeight("\239\187\191" .. s)
+ --     else
+ --         return toeight(s)
+ --     end
+ -- end
 
-    local tostring_u1 = function(t)
-        local s = t[1]
-        if #s == 0 then
-            return "()"
-        elseif find(s,"[\x00-\x1F\x80-\xBF]") then
-            -- control codes              : 0x00 .. 0x1F
-            -- utf continuation bytes    : 0x80 .. 0xBF
-            return tosixteen(s)
-        else
-            return toeight(s)
-        end
-    end
+    local topdfstring = string.topdfstring
 
-    local tostring_u2 = function(t)
-        local s = t[1]
-        if #s == 0 then
-            return "()"
-        elseif find(s,"[\x00-\x1F]") then
-            return tosixteen(s)
-        elseif find(s,"[\x80-\xBF]") then
-         -- return "(\xEF\xBB\xBF" .. s .. ")"
-            return toeight("\239\187\191" .. s)
-        else
-            return toeight(s)
-        end
-    end
+    tostring_u1 = function(s) return topdfstring(s[1])      end
+    tostring_u2 = function(s) return topdfstring(s[1],true) end
 
     local function setutfstringmode(mode)
         tostring_u = mode and tostring_u2 or tostring_u1
@@ -1367,7 +1330,7 @@ do
         pdfgetfontobjectnumber = lpdf.getfontobjectnumber
     end)
 
-    local f_font = formatters["%s%d"]
+    local f_font = "%s%d"
 
     function lpdf.collectedresources(options)
         local ExtGState  = d_extgstates  and next(d_extgstates ) and p_extgstates
@@ -1383,7 +1346,7 @@ do
             local prefix = options.fontprefix or "F"
             Font = pdfdictionary { }
             for k, v in sortedhash(fonts) do
-                Font[f_font(prefix,v)] = pdfreference(pdfgetfontobjectnumber(k))
+                Font[formatted(f_font,prefix,v)] = pdfreference(pdfgetfontobjectnumber(k))
             end
         end
         if ExtGState or ColorSpace or Pattern or Shading or Font then
@@ -1462,10 +1425,12 @@ end
 
 -- in strc-bkm: lpdf.registerdocumentfinalizer(function() structures.bookmarks.place() end,1)
 
+local f_rotation = formatting("%.6N %.6N %.6N %.6N 0 0 cm")
+
 function lpdf.rotationcm(a)
     local s = sind(a)
     local c = cosd(a)
-    return format("%.6F %.6F %.6F %.6F 0 0 cm",c,s,-s,c)
+    return formatted(f_rotation,c,s,-s,c)
 end
 
 -- return nil is nicer in test prints
@@ -1544,76 +1509,42 @@ end
 -- question mark, pdftotext injects an extra space and Okular adds a
 -- newline plus space.
 
--- return formatters["BT /Span << /ActualText (CONTEXT) >> BDC [<feff>] TJ % t EMC ET"](code)
-
 if implement then
-
-    local f_actual_text_p     = formatters["BT /Span << /ActualText <feff%s> >> BDC %s EMC ET"]
-    local f_actual_text_b     = formatters["BT /Span << /ActualText <feff%s> >> BDC"]
-    local f_actual_text_b_not = formatters["/Span << /ActualText <feff%s> >> BDC"]
-    local f_actual_text       = formatters["/Span <</ActualText %s >> BDC"]
-
-    local f_alternative_text  = formatters["/Span <</Alt %s >> BDC"]
-
-    local s_actual_text_e     <const> = "EMC ET"
-    local s_actual_text_e_not <const> = "EMC"
 
     local context   = context
     local pdfdirect = nodes.pool.directliteral -- we can use nuts.write deep down
     local tounicode = fonts.mappings.tounicode
 
-    -- These convert the string:
+    local f_actual_text_b              = "/Span <</ActualText %s >> BDC"
+    local f_alternative_text_b         = "/Span <</Alt %s >> BDC"
+    local s_actual_text_e      <const> = "EMC"
+    local s_alternative_text_e <const> = "EMC"
 
     function codeinjections.startactualtext(str)
-        return f_actual_text(tosixteen(str))
+        return formatted(f_actual_text_b,tosixteen(str))
     end
-
     function codeinjections.stopactualtext()
-        return s_actual_text_e_not
-    end
-
-    function codeinjections.startalternativetext(str)
-        return f_alternative_text(tosixteen(str))
-    end
-
-    function codeinjections.stopalternativetext()
-        return s_actual_text_e_not
-    end
-
-    -- These assume a unicode number of already converted one without bom.
-
-    function codeinjections.unicodetoactualtext(unicode,pdfcode)
-        return f_actual_text_p(type(unicode) == "string" and unicode or tounicode(unicode),pdfcode)
-    end
-
-    function codeinjections.startunicodetoactualtext(unicode)
-        return f_actual_text_b(type(unicode) == "string" and unicode or tounicode(unicode))
-    end
-
-    function codeinjections.stopunicodetoactualtext()
         return s_actual_text_e
     end
 
-    function codeinjections.startunicodetoactualtextdirect(unicode)
-        return f_actual_text_b_not(type(unicode) == "string" and unicode or tounicode(unicode))
+    function codeinjections.startalternativetext(str)
+        return formatted(f_alternative_text_b,tosixteen(str))
     end
-
-    function codeinjections.stopunicodetoactualtextdirect()
-        return s_actual_text_e_not
+    function codeinjections.stopalternativetext()
+        return s_alternative_text_e
     end
 
     implement {
         name      = "startactualtext",
         arguments = "argument",
         actions   = function(str)
-            context(pdfdirect(f_actual_text(tosixteen(str))))
+            context(pdfdirect(formatted(f_actual_text_b,tosixteen(str))))
         end
     }
-
     implement {
         name      = "stopactualtext",
         actions   = function()
-            context(pdfdirect("EMC"))
+            context(pdfdirect(s_actual_text_e))
         end
     }
 
@@ -1621,25 +1552,23 @@ if implement then
         name      = "startalternativetext",
         arguments = "argument",
         actions   = function(str)
-            context(pdfdirect(f_alternative_text(tosixteen(str))))
+            context(pdfdirect(formatted(f_alternative_text_b,tosixteen(str))))
         end
     }
-
     implement {
         name      = "stopalternativetext",
         actions   = function()
-            context(pdfdirect("EMC"))
+            context(pdfdirect(s_alternative_text_e))
         end
     }
 
     local setstate  = nodes.nuts.pool.setstate
 
     function nodeinjections.startalternate(str)
-        return setstate(f_actual_text(tosixteen(str)))
+        return setstate(formatted(f_actual_text_b,tosixteen(str)))
     end
-
     function nodeinjections.stopalternate()
-        return setstate("EMC")
+        return setstate(s_actual_text_e)
     end
 
     implement {
@@ -1649,6 +1578,35 @@ if implement then
         public    = true,
         actions   = codeinjections.setuserdata
     }
+
+    -- These assume a unicode number or already converted one without bom.
+
+    local f_actual_text_p         = "BT /Span << /ActualText <feff%s> >> BDC %s EMC ET"
+    local f_actual_text_b         = "BT /Span << /ActualText <feff%s> >> BDC"
+    local s_actual_text_e <const> = "EMC ET"
+
+    function codeinjections.unicodetoactualtext(unicode,pdfcode)
+        return formatted(f_actual_text_p,type(unicode) == "string" and unicode or tounicode(unicode),pdfcode)
+    end
+
+    function codeinjections.startunicodetoactualtext(unicode)
+        return formatted(f_actual_text_b,type(unicode) == "string" and unicode or tounicode(unicode))
+    end
+
+    function codeinjections.stopunicodetoactualtext()
+        return s_actual_text_e
+    end
+
+    local f_actual_text_b         = "/Span << /ActualText <feff%s> >> BDC"
+    local s_actual_text_e <const> = "EMC"
+
+    function codeinjections.startunicodetoactualtextdirect(unicode)
+        return formatted(f_actual_text_b,type(unicode) == "string" and unicode or tounicode(unicode))
+    end
+
+    function codeinjections.stopunicodetoactualtextdirect()
+        return s_actual_text_e
+    end
 
 end
 

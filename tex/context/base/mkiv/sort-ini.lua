@@ -805,7 +805,7 @@ function sorters.sort(entries,cmp)
         local nofentries = #entries
         report_sorters("entries: %s, language: %s, method: %s, digits: %s",nofentries,language,method,tostring(digits))
         for i=1,nofentries do
-            report_sorters("entry %s",table.serialize(entries[i].split,i,true,true,true))
+            report_sorters("entry %s",table.serialize(entries[i].split,i))
         end
     end
     if trace_tests then

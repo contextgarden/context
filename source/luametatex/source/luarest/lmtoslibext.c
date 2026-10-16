@@ -10,6 +10,12 @@
 #   define MKDIR(a,b) mkdir(a,b)
 # endif
 
+# ifndef _WIN32
+    extern char **environ;
+# else
+    # define environ _environ
+# endif
+
 /*tex
 
     An attempt to figure out the basic platform, does not care about niceties like version numbers
@@ -418,12 +424,171 @@ static int oslib_setlocale(lua_State *L)
     return 0;
 }
 
+/*tex
+
+    This one is not that important but cheap to implement, we assume some sanity check
+    at the \LUA\ end. For instance, we can go to a website or url.
+
+*/
+
+# if defined(_WIN32) || defined(_WIN64)
+    # include <shellapi.h>
+# else
+    # include <spawn.h>
+    # include <sys/wait.h>
+# endif
+
+# define max_command_length 2048
+
+typedef enum {
+    launcher_state_success,
+    launcher_state_blocked,
+    launcher_state_no_command,
+    launcher_state_bad_command,
+    launcher_state_long_command,
+    launcher_state_not_found,
+    launcher_state_failure,
+    launcher_state_unsupported
+} launcher_states;
+
+static int oslib_aux_valid_launch(const char *cmd, size_t len)
+{
+    if (! cmd || len == 0) {
+        return launcher_state_no_command;
+    } else if (len >= max_command_length) {
+        return launcher_state_long_command;
+    } else {
+        for (size_t i = 0; i < len; i++) {
+            unsigned char c = (unsigned char) cmd[i];
+            if (c <= 32 || c >= 127) {
+                return launcher_state_bad_command;
+            }
+        }
+        return launcher_state_success;
+    }
+}
+
+# if defined(_WIN32) || defined(_WIN64)
+
+    /*tex Not really spawn but kind of. */
+
+    static int oslib_aux_spawn_process(const char *executable, const char * cmd)
+    {
+        INT_PTR result = (INT_PTR) ShellExecuteA(NULL, executable, cmd, NULL, NULL, SW_SHOWNORMAL);
+        if (result > 32) {
+            return launcher_state_success;
+        } else {
+            return (result == SE_ERR_FNF || result == SE_ERR_PNF)
+               ? launcher_state_not_found : launcher_state_failure;
+        }
+    }
+
+# else
+
+    /*tex
+
+        This variant intercepts errors in case of an indirect. As I tested the posix variant
+        in WSL, after consulting Gemini instead of a redirect to wslview after a failure some
+        magic commands (installation) did that automatically so we keep things simple and don't
+        rely on a shell.
+
+    */ /*
+
+    static int oslib_aux_spawn_process(const char *executable, const char * cmd)
+    {
+        char buffer[max_command_length * 2];
+        snprintf(buffer, sizeof(buffer), "%s \"%s\" > /dev/null 2>&1 &", executable, cmd);
+        char *const argv[] = {
+            (char *) "/bin/sh",
+            (char *) "-c",
+            buffer,
+            NULL
+        };
+        posix_spawn_file_actions_t actions;
+        posix_spawn_file_actions_init(&actions);
+        pid_t pid;
+        int status = posix_spawnp(&pid, "/bin/sh", &actions, NULL, argv, environ);
+        posix_spawn_file_actions_destroy(&actions);
+        if (status != 0) {
+            return (status == ENOENT) ? launcher_state_not_found : launcher_state_failure;
+        }
+        int exit_code;
+        waitpid(pid, &exit_code, 0);
+        return (WIFEXITED(exit_code) && WEXITSTATUS(exit_code) == 0)
+            ? launcher_state_success
+            : launcher_state_failure;
+    }
+
+    */
+
+    static int oslib_aux_spawn_process(const char *executable, const char * cmd)
+    {
+        char *const argv[] = {
+            (char *) (uintptr_t) executable,
+            (char *) (uintptr_t) cmd,
+            NULL
+        };
+        posix_spawn_file_actions_t actions;
+        posix_spawn_file_actions_init(&actions);
+        int dev_null = open("/dev/null", O_WRONLY);
+        if (dev_null >= 0) {
+            posix_spawn_file_actions_adddup2(&actions, dev_null, STDOUT_FILENO);
+            posix_spawn_file_actions_adddup2(&actions, dev_null, STDERR_FILENO);
+            posix_spawn_file_actions_addclose(&actions, dev_null);
+        }
+        pid_t pid;
+        int status = posix_spawnp(&pid, executable, &actions, NULL, argv, environ);
+        posix_spawn_file_actions_destroy(&actions);
+        if (dev_null >= 0) {
+            close(dev_null);
+        }
+        if (status != 0) {
+            return (status == ENOENT) ? launcher_state_not_found : launcher_state_failure;
+        }
+        return launcher_state_success;
+    }
+
+# endif
+
+static int oslib_launch(lua_State *L)
+{
+    size_t      len    = 0;
+    const char *cmd    = luaL_checklstring(L, 1, &len);
+    int         status = oslib_aux_valid_launch(cmd, len);
+
+    if (status == launcher_state_success && ! lmt_valid_target(L, security_launchable, cmd, security_launch_command)) {
+        status = launcher_state_blocked;
+    }
+    if (status == launcher_state_success) {
+        # if defined(_WIN32) || defined(_WIN64)
+            status = oslib_aux_spawn_process("open", cmd);
+        # elif defined(__APPLE__)
+            status = oslib_aux_spawn_process("open", cmd);
+        # elif defined(__unix__) || defined(__linux__)
+            status = oslib_aux_spawn_process("xdg-open", cmd);
+         // /* WSL Fallback 1: wslview */
+         // if (status != launcher_state_success) {
+         //     status = oslib_aux_spawn_process("wslview", cmd);
+         // }
+         // /* WSL Fallback 2: Direct Windows command interop */
+         // if (status != launcher_state_success) {
+         //     status = oslib_aux_spawn_process("cmd.exe /c start", cmd);
+         // }
+        # else
+            status = launcher_state_unsupported;
+        # endif
+    }
+    lua_pushinteger(L, status);
+    return 1;
+}
+
 static const luaL_Reg oslib_function_list[] = {
     { "sleep",          oslib_sleep          },
     { "uname",          oslib_uname          },
     { "gettimeofday",   oslib_gettimeofday   },
     { "setenv",         oslib_setenv         }, /* security : todo */
     { "execute",        oslib_execute        }, /* security : todo */
+    { "launch",         oslib_launch         }, /* security : todo */
     { "rename",         oslib_rename         }, /* security : writeable */
     { "remove",         oslib_remove         }, /* security : writeable */
     { "setlocale",      oslib_setlocale      },
@@ -443,12 +608,6 @@ static const luaL_Reg oslib_function_list[] = {
     The |environ| variable is deprecated on windows so it made sense to just drop this old \LUATEX\
     feature.
 */
-
-# ifndef _WIN32
-    extern char **environ;
-# else
-    # define environ _environ
-# endif
 
 int luaextend_os(lua_State *L)
 {

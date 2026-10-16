@@ -138,6 +138,10 @@ do
 
     utilities.strings.formatters.add(formatters,"texexp", [[texexp(...)]], { texexp = metapost.texexp })
 
+    if sequencer then
+        sequencer.extensions.texexp = metapost.texexp
+    end
+
     local f_textext = formatters[ [[textext("%s")]] ]
     local f_mthtext = formatters[ [[textext("\mathematics{%s}")]] ]
     local f_exptext = formatters[ [[textext("\mathematics{%s\times10^{%s}}")]] ]

@@ -49,7 +49,7 @@ local lfsdir, lfsattributes = lfs.dir, lfs.attributes
 
 -- the machine/instance matches the server app we use
 
-local machine  = socket.dns.gethostname() or "unknown-machine"
+local machine  = socket and socket.dns and socket.dns.gethostname() or "unknown-machine"
 local instance = string.match(machine,"(%d+)$") or "0"
 
 function scripts.watch.save_exa_modes(joblog,ctmname)

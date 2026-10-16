@@ -30,7 +30,8 @@ local implement           = interfaces.implement
 
 local allocate            = utilities.storage.allocate
 local setmetatableindex   = table.setmetatableindex
-local formatters          = string.formatters
+
+local formatted           = string.formatted
 
 local report_viewerlayers = logs.reporter("viewerlayers")
 
@@ -79,7 +80,7 @@ local listwise          = viewerlayers.listwise
 local registered        = viewerlayers.registered
 local scopes            = viewerlayers.scopes
 
-local f_stamp           = formatters["%s"]
+local f_stamp           = "%s"
 
 storage.register("attributes/viewerlayers/registered", registered, "attributes.viewerlayers.registered")
 storage.register("attributes/viewerlayers/values",     values,     "attributes.viewerlayers.values")
@@ -169,7 +170,7 @@ local function register(name,lw) -- if not inimode redefine data[n] in first cal
     if not enabled then
         viewerlayers.enable(true)
     end
-    local stamp = f_stamp(name)
+    local stamp = formatted(f_stamp,name)
     local n = registered[stamp]
     if not n then
         n = #values + 1

@@ -14,10 +14,9 @@ if not modules then modules = { } end modules ['typo-mar'] = {
 -- Maybe I should redo this one using a few options available in luametatex
 -- but it's easy to break this.
 
-local format, validstring = string.format, string.valid
+local validstring = string.valid
 local insert, remove, sortedkeys, fastcopy = table.insert, table.remove, table.sortedkeys, table.fastcopy
 local setmetatable, next, tonumber = setmetatable, next, tonumber
-local formatters = string.formatters
 local toboolean = toboolean
 local settings_to_hash = utilities.parsers.settings_to_hash
 
@@ -25,6 +24,8 @@ local attributes         = attributes
 local nodes              = nodes
 local variables          = variables
 local context            = context
+
+local formatted          = string.formatted
 
 local trace_margindata   = false  trackers.register("typesetters.margindata",       function(v) trace_margindata  = v end)
 local trace_marginstack  = false  trackers.register("typesetters.margindata.stack", function(v) trace_marginstack = v end)
@@ -974,7 +975,7 @@ end
 
 statistics.register("margin data", function()
     if nofsaved > 0 then
-        return format("%s entries, %s pending",nofsaved,nofdelayed)
+        return formatted("%s entries, %s pending",nofsaved,nofdelayed)
     else
         return nil
     end

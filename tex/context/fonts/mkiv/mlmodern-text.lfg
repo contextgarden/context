@@ -1,0 +1,250 @@
+-- The MLModern text fonts already have the xheight, ascender, descender, italic
+-- angle, ascent and descent values that modern-text.lfg patches for Latin Modern,
+-- so we need no parameters section here.
+--
+-- The design sizes are those of lm.lfg, used by the mlmodern-designsize typeface.
+-- The kerns are those of modern-text.lfg, but now for all design sizes.
+
+return {
+    name = "mlmodern-text",
+    version = "1.00",
+    comment = "Goodies that complement mlmodern.",
+    author = "Mikael Sundqvist & Hans Hagen",
+    copyright = "ConTeXt development team",
+    designsizes = {
+        ["MLMRoman-Regular"] = {
+            ["4pt"]  = "file:mlmroman5-regular",
+            ["5pt"]  = "file:mlmroman5-regular",
+            ["6pt"]  = "file:mlmroman6-regular",
+            ["7pt"]  = "file:mlmroman7-regular",
+            ["8pt"]  = "file:mlmroman8-regular",
+            ["9pt"]  = "file:mlmroman9-regular",
+            ["10pt"] = "file:mlmroman10-regular",
+            ["11pt"] = "file:mlmroman10-regular",
+            ["12pt"] = "file:mlmroman12-regular",
+            default  = "file:mlmroman10-regular",
+        },
+        ["MLMRoman-Bold"] = {
+            ["4pt"]  = "file:mlmroman5-bold",
+            ["5pt"]  = "file:mlmroman5-bold",
+            ["6pt"]  = "file:mlmroman6-bold",
+            ["7pt"]  = "file:mlmroman7-bold",
+            ["8pt"]  = "file:mlmroman8-bold",
+            ["9pt"]  = "file:mlmroman9-bold",
+            ["10pt"] = "file:mlmroman10-bold",
+            ["11pt"] = "file:mlmroman10-bold",
+            ["12pt"] = "file:mlmroman12-bold",
+            default  = "file:mlmroman10-bold",
+        },
+        ["MLMRoman-Demi"] = {
+            default  = "file:mlmromandemi10-regular",
+        },
+        ["MLMRoman-Italic"] = {
+            ["4pt"]  = "file:mlmroman7-italic",
+            ["5pt"]  = "file:mlmroman7-italic",
+            ["6pt"]  = "file:mlmroman7-italic",
+            ["7pt"]  = "file:mlmroman7-italic",
+            ["8pt"]  = "file:mlmroman8-italic",
+            ["9pt"]  = "file:mlmroman9-italic",
+            ["10pt"] = "file:mlmroman10-italic",
+            ["11pt"] = "file:mlmroman10-italic",
+            ["12pt"] = "file:mlmroman12-italic",
+            default  = "file:mlmroman10-italic",
+        },
+        ["MLMRoman-Oblique"] = {
+            ["4pt"]  = "file:mlmromanslant8-regular",
+            ["5pt"]  = "file:mlmromanslant8-regular",
+            ["6pt"]  = "file:mlmromanslant8-regular",
+            ["7pt"]  = "file:mlmromanslant8-regular",
+            ["8pt"]  = "file:mlmromanslant8-regular",
+            ["9pt"]  = "file:mlmromanslant9-regular",
+            ["10pt"] = "file:mlmromanslant10-regular",
+            ["11pt"] = "file:mlmromanslant10-regular",
+            ["12pt"] = "file:mlmromanslant12-regular",
+            default  = "file:mlmromanslant10-regular",
+        },
+        ["MLMRoman-BoldItalic"] = {
+            default  = "file:mlmroman10-bolditalic",
+        },
+        ["MLMRoman-BoldOblique"] = {
+            default  = "file:mlmromanslant10-bold",
+        },
+        ["MLMRoman-DemiOblique"] = {
+            default  = "file:mlmromandemi10-oblique",
+        },
+        ["MLMRoman-CapsRegular"] = {
+            default  = "file:mlmromancaps10-regular",
+        },
+        ["MLMRoman-CapsOblique"] = {
+            default  = "file:mlmromancaps10-oblique",
+        },
+        ["MLMRoman-Dunhill"] = {
+            default  = "file:mlmromandunh10-regular",
+        },
+        ["MLMRoman-DunhillOblique"] = {
+            default  = "file:mlmromandunh10-oblique",
+        },
+        ["MLMRoman-Unslanted"] = {
+            default  = "file:mlmromanunsl10-regular",
+        },
+        ["MLMSans-Regular"] = {
+            ["8pt"]  = "file:mlmsans8-regular",
+            ["9pt"]  = "file:mlmsans9-regular",
+            ["10pt"] = "file:mlmsans10-regular",
+            ["11pt"] = "file:mlmsans10-regular",
+            ["12pt"] = "file:mlmsans12-regular",
+            default  = "file:mlmsans10-regular",
+        },
+        ["MLMSans-Oblique"] = {
+            ["8pt"]  = "file:mlmsans8-oblique",
+            ["9pt"]  = "file:mlmsans9-oblique",
+            ["10pt"] = "file:mlmsans10-oblique",
+            ["11pt"] = "file:mlmsans10-oblique",
+            ["12pt"] = "file:mlmsans12-oblique",
+            default  = "file:mlmsans10-oblique",
+        },
+        ["MLMSans-Bold"] = {
+            default  = "file:mlmsans10-bold",
+        },
+        ["MLMSans-BoldOblique"] = {
+            default  = "file:mlmsans10-boldoblique",
+        },
+        ["MLMSans-DemiCondensed"] = {
+            default  = "file:mlmsansdemicond10-regular",
+        },
+        ["MLMSans-DemiCondensedOblique"] = {
+            default  = "file:mlmsansdemicond10-oblique",
+        },
+        ["MLMTypewriter-Regular"] = {
+            ["8pt"]  = "file:mlmmono8-regular",
+            ["9pt"]  = "file:mlmmono9-regular",
+            ["10pt"] = "file:mlmmono10-regular",
+            ["11pt"] = "file:mlmmono10-regular",
+            ["12pt"] = "file:mlmmono12-regular",
+            default  = "file:mlmmono10-regular",
+        },
+
+        ["MLMTypewriter-Light"] = {
+            default  = "file:mlmmonolt10-regular",
+        },
+        ["MLMTypewriter-LightOblique"] = {
+            default  = "file:mlmmonolt10-oblique",
+        },
+        ["MLMTypewriter-Italic"] = {
+            default  = "file:mlmmono10-italic",
+        },
+        ["MLMTypewriter-Oblique"] = {
+            default  = "file:mlmmonoslant10-regular",
+        },
+        ["MLMTypewriter-Dark"] = {
+            default  = "file:mlmmonolt10-bold",
+        },
+        ["MLMTypewriter-DarkOblique"] = {
+            default  = "file:mlmmonolt10-boldoblique",
+        },
+
+        ["MLMTypewriterVarWd-Regular"] = {
+            default  = "file:mlmmonoproplt10-regular",
+        },
+        ["MLMTypewriterVarWd-Oblique"] = {
+            default  = "file:mlmmonoproplt10-oblique",
+        },
+        ["MLMTypewriterVarWd-Light"] = {
+            default  = "file:mlmmonoprop10-regular",
+        },
+        ["MLMTypewriterVarWd-LightOblique"] = {
+            default  = "file:mlmmonoprop10-oblique",
+        },
+        ["MLMTypewriterVarWd-Dark"] = {
+            default  = "file:mlmmonoproplt10-bold",
+        },
+        ["MLMTypewriterVarWd-DarkOblique"] = {
+            default  = "file:mlmmonoproplt10-boldoblique",
+        },
+
+        ["MLMTypewriter-LightCondensed"] = {
+            default  = "file:mlmmonoltcond10-regular",
+        },
+        ["MLMTypewriter-LightCondensedOblique"] = {
+            default  = "file:mlmmonoltcond10-oblique",
+        },
+
+        ["MLMTypewriter-CapsRegular"] = {
+            default  = "file:mlmmonocaps10-regular",
+        },
+        ["MLMTypewriter-CapsOblique"] = {
+            default  = "file:mlmmonocaps10-oblique",
+        },
+    },
+    extensions = {
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                "MLMRoman5-Regular",
+                "MLMRoman6-Regular",
+                "MLMRoman7-Regular",
+                "MLMRoman8-Regular",
+                "MLMRoman9-Regular",
+                "MLMRoman10-Regular",
+                "MLMRoman12-Regular",
+                "MLMRoman17-Regular",
+                "MLMRoman5-Bold",
+                "MLMRoman6-Bold",
+                "MLMRoman7-Bold",
+                "MLMRoman8-Bold",
+                "MLMRoman9-Bold",
+                "MLMRoman10-Bold",
+                "MLMRoman12-Bold",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 50,
+                    ["}"]  = 50,
+                    ["]"]  = 50,
+                    ["|"]  = 100,
+                    ["\\"] = 50,
+                    ["?"]  = 50,
+                    ["*"]  = 50,
+                },
+            }
+        },
+        {
+            name   = "kern", -- adds to kerns
+            type   = "kern",
+            fonts  = {
+                "MLMRoman7-Italic",
+                "MLMRoman8-Italic",
+                "MLMRoman9-Italic",
+                "MLMRoman10-Italic",
+                "MLMRoman12-Italic",
+                "MLMRoman10-BoldItalic",
+            },
+            data   = {
+                ["f"] = {
+                    [")"]  = 50,
+                    ["}"]  = 50,
+                    ["]"]  = 50,
+                    ["|"]  = 125,
+                    ["\\"] = 125,
+                    ["!"]  = 100,
+                    ["?"]  = 100,
+                    ["*"]  = 100,
+                    ["@"]  = 100,
+                },
+                ["("] = {
+                    ["f"]  = 100,
+                },
+                ["{"] = {
+                    ["f"]  = 100,
+                },
+                ["["] = {
+                    ["f"]  = 100,
+                },
+                ["|"] = {
+                    ["f"]  = 130,
+                },
+            }
+        },
+    }
+}

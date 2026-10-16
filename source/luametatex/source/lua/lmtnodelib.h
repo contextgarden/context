@@ -114,7 +114,7 @@ extern void lmt_local_box_callback(
 extern int lmt_append_to_vlist_callback(
     halfword  box,
     int       location,
-    halfword  prevdepth,
+    scaled    prevdepth,
     halfword *result,
     int      *nextdepth,
     int      *prevset,

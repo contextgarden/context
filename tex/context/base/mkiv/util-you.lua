@@ -41,7 +41,7 @@ local trace  = false
 
 -- dofile("http.lua")
 
-local http = socket.http
+local http = socket and socket.http -- luatex, todo: luametatex
 
 -- f=j : json
 

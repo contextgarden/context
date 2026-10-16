@@ -2381,14 +2381,15 @@ end
 
 -- we need even less, but we can have a 'detail' variant
 
-function readers.loadshapes(filename,n,instance,streams)
+function readers.loadshapes(filename,n,instance,streams,keephints)
     local fontdata = loadfont {
-        filename = filename,
-        shapes   = true,
-        streams  = streams,
-        variable = true,
-        subfont  = n,
-        instance = instance,
+        filename  = filename,
+        shapes    = true,
+        streams   = streams,
+        keephints = keephints,
+        variable  = true,
+        subfont   = n,
+        instance  = instance,
     }
     if fontdata then
         -- easier on luajit but still we can hit the 64 K stack constants issue
@@ -2418,6 +2419,7 @@ function readers.loadshapes(filename,n,instance,streams)
         maximumprofile   = fontdata.maximumprofile,
         names            = fontdata.names,
         postscript       = fontdata.postscript,
+        hinttables       = fontdata.hinttables,
     } or {
         filename = filename,
         format   = "unknown",

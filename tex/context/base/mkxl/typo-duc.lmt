@@ -51,7 +51,8 @@ if not modules then modules = { } end modules ['typo-duc'] = {
 local insert, remove, unpack, concat = table.insert, table.remove, table.unpack, table.concat
 local utfchar = utf.char
 local setmetatable = setmetatable
-local formatters = string.formatters
+
+local formatted            = string.formatted
 
 local directiondata        = characters.directions
 local mirrordata           = characters.mirrors
@@ -203,14 +204,14 @@ local function show_list(list,size,what)
             local last  = entry.last
             local skip  = entry.skip
             if last then
-                result[i] = formatters["%-3s:%s %s..%s (%i)"](direction,joiner,nodecodes[first],nodecodes[last],skip or 0)
+                result[i] = formatted("%-3s:%s %s..%s (%i)",direction,joiner,nodecodes[first],nodecodes[last],skip or 0)
             else
-                result[i] = formatters["%-3s:%s %s (%i)"](direction,joiner,nodecodes[first],skip or 0)
+                result[i] = formatted("%-3s:%s %s (%i)",direction,joiner,nodecodes[first],skip or 0)
             end
         elseif character >= 0x202A and character <= 0x202C then
-            result[i] = formatters["%-3s:%s %U"](direction,joiner,character)
+            result[i] = formatted("%-3s:%s %U",direction,joiner,character)
         else
-            result[i] = formatters["%-3s:%s %c %U"](direction,joiner,character,character)
+            result[i] = formatted("%-3s:%s %c %U",direction,joiner,character,character)
         end
     end
     return concat(result,joiner .. " | " .. joiner)
@@ -221,28 +222,27 @@ end
 local function show_done(list,size)
     local joiner = utfchar(0x200C)
     local result = { }
-    local format = formatters["<%s>"]
     for i=1,size do
         local entry     = list[i]
         local character = entry.char
         local begindir  = entry.begindir
         local enddir    = entry.enddir
         if begindir then
-            result[#result+1] = format(begindir)
+            result[#result+1] = formatted("<%s>",begindir)
         end
         if entry.remove then
             -- continue
         elseif character == 0xFFFC then
-            result[#result+1] = format("?")
+            result[#result+1] = "<?>"
         elseif character == 0x0020 then
-            result[#result+1] = format(" ")
+            result[#result+1] = "< >"
         elseif character >= 0x202A and character <= 0x202C then
-            result[#result+1] = format(entry.original)
+            result[#result+1] = formatted("<%s>",entry.original)
         else
             result[#result+1] = utfchar(character)
         end
         if enddir then
-            result[#result+1] = format(enddir)
+            result[#result+1] = formatted("<%s>",enddir)
         end
     end
     return concat(result,joiner)

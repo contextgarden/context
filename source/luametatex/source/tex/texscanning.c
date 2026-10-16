@@ -242,6 +242,7 @@ static inline void tex_aux_downgrade_cur_val(int level, int succeeded, int negat
             if (level == glue_val_level) {
                 goto COPYGLUE;
             }
+            FALLTHROUGH
         case glue_val_level:
             if (level == posit_val_level) {
                 cur_val_level = level;
@@ -3393,7 +3394,7 @@ void tex_initialize_units(void)
     unit_parameter(unit_parameter_hash('i','n')) = - tex_unit_class;
 }
 
-static int tex_aux_scan_unit(halfword *num, halfword *denom, halfword *value, halfword *order)
+static int tex_aux_scan_unit(halfword *num, halfword *denom, scaled *value, halfword *order)
 {
 //AGAIN: /* only for true */
     do {
@@ -3526,7 +3527,7 @@ static int tex_aux_scan_unit(halfword *num, halfword *denom, halfword *value, ha
     }
 }
 
-static int tex_aux_scan_unit_only(halfword *value)
+static int tex_aux_scan_unit_only(scaled *value)
 {
     int chrone, chrtwo, index;
     halfword tokone, toktwo;
@@ -3630,7 +3631,7 @@ static int tex_aux_scan_unit_only(halfword *value)
 
 # define posit_as_factor 0
 
-halfword tex_scan_dimension(int mu, int inf, int shortcut, int optional_equal, halfword *order, int *grouped)
+scaled tex_scan_dimension(int mu, int inf, int shortcut, int optional_equal, halfword *order, int *grouped)
 {
     bool negative = false;
     int fraction = 0;
@@ -4445,7 +4446,7 @@ void tex_set_font_dimension(void)
     }
 }
 
-halfword tex_get_font_dimension(void)
+scaled tex_get_font_dimension(void)
 {
     halfword fnt = null;
     int n = 0;
@@ -4460,7 +4461,7 @@ void tex_set_scaled_font_dimension(int n)
     }
 }
 
-halfword tex_get_scaled_font_dimension(int n)
+scaled tex_get_scaled_font_dimension(int n)
 {
     halfword fnt = null;
     return (tex_aux_scan_font_id_and_parameter(&fnt, &n)) ? tex_get_scaled_parameter(fnt, n) : null;
@@ -4824,6 +4825,7 @@ halfword tex_scan_toks_expand(int left_brace_found, halfword *tail, int expandco
                     cur_tok = token_val(prefix_cmd, always_code);
                     goto APPENDTOKEN;
                 }
+                FALLTHROUGH
             default:
                 if (cur_cmd > max_command_cmd) {
                     tex_expand_current_token();
@@ -4854,6 +4856,8 @@ halfword tex_scan_toks_expand(int left_brace_found, halfword *tail, int expandco
                     } else {
                         goto FINALYDONE;
                     }
+                    break;
+                default:
                     break;
             }
         }
@@ -5523,16 +5527,38 @@ static inline int tex_aux_add_or_sub(int x, int y, int max_answer, int operation
 //     }
 // }
 
+// static inline int tex_aux_quotient(int n, int d, int rounded)
+// {
+//     if (d == 0) {
+//         lmt_scanner_state.arithmetic_error = 1;
+//         return 0;
+//     } else if (rounded) {
+//         return lround((double) n / (double) d);
+//     } else {
+//         return n / d;
+//     }
+// }
+
 static inline int tex_aux_quotient(int n, int d, int rounded)
 {
     if (d == 0) {
         lmt_scanner_state.arithmetic_error = 1;
         return 0;
-    } else if (rounded) {
-        return lround((double) n / (double) d);
-    } else {
-        return n / d;
     }
+    if (rounded) {
+        long long num = (long long) n;
+        long long den = (long long) d;
+        int negative = (num < 0) != (den < 0);
+        unsigned long long unum = num < 0 ? 0ULL - (unsigned long long) num : (unsigned long long) num;
+        unsigned long long uden = den < 0 ? 0ULL - (unsigned long long) den : (unsigned long long) den;
+        unsigned long long quotient = unum / uden;
+        unsigned long long remainder = unum % uden;
+        if (remainder >= uden - remainder) {
+            ++quotient;
+        }
+        return (int) (negative ? -(long long) quotient : (long long) quotient);
+    }
+    return n / d;
 }
 
 static inline int tex_aux_modulo(int n, int d)
@@ -7130,6 +7156,135 @@ static inline long long tex_aux_double_rounded_long_long(double d)
     }
 }
 
+static inline long long tex_aux_multiply_long_long(long long term, long long factor)
+{
+    if (term == 0 || factor == 0) {
+        return 0;
+    }
+# if defined(__SIZEOF_INT128__)
+    __int128 product = (__int128) term * (__int128) factor;
+    if (product >= (__int128) min_longinteger && product <= (__int128) max_longinteger) {
+        return (long long) product;
+    }
+# else
+    if (term > 0) {
+        if (factor > 0) {
+            if (term <= max_longinteger / factor) return term * factor;
+        } else if (factor >= min_longinteger / term) {
+            return term * factor;
+        }
+    } else if (factor > 0) {
+        if (term >= min_longinteger / factor) return term * factor;
+    } else if (term >= max_longinteger / factor) {
+        return term * factor;
+    }
+# endif
+    tex_aux_scan_integer_out_of_range_error(10);
+    return (term < 0) != (factor < 0) ? min_longinteger : max_longinteger;
+}
+
+static inline long long tex_aux_divide_long_long(long long term, long long factor)
+{
+    if (factor == 0) {
+        tex_aux_scan_integer_out_of_range_error(10);
+        return (term >= 0) ? max_longinteger : min_longinteger;
+    }
+    if (term == 0) {
+        return 0;
+    }
+    /* Symmetric round-to-nearest: ties round away from zero. */
+    int negative = (term < 0) != (factor < 0);
+    unsigned long long uterm = term < 0 ? 0ULL - (unsigned long long) term : (unsigned long long) term;
+    unsigned long long ufactor = factor < 0 ? 0ULL - (unsigned long long) factor : (unsigned long long) factor;
+    unsigned long long quotient = uterm / ufactor;
+    unsigned long long remainder = uterm % ufactor;
+    if (remainder >= ufactor - remainder) {
+        ++quotient;
+    }
+    if (quotient > (unsigned long long) max_longinteger) {
+        tex_aux_scan_integer_out_of_range_error(10);
+        return negative ? min_longinteger : max_longinteger;
+    }
+    {
+        long long result = (long long) quotient;
+        return negative ? -result : result;
+    }
+}
+
+static inline long long tex_aux_integer_divide_long_long(long long term, long long factor)
+{
+    int negative;
+    unsigned long long uterm, ufactor, quotient;
+    if (term == 0) {
+        return 0;
+    }
+    negative = (term < 0) != (factor < 0);
+    uterm = term < 0 ? 0ULL - (unsigned long long) term : (unsigned long long) term;
+    ufactor = factor < 0 ? 0ULL - (unsigned long long) factor : (unsigned long long) factor;
+    quotient = uterm / ufactor;
+    if (quotient > (unsigned long long) max_longinteger) {
+        tex_aux_scan_integer_out_of_range_error(10);
+        return negative ? min_longinteger : max_longinteger;
+    }
+    {
+        long long result = (long long) quotient;
+        return negative ? -result : result;
+    }
+}
+
+static inline long long tex_aux_scale_long_long(long long term, long long numerator, long long factor)
+{
+    if (factor == 0) {
+        tex_aux_scan_integer_out_of_range_error(10);
+        return ((term < 0) != (numerator < 0)) ? min_longinteger : max_longinteger;
+    }
+    if (term == 0 || numerator == 0) {
+        return 0;
+    }
+# if defined(__SIZEOF_INT128__)
+    /* 128-bit widening guarantees zero intermediate overflow for the supported input range. */
+    __int128 prod = (__int128) term * (__int128) numerator;
+    int negative = (prod < 0) != (factor < 0);
+    if (prod < 0) {
+        prod = -prod;
+    }
+    __int128 den = factor < 0 ? -(__int128) factor : (__int128) factor;
+    __int128 q = prod / den;
+    __int128 remainder = prod % den;
+    if (remainder >= den - remainder) {
+        ++q;
+    }
+    if (negative) {
+        q = -q;
+    }
+    if (q < (__int128) min_longinteger) {
+        tex_aux_scan_integer_out_of_range_error(10);
+        return min_longinteger;
+    } else if (q > (__int128) max_longinteger) {
+        tex_aux_scan_integer_out_of_range_error(10);
+        return max_longinteger;
+    }
+    return (long long) q;
+# else
+    /* MSVC / Fallback path using double bridge if 128-bit integers aren't supported */
+    double r = ((double) term * (double) numerator) / (double) factor;
+    return tex_aux_double_rounded_long_long(r);
+# endif
+}
+
+static inline long long tex_aux_modulo_long_long(long long term, long long factor)
+{
+    if (factor == 0) {
+        tex_aux_scan_integer_out_of_range_error(10);
+        return 0;
+    }
+    if (term == LLONG_MIN && factor == -1) {
+        return 0;
+    }
+    /* Standard C % operator matches C99/C11 sign semantics (remainder has dividend's sign). */
+    return term % factor;
+}
+
 /*
 static inline long long tex_aux_double_floored_long_long(double d)
 {
@@ -7157,6 +7312,48 @@ static inline long long tex_aux_long_long(long long l)
     } else {    
        return l;
     }
+}
+
+static inline long long tex_aux_add_long_long(long long a, long long b)
+{
+# if defined(__SIZEOF_INT128__)
+    __int128 sum = (__int128) a + (__int128) b;
+    if (sum < (__int128) min_longinteger) {
+        tex_aux_scan_integer_out_of_range_error(10);
+        return min_longinteger;
+    } else if (sum > (__int128) max_longinteger) {
+        tex_aux_scan_integer_out_of_range_error(10);
+        return max_longinteger;
+    }
+    return (long long) sum;
+# else
+    if ((b > 0 && a > max_longinteger - b) || (b < 0 && a < min_longinteger - b)) {
+        tex_aux_scan_integer_out_of_range_error(10);
+        return b < 0 ? min_longinteger : max_longinteger;
+    }
+    return a + b;
+# endif
+}
+
+static inline long long tex_aux_subtract_long_long(long long a, long long b)
+{
+# if defined(__SIZEOF_INT128__)
+    __int128 difference = (__int128) a - (__int128) b;
+    if (difference < (__int128) min_longinteger) {
+        tex_aux_scan_integer_out_of_range_error(10);
+        return min_longinteger;
+    } else if (difference > (__int128) max_longinteger) {
+        tex_aux_scan_integer_out_of_range_error(10);
+        return max_longinteger;
+    }
+    return (long long) difference;
+# else
+    if ((b < 0 && a > max_longinteger + b) || (b > 0 && a < min_longinteger + b)) {
+        tex_aux_scan_integer_out_of_range_error(10);
+        return b < 0 ? max_longinteger : min_longinteger;
+    }
+    return a - b;
+# endif
 }
 
 static inline long long tex_aux_shift_left(long long value, long long shift)
@@ -7299,6 +7496,7 @@ static void tex_aux_scan_integer_expression(int braced)
                             default:
                                 break;
                         }
+                        break; /* was missing */
                     case tilde_token_l:
                     case tilde_token_o:
                         if (tex_scan_aux_tilde(&alreadygotten) == expression_bnot) { 
@@ -7464,13 +7662,15 @@ static void tex_aux_scan_integer_expression(int braced)
                 numerator = factor;
                 operation = expression_scale;
             } else {
-                term = tex_aux_double_rounded_long_long((double) term * (double) factor);
+             // term = tex_aux_double_rounded_long_long((double) term * (double) factor);
+                term = tex_aux_multiply_long_long(term, factor);
             }
             break;
         case expression_divide:
             /* round */
             if lmt_likely(factor != 0) {
-                term = tex_aux_double_rounded_long_long((double) term / (double) factor);
+             // term = tex_aux_double_rounded_long_long((double) term / (double) factor);
+                term = tex_aux_divide_long_long(term, factor);
             } else {
                 tex_aux_scan_zero_divide_error();
                 lmt_scanner_state.arithmetic_error = 1;
@@ -7479,7 +7679,8 @@ static void tex_aux_scan_integer_expression(int braced)
             break;
         case expression_scale:
             if lmt_likely(factor != 0) {
-                term = tex_aux_double_rounded_long_long((double) term * (double) numerator / (double) factor);
+             // term = tex_aux_double_rounded_long_long((double) term * (double) numerator / (double) factor);
+                term = tex_aux_scale_long_long(term, numerator, factor);
             } else {
                 tex_aux_scan_zero_divide_error();
                 lmt_scanner_state.arithmetic_error = 1;
@@ -7488,7 +7689,7 @@ static void tex_aux_scan_integer_expression(int braced)
             break;
         case expression_idivide:
             if lmt_likely(factor != 0) {
-                term = term / factor;
+                term = tex_aux_integer_divide_long_long(term, factor);
             } else {
                 tex_aux_scan_zero_divide_error();
                 lmt_scanner_state.arithmetic_error = 1;
@@ -7497,7 +7698,8 @@ static void tex_aux_scan_integer_expression(int braced)
             break;
         case expression_imodulo:
             if lmt_likely(factor != 0) {
-                term = tex_aux_double_rounded_long_long(fmod((double) term, (double) factor));
+             // term = tex_aux_double_rounded_long_long(fmod((double) term, (double) factor));
+                term = tex_aux_modulo_long_long(term, factor);
             } else {
                 tex_aux_scan_zero_divide_error();
                 lmt_scanner_state.arithmetic_error = 1;
@@ -7537,8 +7739,8 @@ static void tex_aux_scan_integer_expression(int braced)
     } else {
         state = expression_none;
         switch (result) { 
-            case expression_add     : expression = tex_aux_long_long(expression + term); break;
-            case expression_subtract: expression = tex_aux_long_long(expression - term); break;
+            case expression_add     : expression = tex_aux_add_long_long(expression, term); break;
+            case expression_subtract: expression = tex_aux_subtract_long_long(expression, term); break;
             /* */
             case expression_not     : expression = term ? 0 : 1; break;
             case expression_bnot    : expression = ~ term; break;
@@ -7963,6 +8165,7 @@ static void tex_aux_scan_dimension_expression(int braced)
                             default:
                                 break;
                         }
+                        break; /* was missing */
                     case exclamation_token_l: 
                     case exclamation_token_o:
                         if (tex_scan_aux_exclamation(&alreadygotten) == expression_not) { 
@@ -8236,12 +8439,12 @@ static void tex_aux_scan_dimension_expression(int braced)
         switch (result) { 
             case expression_add:
                 /* depends on term type: float / dimen ok, int is sp */
-                expression = expression + term;
+                expression = tex_aux_add_long_long(expression, term);
                 expressiontype = expression_type_dimension;
                 break;
             case expression_subtract:
                 /* depends on term type: float / dimen ok, int is sp */
-                expression = expression - term;
+                expression = tex_aux_subtract_long_long(expression, term);
                 expressiontype = expression_type_dimension;
                 break;
             case expression_not:
@@ -8723,6 +8926,8 @@ static inline halfword tex_scan_aux_function(int *alreadygotten)
                     switch (cur_tok) { 
                         case s_token_l: case s_token_o:
                             return bit_expression_abs;
+                        default:
+                            break;
                     }
                     break;
                 case c_token_l: case c_token_o:
@@ -8740,9 +8945,12 @@ static inline halfword tex_scan_aux_function(int *alreadygotten)
                                             *alreadygotten = 1;
                                             return bit_expression_acos;
                                     }
+                                default:
+                                    break;
                             }
                             break;
                     }
+                    break;
                 case s_token_l: case s_token_o:
                     tex_get_x_token();
                     switch (cur_tok) { 
@@ -8761,6 +8969,7 @@ static inline halfword tex_scan_aux_function(int *alreadygotten)
                             }
                             break;
                     }
+                    break;
                 case t_token_l: case t_token_o:
                     tex_get_x_token();
                     switch (cur_tok) { 
@@ -8779,6 +8988,7 @@ static inline halfword tex_scan_aux_function(int *alreadygotten)
                             }
                             break;
                     }
+                    break;
             }
             break;
         case c_token_l: case c_token_o:
@@ -9120,6 +9330,8 @@ static void tex_aux_scan_expression(int level, int braced)
                             case bar_token_l: case bar_token_o:
                                 operation = bit_expression_or;
                                 goto OKAY;
+                            default:
+                                break;
                         }
                         operation = bit_expression_bor;
                         alreadygotten = 1;
@@ -9130,6 +9342,7 @@ static void tex_aux_scan_expression(int level, int braced)
                             case less_token : operation = bit_expression_bleft    ; goto OKAY;
                             case equal_token: operation = bit_expression_lessequal; goto OKAY;
                             case more_token : operation = bit_expression_unequal  ; goto OKAY;
+                            default: break;
                         }
                         operation = bit_expression_less;
                         alreadygotten = 1;
@@ -9139,6 +9352,7 @@ static void tex_aux_scan_expression(int level, int braced)
                         switch (cur_tok) {
                             case more_token : operation = bit_expression_bright   ; goto OKAY;
                             case equal_token: operation = bit_expression_moreequal; goto OKAY;
+                            default: break;
                         }
                         operation = bit_expression_more;
                         alreadygotten = 1;
@@ -9164,6 +9378,8 @@ static void tex_aux_scan_expression(int level, int braced)
                             case equal_token:
                                 operation = bit_expression_unequal;
                                 goto OKAY;
+                            default:
+                                break;
                         }
                         operation = bit_expression_bnot;
                         alreadygotten = 1;
@@ -9174,6 +9390,8 @@ static void tex_aux_scan_expression(int level, int braced)
                             case equal_token:
                                 operation = bit_expression_unequal;
                                 goto OKAY;
+                            default:
+                                break;
                         }
                         operation = bit_expression_not; /* better bitwise ~ */
                         alreadygotten = 1;
@@ -9187,27 +9405,35 @@ static void tex_aux_scan_expression(int level, int braced)
                                    case d_token_l: case d_token_o:
                                        operation = bit_expression_mod;
                                        goto OKAY;
+                                    default:
+                                        break;
                                }
+                            default:
+                                break;
                         }
                         goto UNEXPECTED;
                     case d_token_l: case d_token_o:
                         tex_get_x_token();
                         switch (cur_tok) {
                             case i_token_l: case i_token_o:
-                               tex_get_x_token();
-                               switch (cur_tok) {
-                                   case v_token_l: case v_token_o:
-                                       operation = bit_expression_div;
-                                       goto OKAY;
-                               }
+                                tex_get_x_token();
+                                switch (cur_tok) {
+                                    case v_token_l: case v_token_o:
+                                        operation = bit_expression_div;
+                                        goto OKAY;
+                                    default:
+                                        break;
+                                }
+                            default:
+                                break;
                         }
                         goto UNEXPECTED;
                     case n_token_l: case n_token_o:
                         tex_get_x_token();
                         switch (cur_tok) {
                             case o_token_l: case o_token_o:
-                               tex_get_x_token();
-                               switch (cur_tok) {
+                                tex_get_x_token();
+                                switch (cur_tok) {
                                     case t_token_l: case t_token_o:
                                        if (lastoperation != bit_expression_none || initial) {
                                            operation = bit_expression_none;
@@ -9217,10 +9443,13 @@ static void tex_aux_scan_expression(int level, int braced)
                                            operation = bit_expression_not;
                                            goto OKAY;
                                        }
-                               }
+                                    default:
+                                        break;
+                                }
+                                break; /* was missing */
                             case p_token_l: case p_token_o:
-                               tex_get_x_token();
-                               switch (cur_tok) {
+                                tex_get_x_token();
+                                switch (cur_tok) {
                                     case m_token_l: case m_token_o:
                                        if (lastoperation != bit_expression_none || initial) {
                                            operation = bit_expression_none;
@@ -9230,10 +9459,13 @@ static void tex_aux_scan_expression(int level, int braced)
                                            operation = bit_expression_pm;
                                            goto OKAY;
                                        }
-                               }
+                                    default:
+                                        break;
+                                }
+                                break; /* was missing */
                             case m_token_l: case m_token_o:
-                               tex_get_x_token();
-                               switch (cur_tok) {
+                                tex_get_x_token();
+                                switch (cur_tok) {
                                     case p_token_l: case p_token_o:
                                        if (lastoperation !=  bit_expression_none || initial) {
                                            operation = bit_expression_none;
@@ -9243,7 +9475,12 @@ static void tex_aux_scan_expression(int level, int braced)
                                            operation = bit_expression_mp;
                                            goto OKAY;
                                        }
-                               }
+                                    default:
+                                        break;
+                                }
+                                break;
+                            default:
+                                break;
                         }
                         goto UNEXPECTED;
                     case a_token_l: case a_token_o:
@@ -9326,6 +9563,8 @@ static void tex_aux_scan_expression(int level, int braced)
                                         }
                                 }
                                 break;
+                            default:
+                                break;
                         }
                         goto UNEXPECTED;
                     case c_token_l: case c_token_o:
@@ -9351,6 +9590,8 @@ static void tex_aux_scan_expression(int level, int braced)
                                         goto OKAY;
                                 }
                                 break;
+                            default:
+                                break;
                         }
                         goto UNEXPECTED;
                     case o_token_l: case o_token_o:
@@ -9359,6 +9600,8 @@ static void tex_aux_scan_expression(int level, int braced)
                             case r_token_l: case r_token_o:
                                 operation = bit_expression_or;
                                 goto OKAY;
+                            default:
+                                break;
                         }
                         goto UNEXPECTED;
                     case v_token_l: case v_token_o:
