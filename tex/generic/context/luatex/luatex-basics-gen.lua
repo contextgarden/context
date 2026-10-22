@@ -252,7 +252,7 @@ do
     end
 
     if not writable then
-        logs.report("system","no writeable cache path, quiting")
+        logs.report("system","no writable cache path, quiting")
         os.exit()
     elseif #readables == 0 then
         logs.report("system","no readable cache path, quiting")

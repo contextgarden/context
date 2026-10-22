@@ -49,17 +49,17 @@ local state_single  <const> = 3
 
 local mpsliteral        = nodes.pool.originliteral
 
-local f_f  = formatting("%.6N")
-local f_m  = formatting("%.6N %.6N m")
-local f_c  = formatting("%.6N %.6N %.6N %.6N %.6N %.6N c")
-local f_l  = formatting("%.6N %.6N l")
-local f_cm = formatting("%.6N %.6N %.6N %.6N %.6N %.6N cm")
-local f_M  = formatting("%.6N M")
-local f_j  = formatting("%i j")
-local f_J  = formatting("%i J")
-local f_d  = formatting("[%s] %.6N d")
-local f_w  = formatting("%.6N w")
-local f_r  = formatting("%.6N %.6N %.6N %.6N re")
+local f_f  <const> = formatting("%.6N")
+local f_m  <const> = formatting("%.6N %.6N m")
+local f_c  <const> = formatting("%.6N %.6N %.6N %.6N %.6N %.6N c")
+local f_l  <const> = formatting("%.6N %.6N l")
+local f_cm <const> = formatting("%.6N %.6N %.6N %.6N %.6N %.6N cm")
+local f_M  <const> = formatting("%.6N M")
+local f_j  <const> = formatting("%i j")
+local f_J  <const> = formatting("%i J")
+local f_d  <const> = formatting("[%s] %.6N d")
+local f_w  <const> = formatting("%.6N w")
+local f_r  <const> = formatting("%.6N %.6N %.6N %.6N re")
 
 directives.register("metapost.savetable",function(v)
     if type(v) == "string" then

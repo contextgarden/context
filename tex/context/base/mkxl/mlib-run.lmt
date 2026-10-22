@@ -170,7 +170,7 @@ end
 
 local seed = nil
 
-local default_tolerance = 131/65536.0 -- a little below 0.001 * 0x7FFF/0x4000
+local default_tolerance <const> = 131/65536.0 -- a little below 0.001 * 0x7FFF/0x4000
 local bend_tolerance    = default_tolerance
 local move_tolerance    = default_tolerance
 

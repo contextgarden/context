@@ -17,26 +17,28 @@ local settings_to_array = utilities.parsers.settings_to_array
 local appendtable = table.append
 local lpegpatterns, lpegmatch, Cs, P = lpeg.patterns, lpeg.match, lpeg.Cs, lpeg.P
 
-local getargument   = environment.getargument or environment.argument
-local setargument   = environment.setargument
+local getargument      = environment.getargument or environment.argument
+local setargument      = environment.setargument
 
-local filejoinname  = file.join
-local filebasename  = file.basename
-local filenameonly  = file.nameonly
-local filepathpart  = file.pathpart
-local filesuffix    = file.suffix
-local fileaddsuffix = file.addsuffix
-local filenewsuffix = file.replacesuffix
-local removesuffix  = file.removesuffix
-local validfile     = lfs.isfile
-local removefile    = os.remove
-local renamefile    = os.rename
-local formatters    = string.formatters
+local filejoinname     = file.join
+local filebasename     = file.basename
+local filenameonly     = file.nameonly
+local filepathpart     = file.pathpart
+local filesuffix       = file.suffix
+local fileremovesuffix = file.removesuffix
+local fileaddsuffix    = file.addsuffix
+local filenewsuffix    = file.replacesuffix
+local validfile        = lfs.isfile
+local removefile       = os.remove
+local renamefile       = os.rename
 
-local starttiming   = statistics.starttiming
-local stoptiming    = statistics.stoptiming
-local resettiming   = statistics.resettiming
-local elapsedtime   = statistics.elapsedtime
+local formatters       = string.formatters
+local formatted        = string.formatted or string.format
+
+local starttiming      = statistics.starttiming
+local stoptiming       = statistics.stoptiming
+local resettiming      = statistics.resettiming
+local elapsedtime      = statistics.elapsedtime
 
 local application = logs.application {
     name     = "mtx-context",
@@ -78,6 +80,8 @@ local function restart(engine_old,engine_new)
     local result = os.execute(command)
     os.exit(result == 0 and 0 or 1)
 end
+
+-- validengines are run by themselves
 
 if environment.validengines[engine_new] and engine_new ~= environment.basicengines[engine_old] then
     restart(engine_old,engine_new)
@@ -212,7 +216,7 @@ function ctxrunner.checkfile(ctxdata,ctxname,defaultname)
         return
     end
 
-    ctxdata.ctxname = ctxname or removesuffix(ctxdata.jobname) or ""
+    ctxdata.ctxname = ctxname or fileremovesuffix(ctxdata.jobname) or ""
 
     if ctxdata.ctxname == "" then
         return
@@ -672,12 +676,12 @@ function scripts.context.run(ctxdata,filename)
             break
         end
 
-        local basename = filebasename(filename) -- use splitter
-        local pathname = filepathpart(filename)
-        --
         if filesuffix(filename) == "" then
             filename = fileaddsuffix(filename,"tex")
         end
+
+        local basename = filebasename(filename) -- use splitter
+        local pathname = filepathpart(filename)
         --
         if pathname == "" and not a_global and filename ~= usedfiles.nop then
             filename = "./" .. filename
@@ -686,8 +690,8 @@ function scripts.context.run(ctxdata,filename)
             end
         end
         --
-        local jobname  = removesuffix(basename)
-     -- local jobname  = removesuffix(filename)
+        local jobname  = fileremovesuffix(basename)
+     -- local jobname  = fileremovesuffix(filename)
         local ctxname  = ctxdata and ctxdata.ctxname
         --
         if changed[jobname] == nil then
@@ -696,6 +700,8 @@ function scripts.context.run(ctxdata,filename)
         --
         local analysis = preamble_analyze(filename)
         --
+-- inspect(analysis)
+-- os.exit()
         if a_mkii or analysis.engine == 'pdftex' or analysis.engine == 'xetex' then
             run_texexec(filename,a_purge,a_purgeall)
         elseif plain_format(a_texformat or analysis.texformat) then
@@ -777,13 +783,13 @@ function scripts.context.run(ctxdata,filename)
                 if resultpath ~= "" then
                     resultname  = nil
                 elseif suffix then
-                    resultname = removesuffix(jobname) .. suffix
+                    resultname = fileremovesuffix(jobname) .. suffix
                 end
                 local oldbase = ""
                 local newbase = ""
                 if resultname then
-                    oldbase = removesuffix(jobname)
-                    newbase = removesuffix(resultname)
+                    oldbase = fileremovesuffix(jobname)
+                    newbase = fileremovesuffix(resultname)
                     if oldbase ~= newbase then
                         if a_purgeresult then
                             result_push_purge(oldbase,newbase)
@@ -849,11 +855,17 @@ function scripts.context.run(ctxdata,filename)
                 -- todo: --output-file=... in luatex
                 --
                 local usedname = jobname
-                local engine   = analysis.engine or "luametatex"
-                if engine == "luametatex" and (mainfile == usedfiles.yes or mainfile == usedfiles.nop) and not getargument("redirected") then
-                    mainfile = "" -- we don't need that
-                    usedname = fulljobname
+-- inspect(analysis)
+                local engine   = type(analysis.engine) == "string" and analysis.engine or engine_old or "luametatex"
+-- print(engine_old,engine,usedname,fulljobname)
+                if engine == "luametatex" then
+                    if (mainfile == usedfiles.yes or mainfile == usedfiles.nop) and not getargument("redirected") then
+                        mainfile = "" -- we don't need that
+                        usedname = fulljobname
+                    end
                 end
+-- print(engine,usedname)
+-- os.exit()
                 --
                 --
                 local l_flags = {
@@ -1274,7 +1286,7 @@ do -- more or less copied from mtx-plain.lua:
         for k, v in next, environment.arguments do
             t[#t+1] = string.format("--mtx:%s=%s",k,v)
         end
-        execute('%s --fmt=%s %s "%s"',texengine,removesuffix(texformat),table.concat(t," "),filename)
+        execute('%s --fmt=%s %s "%s"',texengine,fileremovesuffix(texformat),table.concat(t," "),filename)
     end
 
     make_mkii_format = function(name,engine)
@@ -1413,7 +1425,7 @@ end
 function scripts.context.purge_job(jobname,all,mkiitoo,fulljobname)
     if jobname and jobname ~= "" then
         jobname = filebasename(jobname)
-        local filebase = removesuffix(jobname)
+        local filebase = fileremovesuffix(jobname)
         if mkiitoo then
             scripts.context.purge(all,filebase,true) -- leading "./"
         else
@@ -1754,18 +1766,21 @@ end
 
 -- experiment
 
+-- see workflows-parallel
+
 do
 
     local ticks   = lua.getpreciseticks
     local seconds = lua.getpreciseseconds
 
-    local f_runner  = formatters['context %s "%s"']
-    local f_command = formatters['%s %s']
+    local f_runner  = 'context %s "%s"'
+    local f_command = '%s %s'
+    local f_modes   = 'context --mode=%s --forceinput=%s %s'
 
     local function getline(line,name)
-        if string.find(line,"^context ") then
+        if find(line,"^context ") then
             return line
-        elseif string.find(line,"^mtxrun ") then
+        elseif find(line,"^mtxrun ") then
             return line
         end
     end
@@ -1781,13 +1796,11 @@ do
         local terminal = environment.argument("terminal")
         local parallel = environment.argument("parallel")
         local runners  = tonumber(parallel)
-
         if runners then
             parallel = true
         else
             runners = environment.argument("runners") or 8
         end
-
         if type(parallel) == "string" then
             local specification = table.load(parallel)
             if specification then
@@ -1865,10 +1878,31 @@ do
                 total = total + #list
             end
             whattodo = "command"
+        elseif getargument("parallelmodes") then
+            local m = getargument("parallelmodes")
+            if type(m) == "string" then
+                total = 0
+                local list = { }
+                local modes = settings_to_array(m)
+                for i=1,#files do
+                    for j=1,#modes do
+                        local m = modes[j]
+                        local f = files[i]
+                        local s = filesuffix(f)
+                        local b = fileremovesuffix(f)
+                        local n = fileaddsuffix(b.."-"..m,s)
+                        list[#list+1] = formatted(f_modes,m,f,n)
+                    end
+                end
+                if #list > 0 then
+                    lists = { list }
+                    total = total + #list
+                end
+                whattodo = "modes"
+            end
         elseif total > 1 then
             lists = { files }
         end
-
         if not lists and total == 1 then
             -- Beware: "--parallel" and "--terminal" are passed to the single run but this
             -- is normally harmless.
@@ -1885,7 +1919,7 @@ do
             local passthese = environment.arguments_after
             for i=1,#passthese do
                 local a = passthese[i]
-                if string.find(a,"^%-%-parallel") or string.find(a,"^%-%-terminal") or not find(a,"^%-%-") then
+                if find(a,"^%-%-parallel") or find(a,"^%-%-terminal") or not find(a,"^%-%-") then
                     passthese[i] = ""
                 end
             end
@@ -1915,7 +1949,7 @@ do
                 end
             end
             --
-            local ansi = terminal == "ansi"
+            local ansi = (terminal == "ansi" or terminal == "color")
                 and os.enableansi and os.enableansi()
                 and { [0] =
                     "[0;37mmtx-process % 3i[0;1m",
@@ -1969,23 +2003,34 @@ do
                                 else
                                     counts = counts + 1
                                     local timer    = "parallel:" .. set .. ":" .. i
+                                    local command  = false
                                     local filename = files[count]
-                                    local dirname  = file.dirname(filename)
-                                    local basename = file.basename(filename)
-                                    if dirname ~= "." and dirname ~= "./" then
-                                        dir.push(dirname)
+                                    local pushed   = false
+                                    if whattodo == "modes" then
+                                        command = filename
+                                    else
+                                        local dirname  = filepathpart(filename)
+                                        local basename = filebasename(filename)
+                                        pushed = dirname ~= "." and dirname ~= "./"
+                                        if pushed then
+                                            dir.push(dirname)
+                                        end
+                                        if whattodo == "command" then
+                                            command = formatted(f_command,basename,arguments)
+                                        else
+                                            command = formatted(f_runner,arguments,basename)
+                                        end
                                     end
-                                    local command  = whattodo == "command" and f_command(basename,arguments) or f_runner(arguments,basename)
                                     resettiming(timer)
                                     starttiming(timer)
                                     if squid then
                                         squid.stepper("step",i,0,problem)
                                     end
                                     local handle = open(command,not terminal)
-                                    if dirname ~= "." then
+                                    if pushed then
                                         dir.pop()
                                     end
-                                    local status  = nil
+                                    local status = nil
                                     if handle then
                                         status = {
                                             handle   = handle,
@@ -2023,13 +2068,9 @@ do
                         end
                         return active
                     end
--- local changed = true
--- local active  = false
                     while true do
                         local active = populated()
--- active = changed and populated() or active
                         if #active > 0 then
--- changed = false
                             local ready = poll(active,1000)
                             for i=1,#ready do
                                 local index  = ready[i]
@@ -2038,7 +2079,6 @@ do
                                 if pi then
                                     local state = read(handle, terminal and writers[index])
                                     if state == true then
--- changed = true
                                         local exit = close(handle)
                                         stoptiming(pi.timer)
                                         local time = elapsedtime(pi.timer)
@@ -2119,20 +2159,30 @@ do
                                 -- we're done
                             else
                                 local timer    = "parallel:" .. set .. ":" .. i
+                                local command  = false
                                 local filename = files[count]
-                                local dirname  = file.dirname(filename)
-                                local basename = file.basename(filename)
-                                if dirname ~= "." and dirname ~= "./" then
-                                    dir.push(dirname)
+                                local pushed   = dirname ~= "." and dirname ~= "./"
+                                if whattodo == "modes" then
+                                    command = filename
+                                else
+                                    local dirname  = filepathpart(filename)
+                                    local basename = filebasename(filename)
+                                    if pushed then
+                                        pushdir(dirname)
+                                    end
+                                    if whattodo == "command" then
+                                        command = formatted(f_command,basename,arguments)
+                                    else
+                                        command = formatted(f_runner,arguments,basename)
+                                    end
                                 end
-                                local command  = whattodo == "command" and f_command(basename,arguments) or f_runner(arguments,basename)
                                 resettiming(timer)
                                 starttiming(timer)
                                 if squid then
                                     squid.stepper("step",i,0,problem)
                                 end
-                                local result  = popen(command)
-                                if dirname ~= "." then
+                                local result = popen(command)
+                                if pushed then
                                     dir.pop()
                                 end
                                 local status  = nil
@@ -2353,7 +2403,7 @@ else
     multipass_forcedruns = tonumber(getargument("forcedruns")) or nil
 end
 
-if getargument("parallel") or getargument("parallellist") then
+if getargument("parallel") or getargument("parallellist") or getargument("parallelmodes") then
     scripts.context.timed(scripts.context.parallel)
 elseif getargument("run") then
     scripts.context.timed(scripts.context.autoctx)

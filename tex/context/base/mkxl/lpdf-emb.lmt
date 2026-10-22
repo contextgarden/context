@@ -134,8 +134,8 @@ do
     -- backend). In fact, we can now no longer pass the tounicodes to the frontend but
     -- pick them up from the descriptions.
 
-    local f_mapping_2 = formatting("<%02X> <%s>")
-    local f_mapping_4 = formatting("<%04X> <%s>")
+    local f_mapping_2 <const> = formatting("<%02X> <%s>")
+    local f_mapping_4 <const> = formatting("<%04X> <%s>")
 
 local tounicode_template <const> = [[
 %%!PS-Adobe-3.0 Resource-CMap
@@ -1909,24 +1909,24 @@ do
 
         local embedimage = images.embed
 
-        local f_glyph      = "G%d"
-        local f_char       = "BT /V%d 1 Tf [<%04X>] TJ ET"
-        local f_width      = "%N 0 d0"
-        local f_index      = "I%d"
-        local f_image_xy   = "%N 0 d0 1 0 0 1 %N %N cm /%s Do"
-        local f_image_c    = "/%s Do"
-        ----- f_image_c_xy = "%N 0 0 %N %N %N cm /%s Do"
-        local f_image_w    = "%N 0 d0 %s"
-        ----- f_image_d    = "%N 0 d0 1 0 0 1 0 %N cm /%s Do"
-        local f_stream     = "%N 0 d0 %s"
-        local f_stream_c   = "%N 0 0 0 0 0 d1 %s" -- last four bbox
-        local f_stream_cc  = "%N 0 %N %N %N %N d1 %s" -- last four bbox
-        local f_stream_d   = "%N 0 d0 1 0 0 1 0 %N cm %s"
-     -- local f_stream_s   = "%N 0 0 %N 0 0 cm /%s Do"
+        local f_glyph      <const> = "G%d"
+        local f_char       <const> = "BT /V%d 1 Tf [<%04X>] TJ ET"
+        local f_width      <const> = "%N 0 d0"
+        local f_index      <const> = "I%d"
+        local f_image_xy   <const> = "%N 0 d0 1 0 0 1 %N %N cm /%s Do"
+        local f_image_c    <const> = "/%s Do"
+        ----- f_image_c_xy <const> = "%N 0 0 %N %N %N cm /%s Do"
+        local f_image_w    <const> = "%N 0 d0 %s"
+        ----- f_image_d    <const> = "%N 0 d0 1 0 0 1 0 %N cm /%s Do"
+        local f_stream     <const> = "%N 0 d0 %s"
+        local f_stream_c   <const> = "%N 0 0 0 0 0 d1 %s" -- last four bbox
+        local f_stream_cc  <const> = "%N 0 %N %N %N %N d1 %s" -- last four bbox
+        local f_stream_d   <const> = "%N 0 d0 1 0 0 1 0 %N cm %s"
+     -- local f_stream_s   <const> = "%N 0 0 %N 0 0 cm /%s Do"
 
-        local f_image_xy   = "%N 0 d0 1 0 0 1 %N %N cm /Artifact BMC /%s Do EMC"
-        local f_image_c    = "/Artifact BMC /%s Do EMC"
-        local f_image_c_xy = "%N 0 0 %N %N %N cm /Artifact BMC /%s Do EMC"
+        local f_image_xy   <const> = "%N 0 d0 1 0 0 1 %N %N cm /Artifact BMC /%s Do EMC"
+        local f_image_c    <const> = "/Artifact BMC /%s Do EMC"
+        local f_image_c_xy <const> = "%N 0 0 %N %N %N cm /Artifact BMC /%s Do EMC"
 
         -- A type 3 font has at most 256 characters and Acrobat also wants a zero slot
         -- to be filled. We can share a mandate zero slot character. We also need to

@@ -22,7 +22,7 @@ local context        = context
 local implement      = interfaces.implement
 
 local qualified      = { }
-local writeable      = { }
+local writable       = { }
 local readable       = { }
 local blocked        = { }
 local trace_files    = false
@@ -97,9 +97,9 @@ local function logsandboxfiles(name,what,asked,okay)
     if not okay then
         blocked  [asked] = blocked  [asked] or 0 + 1
     elseif what == "*" or what == "w" then
-        writeable[asked] = writeable[asked] or 0 + 1
+        writable[asked] = writable[asked] or 0 + 1
     else
-        readable [asked] = readable [asked] or 0 + 1
+        readable[asked] = readable[asked] or 0 + 1
     end
 end
 
@@ -126,9 +126,9 @@ function sandbox.logfiles()
                     filenames   = qualified,
                 },
                 checkednames = {
-                    readable  = readable,
-                    writeable = writeable,
-                    blocked   = blocked,
+                    readable = readable,
+                    writable = writable,
+                    blocked  = blocked,
                 },
             })
         end)

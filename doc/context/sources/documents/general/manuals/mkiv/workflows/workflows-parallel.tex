@@ -209,7 +209,7 @@ If you use the same input file with different output, you can use this setup:
 context test-1 --mode=m-1 --forceinput=test
 context test-2 --mode=m-2 --forceinput=test
 context test-3 --mode=m-3 --forceinput=test
-context test-5 --mode=m-5 --forceinput=test
+context test-4 --mode=m-4 --forceinput=test
 context test-5 --mode=m-5 --forceinput=test
 context test-6 --mode=m-6 --forceinput=test
 \stoptyping
@@ -220,6 +220,24 @@ specification doesn't work here because the multi|-|pass data file(s) and
 intermediate result will clash. Running on dedicated subpath could work out but
 has its own complications (creation, cleanup, moving results) and would therefore
 be more fragile.
+
+You can actually also do this which automatically creates a list like the above
+from the specification on the command line. This will append the mode to
+the filename(s).
+
+\starttyping
+context --parallelmodes=paper,screen --pattern=leaflet*.tex
+\stoptyping
+
+So, if we have \typ {leaflet-1}, \typ {leaflet-2}, and more, we will
+get files like:
+
+\starttyping
+leaflet-1-paper.pdf
+leaflet-1-screen.pdf
+leaflet-2-paper.pdf
+leaflet-2-screen.pdf
+\stoptyping
 
 An example of running files in a tree, like those in the test suite is:
 

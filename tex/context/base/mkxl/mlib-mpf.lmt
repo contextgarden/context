@@ -40,20 +40,20 @@ do
     -- no %n as that can produce -e notation and that is not so nice for scaled but maybe we
     -- should then switch between ... i.e. make a push/pop for the formatters here ... not now.
 
-    local f_integer      = formatting("%i")
-    local f_numeric      = formatting("%N")
-    local f_pair         = formatting("(%N,%N)")
-    local f_ctrl         = formatting("(%N,%N) .. controls (%N,%N) and (%N,%N)")
-    local f_triplet      = formatting("(%N,%N,%N)")
-    local f_quadruple    = formatting("(%N,%N,%N,%N)")
-    local f_transform    = formatting("totransform(%N,%N,%N,%N,%N,%N)")
-    local f_pen          = formatting("(pencircle transformed totransform(%N,%N,%N,%N,%N,%N))")
+    local f_integer      <const> = formatting("%i")
+    local f_numeric      <const> = formatting("%N")
+    local f_pair         <const> = formatting("(%N,%N)")
+    local f_ctrl         <const> = formatting("(%N,%N) .. controls (%N,%N) and (%N,%N)")
+    local f_triplet      <const> = formatting("(%N,%N,%N)")
+    local f_quadruple    <const> = formatting("(%N,%N,%N,%N)")
+    local f_transform    <const> = formatting("totransform(%N,%N,%N,%N,%N,%N)")
+    local f_pen          <const> = formatting("(pencircle transformed totransform(%N,%N,%N,%N,%N,%N))")
 
-    local f_points       = formatting("%p")
-    local f_pair_pt      = formatting("(%p,%p)")
-    local f_ctrl_pt      = formatting("(%p,%p) .. controls (%p,%p) and (%p,%p)")
-    local f_triplet_pt   = formatting("(%p,%p,%p)")
-    local f_quadruple_pt = formatting("(%p,%p,%p,%p")
+    local f_points       <const> = formatting("%p")
+    local f_pair_pt      <const> = formatting("(%p,%p)")
+    local f_ctrl_pt      <const> = formatting("(%p,%p) .. controls (%p,%p) and (%p,%p)")
+    local f_triplet_pt   <const> = formatting("(%p,%p,%p)")
+    local f_quadruple_pt <const> = formatting("(%p,%p,%p,%p")
 
     local r = P('%')  / "percent"
             + P('"')  / "dquote"

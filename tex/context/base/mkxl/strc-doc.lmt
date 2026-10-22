@@ -30,15 +30,15 @@ local variables           = interfaces.variables
 
 local implement           = interfaces.implement
 
-local v_last              = variables.last
-local v_first             = variables.first
-local v_previous          = variables.previous
-local v_next              = variables.next
-local v_auto              = variables.auto
-local v_strict            = variables.strict
-local v_all               = variables.all
-local v_positive          = variables.positive
-local v_current           = variables.current
+local v_last      <const> = variables.last
+local v_first     <const> = variables.first
+local v_previous  <const> = variables.previous
+local v_next      <const> = variables.next
+local v_auto      <const> = variables.auto
+local v_strict    <const> = variables.strict
+local v_all       <const> = variables.all
+local v_positive  <const> = variables.positive
+local v_current   <const> = variables.current
 
 local texgetcount         = tex.getcount
 

@@ -538,12 +538,8 @@ static int tex_aux_set_cur_val_by_some_cmd(int code)
             cur_val = lmt_version_state.release; 
             cur_val_level = integer_val_level;
             break;
-        case luatex_version_code:
+        case luametatex_version_code:
             cur_val = lmt_version_state.version;  /* combined major and minor */
-            cur_val_level = integer_val_level;
-            break;
-        case luatex_revision_code:
-            cur_val = lmt_version_state.revision; /* always zero */
             cur_val_level = integer_val_level;
             break;
         case current_group_level_code:

@@ -1371,7 +1371,8 @@ end
 \stoptyping
 
 Only valid primitive names are processed. Because it is no fun to enter the
-names, there is this one.
+names, the second argument can be a boolean which indicates that all primitives
+will be used.
 
 \starttyping[option=LUA]
 function tex.extraprimitives ( <t:string> subset, ... )
@@ -1382,6 +1383,9 @@ end
 Possible values for \type {subset} are:
 
 \getbuffer[engine:syntax:primitiveorigins]
+
+Instead of one or more strings you can also pass a number with the bit set that
+indicate what subset to include.
 
 You can feed the result of the last one in \type {tex.enableprimitives}. If
 there is already a macro with that name if will not be overloaded.
@@ -1398,7 +1402,7 @@ function tex.primitives ( )
 end
 \stoptyping
 
-of course the fact that the name is there doesn't mean that it has the same
+Of course the fact that the name is there doesn't mean that it has the same
 meaning.
 
 A complete list of all hash entries can be asked for by the following function, but

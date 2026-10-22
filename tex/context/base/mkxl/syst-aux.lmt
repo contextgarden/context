@@ -14,7 +14,7 @@ if not modules then modules = { } end modules ['syst-aux'] = {
 local tonumber, next, type = tonumber, next, type
 local utfsub = utf.sub
 local P, S, R, C, Cc, Cs, Carg, lpegmatch = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Carg, lpeg.match
-local find, formatters = string.find, string.formatters
+local find = string.find
 
 local context           = context
 local implement         = interfaces.implement
@@ -26,6 +26,8 @@ local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_set   = utilities.parsers.settings_to_set
 
 local pattern           = C(utf8character^-1) * C(P(1)^0)
+
+local formatted         = string.formatted
 
 local boolean_value <const> = tokens.values.boolean
 ----- string_value  <const> = tokens.values.string
@@ -108,7 +110,7 @@ implement {
 -- end
 
 local pattern = (C((1-P("%"))^1) * Carg(1)) / function(n,d)
-    return formatters["%.0fsp"](d * tonumber(n)/100) end * P("%") * P(-1) -- .0 ?
+    return formatted("%.0fsp",d * tonumber(n)/100) end * P("%") * P(-1) -- .0 ?
 
 -- percentageof("10%",65536*10)
 
@@ -410,15 +412,17 @@ implement {
 }
 
 local accuracy = table.setmetatableindex(function(t,k)
-    local v = formatters["%0." ..k .. "f"]
+    local v = "%0." ..k .. "f"
     t[k] = v
     return v
 end)
 
 implement {
     name      = "rounded",
-    arguments = "integer",
-    actions   = function(n,m) context(accuracy[n](m)) end
+    arguments = { "integer", "string" },
+    actions   = function(n,m)
+        context(accuracy[n],tonumber(m))
+    end
 }
 
 -- not faster but just less tracing:

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2026-10-16 13:39
+-- merge date  : 2026-10-22 11:29
 
 do -- begin closure to overcome local limits and interference
 
@@ -2446,7 +2446,7 @@ function io.ask(question,default,options)
   if default then
    write(format(" [%s]",default))
   end
-  write(format(" "))
+  write(" ")
   flush()
   local answer=read()
   answer=gsub(answer,"^%s*(.*)%s*$","%1")
@@ -2896,11 +2896,13 @@ end
 function file.is_rootbased_path(filename)
  return filename and lpegmatch(rootbased,filename)~=nil
 end
-function lfs.mkdirs(path)
- local full=""
- for sub in gmatch(path,"(/*[^\\/]+)") do 
-  full=full..sub
-  lfs.mkdir(full)
+if not lfs.mkdirs then
+ function lfs.mkdirs(path)
+  local full=""
+  for sub in gmatch(path,"(/*[^\\/]+)") do 
+   full=full..sub
+   lfs.mkdir(full)
+  end
  end
 end
 function file.withinbase(path) 
@@ -3100,39 +3102,6 @@ if not math.ult then
  local floor=math.floor
  function math.ult(m,n)
   return floor(m)<floor(n) 
- end
-end
-if setinspector and vector then
- local inspect=inspect
- local isvector=vector.isvector
- local totable=vector.totable
- setinspector("vector",function(v)
-  if isvector(v) then
-   inspect(totable(v))
-   return true
-  end
- end)
- local mesh=vector.mesh
- if mesh then
-  local ismesh=mesh.ismesh
-  local totable=mesh.totable
-  setinspector("mesh",function(v)
-   if ismesh(v) then
-    inspect(totable(v))
-    return true
-   end
-  end)
- end
- local points=vector.points
- if points then
-  local ispoints=points.ispoints
-  local totable=points.totable
-  setinspector("points",function(v)
-   if ispoints(v) then
-    inspect(totable(v))
-    return true
-   end
-  end)
  end
 end
 
@@ -4801,7 +4770,7 @@ do
   end
  end
  if not writable then
-  logs.report("system","no writeable cache path, quiting")
+  logs.report("system","no writable cache path, quiting")
   os.exit()
  elseif #readables==0 then
   logs.report("system","no readable cache path, quiting")

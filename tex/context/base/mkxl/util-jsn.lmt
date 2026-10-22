@@ -122,30 +122,30 @@ do
 
     local escaper
 
-    local f_start_hash      =         '%w{'
-    local f_start_array     =         '%w['
-    local f_start_hash_new  = "\n" .. '%w{'
-    local f_start_array_new = "\n" .. '%w['
-    local f_start_hash_key  = "\n" .. '%w"%s" : {'
-    local f_start_array_key = "\n" .. '%w"%s" : ['
+    local f_start_hash      <const> =         '%w{'
+    local f_start_array     <const> =         '%w['
+    local f_start_hash_new  <const> = "\n" .. '%w{'
+    local f_start_array_new <const> = "\n" .. '%w['
+    local f_start_hash_key  <const> = "\n" .. '%w"%s" : {'
+    local f_start_array_key <const> = "\n" .. '%w"%s" : ['
 
-    local f_stop_hash       = "\n" .. '%w}'
-    local f_stop_array      = "\n" .. '%w]'
+    local f_stop_hash       <const> = "\n" .. '%w}'
+    local f_stop_array      <const> = "\n" .. '%w]'
 
-    local f_key_val_seq     = "\n" .. '%w"%s" : %s'
-    local f_key_val_str     = "\n" .. '%w"%s" : "%s"'
-    local f_key_val_num     = f_key_val_seq
-    local f_key_val_yes     = "\n" .. '%w"%s" : true'
-    local f_key_val_nop     = "\n" .. '%w"%s" : false'
-    local f_key_val_null    = "\n" .. '%w"%s" : null'
+    local f_key_val_seq     <const> = "\n" .. '%w"%s" : %s'
+    local f_key_val_str     <const> = "\n" .. '%w"%s" : "%s"'
+    local f_key_val_num     <const> = f_key_val_seq
+    local f_key_val_yes     <const> = "\n" .. '%w"%s" : true'
+    local f_key_val_nop     <const> = "\n" .. '%w"%s" : false'
+    local f_key_val_null    <const> = "\n" .. '%w"%s" : null'
 
-    local f_val_num         = "\n" .. '%w%s'
-    local f_val_str         = "\n" .. '%w"%s"'
-    local f_val_yes         = "\n" .. '%wtrue'
-    local f_val_nop         = "\n" .. '%wfalse'
-    local f_val_null        = "\n" .. '%wnull'
-    local f_val_empty       = "\n" .. '%w{ }'
-    local f_val_seq         = f_val_num
+    local f_val_num         <const> = "\n" .. '%w%s'
+    local f_val_str         <const> = "\n" .. '%w"%s"'
+    local f_val_yes         <const> = "\n" .. '%wtrue'
+    local f_val_nop         <const> = "\n" .. '%wfalse'
+    local f_val_null        <const> = "\n" .. '%wnull'
+    local f_val_empty       <const> = "\n" .. '%w{ }'
+    local f_val_seq         <const> = f_val_num
 
     -- no empty tables because unknown if table or hash
 

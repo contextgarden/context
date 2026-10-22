@@ -7,14 +7,17 @@ if not modules then modules = { } end modules ['strc-reg'] = {
 }
 
 local next, type, tonumber, rawget = next, type, tonumber, rawget
-local char, format, gmatch = string.char, string.format, string.gmatch
+local char, gmatch = string.char, string.gmatch
 local equal, concat, remove = table.are_equal, table.concat, table.remove
 local lpegmatch, lpegpatterns, P, C, Ct, Cs = lpeg.match, lpeg.patterns, lpeg.P, lpeg.C, lpeg.Ct, lpeg.Cs
 local allocate = utilities.storage.allocate
 
-local trace_registers    = false  trackers.register("structures.registers", function(v) trace_registers = v end)
+local trace_registers      = false  trackers.register("structures.registers", function(v) trace_registers = v end)
 
 local report_registers     = logs.reporter("structure","registers")
+
+local formatting           = string.formatting
+local formatted            = string.formatted
 
 local structures           = structures
 local registers            = structures.registers
@@ -314,7 +317,7 @@ local function filtercollected(names,criterium,number,collected,prevmode)
         local depth = sections.getlevel(criterium)
         local number = tonumber(number) or numberatdepth(depth) or 0
         if trace_registers then
-            detail = format("depth: %s, number: %s, numbers: %s, startset: %s",depth,number,concat(sections.numbers(),".",1,depth),#collected)
+            detail = formatted("depth: %s, number: %s, numbers: %s, startset: %s",depth,number,concat(sections.numbers(),".",1,depth),#collected)
         end
         if number > 0 then
             for i=1,#collected do
@@ -1134,6 +1137,8 @@ function registers.tweak(data,options)
     -- Just in case it's needed.
 end
 
+local f_prefix = formatting("%03i")
+
 local function analyzeregister(class,options)
     local data = rawget(collected,class)
     if not data then
@@ -1162,7 +1167,7 @@ local function analyzeregister(class,options)
             if d then
                 local e = d.entries
              -- local u = u and { u.prefix } or nil
-                local u = multiple and { string.formatters["%03i"](i) } or nil -- maybe prefix but then how about main
+                local u = multiple and { formatted(f_prefix,i) } or nil -- maybe prefix but then how about main
                 for i=1,#e do
                     -- see has no pagedata
                     local ei = e[i]

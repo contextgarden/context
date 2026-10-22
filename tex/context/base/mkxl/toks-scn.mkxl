@@ -15,9 +15,9 @@
 
 \unprotect
 
-\registerctxluafile{toks-scn}{}
+\registerctxluafile{toks-scn}{autosuffix}
 \registerctxluafile{cldf-scn}{}
 \registerctxluafile{cldf-stp}{}
-\registerctxluafile{cldf-lmt}{}
+\registerctxluafile{cldf-lmt}{autosuffix}
 
 \protect \endinput

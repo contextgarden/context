@@ -117,45 +117,35 @@ local targetpath = "."
 -- environment.jobname = tex.jobname
 -- environment.version = tostring(tex.toks.contextversiontoks)
 
--- traditionally the revision has been a one character string and only
--- pdftex went beyond "9" but anyway we test for it
+environment.luametatexengine        = string.lower(status.luametatex_engine or status.luatex_engine or "luametatex")
+environment.luametatexversion       = status.version
+environment.luametatexverbose       = status.luametatex_verbose or status.luatex_verbose
+environment.luametatexfunctionality = status.functionality
+environment.luametatexformatid      = status.format_id
 
-if LUATEXENGINE == nil then
-    LUATEXENGINE = status.luatex_engine and string.lower(status.luatex_engine) or "luametatex"
-end
+environment.luatexengine            = environment.luametatexengine
+environment.luatexversion           = environment.luametatexversion
+environment.luatexverbose           = environment.luametatexverbose
+environment.luatexfunctionality     = environment.luametatexfunctionality
+environment.luatexformatid          = environment.luametatexformatid
 
-if LUATEXVERSION == nil then
-    LUATEXVERSION = status.version
-end
+environment.luaversion              = status.lua_version
+environment.luaformat               = status.lua_format
 
-if LUATEXVERBOSE == nil then
-    LUATEXVERBOSE = status.luatex_verbose
-end
+environment.initexmode              = status.run_state == 0
+environment.initex                  = environment.initexmode
 
-if CONTEXTLMTXMODE == nil then
-    CONTEXTLMTXMODE = 1
-end
+environment.contextlmtxmode         = 1
 
-if LUATEXFUNCTIONALITY == nil then
-    LUATEXFUNCTIONALITY = status.development_id or 6346
-end
+-- status.toversion     (major,minor,release)
+-- status.fromversion   (version)
+-- status.currentversion()
+--
+-- usage: status.currentversion() > status.toversion(1,12,25))
 
-if LUATEXFORMATID == nil then
-    LUATEXFORMATID = status.format_id or 0
-end
+CONTEXTLMTXMODE = 1 -- todo: use environment.contextlmtxmode everywhere
 
-if INITEXMODE == nil then
-    INITEXMODE = status.run_state == 0 -- initializing updating production
-end
-
-environment.luatexengine        = LUATEXENGINE
-environment.luatexversion       = LUATEXVERSION
-environment.luatexverbose       = LUATEXVERBOSE
-environment.luatexfunctionality = LUATEXFUNCTIONALITY
-environment.initex              = INITEXMODE
-environment.initexmode          = INITEXMODE
-
-if INITEXMODE then
+if environment.initexmode then
 
     local finalizers = { }
 

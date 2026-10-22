@@ -10,9 +10,11 @@ utilities            = utilities or { }
 utilities.formatters = utilities.formatters or { }
 local formatters     = utilities.formatters
 
-local concat, format = table.concat, string.format
 local tostring, type, unpack = tostring, type, unpack
-local strip = string.strip
+
+local concat    = table.concat
+local strip     = string.strip
+local formatted = string.formatted or string.format
 
 local lpegmatch = lpeg.match
 local stripper  = lpeg.patterns.stripzeros
@@ -84,7 +86,7 @@ function formatters.formatcolumns(result,between,header)
         end
         local template = strip(concat(templates))
         for i=1,#result do
-            local str = format(template,unpack(result[i]))
+            local str = formatted(template,unpack(result[i]))
             result[i] = strip(str)
         end
         if header then
@@ -100,7 +102,7 @@ function formatters.formatcolumns(result,between,header)
             end
             local template = strip(concat(templates))
             for i=1,#header do
-                local str = format(template,unpack(header[i]))
+                local str = formatted(template,unpack(header[i]))
                 header[i] = strip(str)
             end
         end

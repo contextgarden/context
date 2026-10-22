@@ -118,7 +118,7 @@ add_library(softposit STATIC ${softposit_sources})
 target_include_directories(softposit PRIVATE
     source/libraries/softposit/source
     source/libraries/softposit/source/include
-    source/libraries/softposit/build/Linux-x86_64-GCC
+  # source/libraries/softposit/build/Linux-x86_64-GCC
 )
 
 target_compile_options(softposit PRIVATE

@@ -24,13 +24,9 @@ if not globals then
     globaldata = _G -- preferred
 end
 
-LUATEXVERSION       = status.version
-LUATEXVERBOSE       = status.luatex_verbose
-LUATEXENGINE        = string.lower(status.luatex_engine or "luametatex")
-LUATEXFUNCTIONALITY = status.development_id or 6346
-LUATEXFORMATID      = status.format_id or 0
-INITEXMODE          = status.ini_version
-CONTEXTLMTXMODE     = 1
+-- The same as in luat-cod.lmt:
+
+CONTEXTLMTXMODE = 1
 
 function os.setlocale()
     -- no need for a message

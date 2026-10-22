@@ -15,6 +15,9 @@ local implement    = interfaces.implement
 
 local report_files = logs.reporter("system","files")
 
+-- Because we can have various suffixes (tex, cml, cld, etc) we make the suffix
+-- mandate so no automatic .tex append and checking!
+
 function environment.initializefilenames()
 
     local arguments      = environment.arguments
@@ -22,7 +25,6 @@ function environment.initializefilenames()
     local jobname        = arguments.jobname
     local fulljobname    = arguments.fulljobname
     local inputfilename  = arguments.input
-
     if not fulljobname then
         fulljobname = inputfilename or tex.jobname
     end
@@ -62,9 +64,7 @@ function environment.initializefilenames()
     environment.filename          = filename
     environment.suffix            = suffix
 
- -- if tex then
- --     tex.jobname = jobfilename
- -- end
+    tex.jobname                   = jobfilename -- because the engine strips a suffix
 
     report_files("jobname %a, input %a, result %a",jobfilename,inputfilename,outputfilename)
 

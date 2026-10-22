@@ -5,16 +5,16 @@
 # include "luametatex.h"
 
 engine_state_info lmt_engine_state = {
-    .lua_init         = 0,
-    .lua_only         = 0,
-    .luatex_banner    = NULL,
-    .engine_name      = NULL,
-    .startup_filename = NULL,
-    .startup_jobname  = NULL,
-    .dump_name        = NULL,
-    .utc_time         = 0,
-    .permit_loadlib   = 0,
-    .permit_shebang   = load_shebang_enabled,
+    .lua_init          = 0,
+    .lua_only          = 0,
+    .luametatex_banner = NULL,
+    .engine_name       = NULL,
+    .startup_filename  = NULL,
+    .startup_jobname   = NULL,
+    .dump_name         = NULL,
+    .utc_time          = 0,
+    .permit_loadlib    = 0,
+    .permit_shebang    = load_shebang_enabled,
 };
 
 /*tex
@@ -48,25 +48,25 @@ typedef struct environment_state_info {
     char  *owncore;
     char  *ownlink;
     char  *input_name;
-    int    luatex_lua_offset;
+    int    lua_offset;
     int    padding;
 } environment_state_info;
 
 static environment_state_info lmt_environment_state = {
-    .argv              = NULL,
-    .argc              = 0,
-    .npos              = 0,
-    .flag              = NULL,
-    .value             = NULL,
-    .name              = NULL,
-    .ownpath           = NULL,
-    .ownbase           = NULL,
-    .ownname           = NULL,
-    .owncore           = NULL,
-    .ownlink           = NULL,
-    .input_name        = NULL,
-    .luatex_lua_offset = 0,
-    .padding           = 0,
+    .argv       = NULL,
+    .argc       = 0,
+    .npos       = 0,
+    .flag       = NULL,
+    .value      = NULL,
+    .name       = NULL,
+    .ownpath    = NULL,
+    .ownbase    = NULL,
+    .ownname    = NULL,
+    .owncore    = NULL,
+    .ownlink    = NULL,
+    .input_name = NULL,
+    .lua_offset = 0,
+    .padding    = 0,
 };
 
 /*tex todo: make helpers in |lmtoslibext| which has similar code */
@@ -236,9 +236,13 @@ static void enginelib_show_version_info(void)
         "version. For more information about these matters, see the file named COPYING\n"
         "and the LuaMetaTeX source.\n"
         "\n"
-        "Functionality : level " LMT_TOSTRING(luametatex_development_id) "\n"
+        "Functionality : level " LMT_TOSTRING(luametatex_functionality) "\n"
         "Support       : " luametatex_support_address "\n"
-        "Copyright     : The Lua(Meta)TeX Team(s) (2005-2024+)\n"
+        "Copyright     : The Lua(Meta)TeX Team(s) (2005-2026+)\n"
+# if defined(LMT_DISTRIBUTION_USED)
+        "\n"
+        "Distribution  : " LMT_DISTRIBUTION_USED "\n"
+# endif
         "\n"
         "The LuaMetaTeX project is related to ConTeXt development. This macro package\n"
         "tightly integrates TeX and MetaPost in close cooperation with Lua. Updates will\n"
@@ -350,7 +354,7 @@ static void enginelib_show_credits(void)
         "simple foreign interface subsystem. Although this is provided and considered part of the\n"
         "LuaMetaTeX engine it is not something ConTeXt depends (and will) depend on.\n"
         "\n"
-        "version    : " luametatex_version_string " | " LMT_TOSTRING(luametatex_development_id) "\n"
+        "version    : " luametatex_version_string " | " LMT_TOSTRING(luametatex_functionality) "\n"
         "format id  : " LMT_TOSTRING(luametatex_format_fingerprint) "\n"
 # ifdef __DATE__
         "date       : " __TIME__ " | " __DATE__ "\n"
@@ -492,7 +496,7 @@ static void enginelib_parse_options(void)
         if (aux_is_readable(firstfile)) {
             lmt_memory_free(lmt_engine_state.startup_filename);
             lmt_engine_state.startup_filename = firstfile;
-            lmt_environment_state.luatex_lua_offset = 0;
+            lmt_environment_state.lua_offset = 0;
             lmt_engine_state.lua_only = 1;
             lmt_engine_state.lua_init = 1;
             return;
@@ -511,13 +515,13 @@ static void enginelib_parse_options(void)
             continue;
         } else if (strcmp(lmt_environment_state.flag, "luaonly") == 0) {
             lmt_engine_state.lua_only = 1;
-            lmt_environment_state.luatex_lua_offset = i;
+            lmt_environment_state.lua_offset = i;
             lmt_engine_state.lua_init = 1;
         } else if (strcmp(lmt_environment_state.flag, "lua") == 0) {
             if (lmt_environment_state.value) {
                 lmt_memory_free(lmt_engine_state.startup_filename);
                 lmt_engine_state.startup_filename = lmt_memory_strdup(lmt_environment_state.value);
-                lmt_environment_state.luatex_lua_offset = i - 1;
+                lmt_environment_state.lua_offset = i - 1;
                 lmt_engine_state.lua_init = 1;
             }
         } else if (strcmp(lmt_environment_state.flag, "jobname") == 0) {
@@ -555,7 +559,7 @@ static void enginelib_parse_options(void)
         if (lmt_engine_state.lua_only) {
             if (! lmt_engine_state.startup_filename) {
                 lmt_engine_state.startup_filename = lmt_memory_strdup(lmt_environment_state.argv[lmt_environment_state.npos]);
-                lmt_environment_state.luatex_lua_offset = lmt_environment_state.npos;
+                lmt_environment_state.lua_offset = lmt_environment_state.npos;
             }
         } else if (lmt_environment_state.argv[lmt_environment_state.npos][0] == '&') {
             /*tex This is historic but and might go away. */
@@ -578,7 +582,7 @@ static void enginelib_parse_options(void)
                         lmt_memory_free(firstfile);
                     } else {
                         lmt_engine_state.startup_filename = firstfile;
-                        lmt_environment_state.luatex_lua_offset = lmt_environment_state.npos;
+                        lmt_environment_state.lua_offset = lmt_environment_state.npos;
                         lmt_engine_state.lua_only = 1;
                         lmt_engine_state.lua_init = 1;
                     }
@@ -664,7 +668,7 @@ void tex_engine_initialize(int ac, char **av)
     lmt_engine_state.startup_jobname = NULL;
     lmt_engine_state.engine_name = luametatex_name_lowercase;
     lmt_engine_state.dump_name = NULL;
-    lmt_engine_state.luatex_banner = lmt_memory_strdup(lmt_version_state.banner);
+    lmt_engine_state.luametatex_banner = lmt_memory_strdup(lmt_version_state.banner);
     /* preparations */
     lmt_environment_state.ownpath = aux_utf8_getownpath(lmt_environment_state.argv[0]);
     lmt_environment_state.ownlink = aux_utf8_readlink(lmt_environment_state.ownpath);
@@ -691,7 +695,7 @@ void tex_engine_initialize(int ac, char **av)
     lmt_tokenlib_initialize();
     lmt_fontlib_initialize();
     /*tex Collect arguments. */
-    enginelib_prepare_cmdline(lmt_environment_state.luatex_lua_offset);
+    enginelib_prepare_cmdline(lmt_environment_state.lua_offset);
     if (lmt_engine_state.startup_filename && ! aux_is_readable(lmt_engine_state.startup_filename)) {
         lmt_memory_free(lmt_engine_state.startup_filename);
         lmt_engine_state.startup_filename = NULL;

@@ -340,7 +340,7 @@ width = round(width)
         return formatted(template,width,llx,lly,urx,ury,xsize,ysize,llx,lly,xsize,ysize,result), width
     end
 
-    local template = [[
+    local template <const> = [[
 %N 0 %N %N %N %N d1
 1 0 0 1 %N %N cm
 %t h f
@@ -348,9 +348,9 @@ width = round(width)
 
 -- S
 
-    local f_curveto = "%N %N %N %N %N %N c"
-    local f_moveto  = "%N %N m"
-    local f_lineto  = "%N %N l"
+    local f_curveto <const> = "%N %N %N %N %N %N c"
+    local f_moveto  <const> = "%N %N m"
+    local f_lineto  <const> = "%N %N l"
 
     function readers.potracedtopdf(glyph,data,factor,settings)
         local width   = data.width * factor
@@ -389,10 +389,10 @@ width = round(width)
                 ri[ni+1] = " "
                 result[i] = concat(ri," ")
             end
-llx = round(llx)
-lly = round(lly)
-urx = round(urx)
-ury = round(ury)
+            llx = round(llx)
+            lly = round(lly)
+            urx = round(urx)
+            ury = round(ury)
             return formatted(template,width,llx,lly,urx,ury,llx,lly,result), width
         end
 

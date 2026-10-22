@@ -15,6 +15,8 @@ local gmatch = string.gmatch
 
 local report = logs.reporter("metapost","bytemap")
 
+local formatted   = string.formatted
+
 local starttiming = statistics.starttiming
 local stoptiming  = statistics.stoptiming
 local elapsedtime = statistics.elapsedtime
@@ -24,7 +26,7 @@ local processbytemap   = mp.processbytemap
 local getbytemapdirect = mp.getbytemapdirect
 local getparameterset  = metapost.getparameterset
 
-local f_function = [[
+local f_function <const> = [[
     local math  = math
     local round = math.round
     %s
@@ -44,7 +46,7 @@ function mp.lmt_bytemap_do()
         action = MP[colorfunction] or document[colorfunction]
     end
     if type(action) ~= "function" and colorcode ~= "" then
-        colorcode = string.formatters[f_function](preamble,colorcode)
+        colorcode = formatted[f_function,preamble,colorcode)
         action = load(colorcode)
         if type(action) == "function" then
             action = action()
@@ -56,7 +58,7 @@ function mp.lmt_bytemap_do()
     processbytemap(mpbytemap,action,true)
 end
 
--- local f_function = [[
+-- local f_function <const> = [[
 --     local math  = math
 --     local round = math.round
 --     %s
@@ -76,7 +78,7 @@ function mp.lmt_domainmap_do()
         action = MP[domainfunction] or document[domainfunction]
     end
  -- if type(action) ~= "function" then
- --     domaincode = string.formatters[f_function](preamble,domaincode)
+ --     domaincode = formatted(f_function,preamble,domaincode)
  --     action = load(domaincode)
  --     if type(action) == "function" then
  --         action = action()

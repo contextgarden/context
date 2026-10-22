@@ -14,7 +14,7 @@ typedef enum permits_shebang_modes {
 typedef struct engine_state_info {
     int         lua_init;
     int         lua_only;
-    const char *luatex_banner;
+    const char *luametatex_banner;
     const char *engine_name;
     char       *startup_filename;
     char       *startup_jobname;

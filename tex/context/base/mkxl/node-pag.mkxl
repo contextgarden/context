@@ -15,6 +15,6 @@
 
 \unprotect
 
-\registerctxluafile{node-pag}{}
+\registerctxluafile{node-pag}{autosuffix}
 
 \protect \endinput

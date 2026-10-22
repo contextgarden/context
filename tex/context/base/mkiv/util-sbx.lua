@@ -211,14 +211,14 @@ local function normalizedreadable(name,finalized)
     end
 end
 
-local function writeable(name,finalized)
+local function writable(name,finalized)
 --     if platform == "windows" then
 --         name = lower(name) -- we assume ascii names
 --     end
     return validfilename(name,"w")
 end
 
-local function normalizedwriteable(name,finalized)
+local function normalizedwritable(name,finalized)
 --     if platform == "windows" then
 --         name = lower(name) -- we assume ascii names
 --     end
@@ -228,11 +228,11 @@ local function normalizedwriteable(name,finalized)
     end
 end
 
-validators.readable            = readable
-validators.writeable           = normalizedwriteable
-validators.normalizedreadable  = normalizedreadable
-validators.normalizedwriteable = writeable
-validators.filename            = readable
+validators.readable           = readable
+validators.writable           = normalizedwritable
+validators.normalizedreadable = normalizedreadable
+validators.normalizedwritable = writable
+validators.filename           = readable
 
 table.setmetatableindex(validators,function(t,k)
     if k then

@@ -12,7 +12,7 @@ if not modules then modules = { } end modules ['spac-prf'] = {
 
 local unpack, rawget = unpack, rawget
 
-local formatters        = string.formatters
+----- formatted         = string.formatted
 
 local nodecodes         = nodes.nodecodes
 local gluecodes         = nodes.gluecodes
@@ -394,8 +394,8 @@ local function addprofile(node,profile,step)
  -- if texttoo then
  --
  --     local text = addstring(
- --         formatters["%0.4f"](getheight(rule)/65536),
- --         formatters["%0.4f"](getdepth(rule) /65536)
+ --         formatted("%0.4f",getheight(rule)/65536),
+ --         formatted("%0.4f",getdepth(rule) /65536)
  --     )
  --
  --     setlink(text,rule)
@@ -1205,17 +1205,15 @@ do
 --     local d = { }
 --     local t = { }
 --     local o = { }
---     local f = formatters["%.5f"]
---     local s = formatters["%9s"]
 --     local p = possible/65536
 --     for i=1,steps do
 --         local ht = heights[i]/65536
 --         local dp = depths [i]/65536
 --         local hd = ht + dp
---         h[i] = s(f(ht))
---         d[i] = s(f(dp))
---         t[i] = s(f(hd))
---         o[i] = s(f(hd - p))
+--         h[i] = formatted("% 10.5f",ht)
+--         d[i] = formatted("% 10.5f",dp)
+--         t[i] = formatted("% 10.5f",hd)
+--         o[i] = formatted("% 10.5f",hd - p)
 --     end
 --     report("steps      : %i",steps)
 --     report("amount     : %.5f",amount/65536)

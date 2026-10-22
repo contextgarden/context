@@ -24,8 +24,8 @@ do
 
     local n = 0 -- hm, number can be query
 
-    local f_virtual_n = "virtual://%s.%s"
-    local f_virtual_y = "virtual://%s-%s.%s"
+    local f_virtual_n <const> = "virtual://%s.%s"
+    local f_virtual_y <const> = "virtual://%s-%s.%s"
 
     local function virtualname(specification,suffix)
         n = n + 1 -- one number for all namespaces

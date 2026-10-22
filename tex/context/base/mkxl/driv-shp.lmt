@@ -1675,7 +1675,10 @@ local hlist_out, vlist_out  do
                 end
                 cur_v = cur_v + height + depth
             elseif id == kern_code then
-                cur_v = cur_v + getkern(current)
+                local kern = getkern(current)
+                if kern ~= 0 then
+                    cur_v = cur_v + kern
+                end
             elseif id == rule_code then
                 local width, height, depth, virtual = getruledimensions(current)
                 local total = height + depth

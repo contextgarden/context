@@ -1523,13 +1523,12 @@ static int fiolib_readcline(lua_State *L)
             }
         } while (c != EOF);
         goto BAD;
-      GOOD:
-        if (n > 0) {
-            luaL_addsize(&buf, n);
-            luaL_pushresult(&buf);
-        } else {
-            lua_pushnil(L);
+        if (n == 0) {
+            goto BAD;
         }
+      GOOD:
+        luaL_addsize(&buf, n);
+        luaL_pushresult(&buf);
         lua_pushinteger(L, (lua_Integer) l_ftell(f));
         return 2;
     }
@@ -1656,6 +1655,68 @@ static int siolib_readcstring(lua_State *L)
     lua_pushnil(L);
  // lua_pushinteger(L, p + 1);
  // return 2;
+    return 1;
+}
+
+/* */
+
+static int fiolib_readnstring(lua_State *L)
+{
+    FILE *f = lmt_valid_file(L);
+    size_t n = (size_t) luaL_checkinteger(L, 2);
+    if (! f) {
+        lua_pushnil(L);
+        return 1;
+    }
+    luaL_Buffer buf;
+    char *b = luaL_buffinitsize(L, &buf, n);
+    size_t bytes_read = fread(b, 1, n, f);
+    if (bytes_read == 0) {
+        lua_pushliteral(L, "");
+        lua_pushinteger(L, (lua_Integer) l_ftell(f));
+        return 2;
+    }
+    char *nul = memchr(b, '\0', bytes_read);
+    size_t len = nul ? (size_t) (nul - b) : bytes_read;
+    luaL_addsize(&buf, len);
+    luaL_pushresult(&buf);
+    lua_pushinteger(L, (lua_Integer) l_ftell(f));
+    return 2;
+}
+
+static int siolib_readnstring(lua_State *L)
+{
+    size_t p, l;
+    int mode;
+    const char *s = siolib_okay(L, 0, &p, &l, &mode);
+    lua_Integer max_n = luaL_checkinteger(L, 2);
+    if (s) {
+        size_t i = p;
+        size_t n = 0;
+        int found_nul = 0;
+        while (p < l && (lua_Integer)n < max_n) {
+            int c = uchar(s[p++]);
+            if (c == '\0') {
+                found_nul = 1;
+                break;
+            } else {
+                n++;
+            }
+        }
+        if (n > 0 || found_nul) {
+            /* also skip the nul when found */
+            size_t consumed = found_nul ? n + 1 : n;
+            siolib_done(L, mode, consumed);
+            lua_pushlstring(L, &s[i], n);
+        } else {
+            siolib_done(L, mode, 1);
+            lua_pushliteral(L, "");
+        }
+        lua_pushinteger(L, p + 1);
+        return 2;
+    }
+    siolib_done(L, mode, 1);
+    lua_pushnil(L);
     return 1;
 }
 
@@ -1904,6 +1965,7 @@ static const luaL_Reg fiolib_function_list[] = {
 
     { "readcline",         fiolib_readcline         },
     { "readcstring",       fiolib_readcstring       },
+    { "readnstring",       fiolib_readnstring       },
 
     { "writecardinal1",    fiolib_writecardinal1    },
     { "writecardinal2",    fiolib_writecardinal2    },
@@ -1966,6 +2028,7 @@ static const luaL_Reg siolib_function_list[] = {
 
     { "readcline",         siolib_readcline         },
     { "readcstring",       siolib_readcstring       },
+    { "readnstring",       siolib_readnstring       },
 
     { "tocardinal1",       siolib_tocardinal1       },
     { "tocardinal2",       siolib_tocardinal2       },
@@ -2104,7 +2167,7 @@ static inline int io_aux_check_open(lua_State *L, const char **filename, const c
         errno = EACCES;
         return 0;
     }
-    if (is_write && ! lmt_valid_target(L, security_writeable, *filename, security_open_file)) {
+    if (is_write && ! lmt_valid_target(L, security_writable, *filename, security_open_file)) {
         errno = EACCES;
         return 0;
     }

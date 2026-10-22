@@ -54,15 +54,18 @@ if not modules then modules = { } end modules ['lpdf-fld'] = {
 -- printing especially when highlighting (those colorfull foregrounds) is on.
 
 local tostring, tonumber, next = tostring, tonumber, next
-local gmatch, lower, format, formatters = string.gmatch, string.lower, string.format, string.formatters
+local gmatch, lower = string.gmatch, string.lower
 local lpegmatch = lpeg.match
 local todimen = string.todimen
 local sortedhash = table.sortedhash
 local trace_fields = false  trackers.register("backend.fields", function(v) trace_fields = v end)
 
-local report_fields = logs.reporter("backend","fields")
+local report_fields           = logs.reporter("backend","fields")
 
 local context                 = context
+
+local formatting              = string.formatting
+local formatted               = string.formatted
 
 local bpfactor                <const> = number.dimenfactors.bp
 
@@ -332,6 +335,8 @@ local fontnames = {
 
 local usedfonts = { }
 
+local f_font    = formatting("%0.6N Tf %0.6N Ts")
+
 local function fieldsurrounding(specification)
     local fontsize        = specification.fontsize or "12pt"
     local fontstyle       = specification.fontstyle or "rm"
@@ -350,7 +355,7 @@ local function fieldsurrounding(specification)
     fontsize  = todimen(fontsize)
     fontsize  = fontsize and (bpfactor * fontsize) or 12
     fontraise = 0.1 * fontsize -- todo: figure out what the natural one is and compensate for strutdp
-    local fontcode  = formatters["%0.4F Tf %0.4F Ts"](fontsize,fontraise)
+    local fontcode  = formatted(f_font,fontsize,fontraise)
     -- we could test for colorvalue being 1 (black) and omit it then
     local colorcode = pdfcolor(3,colorvalue) -- we force an rgb color space
     if trace_fields then
@@ -359,7 +364,7 @@ local function fieldsurrounding(specification)
     end
     local stream = pdfstream {
         pdfconstant(tag),
-        formatters["%s %s"](fontcode,colorcode)
+        formatted("%s %s",fontcode,colorcode)
     }
     usedfonts[tag] = a -- the name
     -- move up with "x.y Ts"
@@ -692,10 +697,10 @@ local xfdftemplate <const> = [[
 function codeinjections.exportformdata(name)
     local result = { }
     for k, v in sortedhash(fields) do
-        result[#result+1] = formatters["    <field name='%s'><value>%s</value></field>"](v.name or k,v.default or "")
+        result[#result+1] = formatted("    <field name='%s'><value>%s</value></field>",v.name or k,v.default or "")
     end
     local base = file.basename(tex.jobname)
-    local xfdf = format(xfdftemplate,base,table.concat(result,"\n"))
+    local xfdf = formatted(xfdftemplate,base,table.concat(result,"\n"))
     if not name or name == "" then
         name = base
     end

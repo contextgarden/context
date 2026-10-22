@@ -14,7 +14,8 @@ if not modules then modules = { } end modules ['spac-ver'] = {
 
 local next, type, tonumber = next, type, tonumber
 local gmatch = string.gmatch
-local formatters = string.formatters
+
+local formatted    = string.formatted
 
 local nodes        =  nodes
 local trackers     =  trackers
@@ -435,9 +436,9 @@ local snap_hlist  do
         local list = getlist(current)
         local t = trace_vsnapping and { }
         if t then
-            t[#t+1] = formatters["list content: %s"](listtoutf(list))
-            t[#t+1] = formatters["snap method: %s"](method.name) -- not interfaced
-            t[#t+1] = formatters["specification: %s"](method.specification) -- not interfaced
+            t[#t+1] = formatted("list content: %s",listtoutf(list))
+            t[#t+1] = formatted("snap method: %s",method.name) -- not interfaced
+            t[#t+1] = formatted("specification: %s",method.specification) -- not interfaced
         end
         local snapht, snapdp
         if method[v_local] then
@@ -445,13 +446,13 @@ local snap_hlist  do
             snapht = texgetdimen(d_bodyfontstrutheight)
             snapdp = texgetdimen(d_bodyfontstrutdepth)
             if t then
-                t[#t+1] = formatters["local: snapht %p snapdp %p"](snapht,snapdp)
+                t[#t+1] = formatted("local: snapht %p snapdp %p",snapht,snapdp)
             end
         elseif method[v_global] then
             snapht = texgetdimen(d_globalbodyfontstrutheight)
             snapdp = texgetdimen(d_globalbodyfontstrutdepth)
             if t then
-                t[#t+1] = formatters["global: snapht %p snapdp %p"](snapht,snapdp)
+                t[#t+1] = formatted("global: snapht %p snapdp %p",snapht,snapdp)
             end
         else
             -- maybe autolocal
@@ -464,7 +465,7 @@ local snap_hlist  do
                 snapht, snapdp = lsnapht, lsnapdp
             end
             if t then
-                t[#t+1] = formatters["auto: snapht %p snapdp %p"](snapht,snapdp)
+                t[#t+1] = formatted("auto: snapht %p snapdp %p",snapht,snapdp)
             end
         end
         --
@@ -501,8 +502,8 @@ local snap_hlist  do
         local extra    = 0
 
         if t then
-            t[#t+1] = formatters["hlist: wd %p ht %p (used %p) dp %p (used %p)"](wd,ht,h,dp,d)
-            t[#t+1] = formatters["fractions: hfraction %s dfraction %s bfraction %s tlines %s blines %s"](hr,dr,br,tlines,blines)
+            t[#t+1] = formatted("hlist: wd %p ht %p (used %p) dp %p (used %p)",wd,ht,h,dp,d)
+            t[#t+1] = formatted("fractions: hfraction %s dfraction %s bfraction %s tlines %s blines %s",hr,dr,br,tlines,blines)
         end
         if method[v_box] then
             local br = 1 - br
@@ -516,7 +517,7 @@ local snap_hlist  do
             plusht = h + x / 2
             plusdp = d + x / 2
             if t then
-                t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_box,plusht,plusdp)
+                t[#t+1] = formatted("%s: plusht %p plusdp %p",v_box,plusht,plusdp)
             end
         elseif method[v_max] then
             local n = ceiled((h+d)/snaphtdp)
@@ -524,7 +525,7 @@ local snap_hlist  do
             plusht = h + x / 2
             plusdp = d + x / 2
             if t then
-                t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_max,plusht,plusdp)
+                t[#t+1] = formatted("%s: plusht %p plusdp %p",v_max,plusht,plusdp)
             end
         elseif method[v_min] then
             -- we catch a lone min
@@ -541,12 +542,12 @@ local snap_hlist  do
                 end
             end
             if t then
-                t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_min,plusht,plusdp)
+                t[#t+1] = formatted("%s: plusht %p plusdp %p",v_min,plusht,plusdp)
             end
         elseif method[v_none] then
             plusht, plusdp = 0, 0
             if t then
-                t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_none,0,0)
+                t[#t+1] = formatted("%s: plusht %p plusdp %p",v_none,0,0)
             end
         end
         -- for now, we actually need to tag a box and then check at several points if something ended up
@@ -556,7 +557,7 @@ local snap_hlist  do
             plusht = plusht + extra
             plusdp = plusdp + extra
             if t then
-                t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_halfline,plusht,plusdp)
+                t[#t+1] = formatted("%s: plusht %p plusdp %p",v_halfline,plusht,plusdp)
             end
         end
         if method[v_line] then -- extra line
@@ -564,7 +565,7 @@ local snap_hlist  do
             plusht = plusht + extra
             plusdp = plusdp + extra
             if t then
-                t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_line,plusht,plusdp)
+                t[#t+1] = formatted("%s: plusht %p plusdp %p",v_line,plusht,plusdp)
             end
         end
         if method[v_halfline_m] then -- extra halfline
@@ -572,7 +573,7 @@ local snap_hlist  do
             plusht = plusht + extra
             plusdp = plusdp + extra
             if t then
-                t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_halfline_m,plusht,plusdp)
+                t[#t+1] = formatted("%s: plusht %p plusdp %p",v_halfline_m,plusht,plusdp)
             end
         end
         if method[v_line_m] then -- extra line
@@ -580,7 +581,7 @@ local snap_hlist  do
             plusht = plusht + extra
             plusdp = plusdp + extra
             if t then
-                t[#t+1] = formatters["%s: plusht %p plusdp %p"](v_line_m,plusht,plusdp)
+                t[#t+1] = formatted("%s: plusht %p plusdp %p",v_line_m,plusht,plusdp)
             end
         end
         if method[v_first] then
@@ -600,8 +601,8 @@ local snap_hlist  do
                 if lh then
                     local wd, ht, dp = getwhd(thebox)
                     if t then
-                        t[#t+1] = formatters["first line: height %p depth %p"](lh,ld)
-                        t[#t+1] = formatters["dimensions: height %p depth %p"](ht,dp)
+                        t[#t+1] = formatte("first line: height %p depth %p",lh,ld)
+                        t[#t+1] = formatte("dimensions: height %p depth %p",ht,dp)
                     end
                     local delta = h - lh
                     ch, cd = lh, delta + d
@@ -611,7 +612,7 @@ local snap_hlist  do
                     setlist(current,shifted)
                     done = true
                     if t then
-                        t[#t+1] = formatters["first: height %p depth %p shift %p"](ch,cd,delta)
+                        t[#t+1] = formatted("first: height %p depth %p shift %p",ch,cd,delta)
                     end
                 elseif t then
                     t[#t+1] = "first: not done, no content"
@@ -635,8 +636,8 @@ local snap_hlist  do
                 if lh then
                     local wd, ht, dp = getwhd(thebox)
                     if t then
-                        t[#t+1] = formatters["last line: height %p depth %p" ](lh,ld)
-                        t[#t+1] = formatters["dimensions: height %p depth %p"](ht,dp)
+                        t[#t+1] = formatted("last line: height %p depth %p",lh,ld)
+                        t[#t+1] = formatted("dimensions: height %p depth %p",ht,dp)
                     end
                     local delta = d - ld
                     cd, ch = ld, delta + h
@@ -646,7 +647,7 @@ local snap_hlist  do
                     setlist(current,shifted)
                     done = true
                     if t then
-                        t[#t+1] = formatters["last: height %p depth %p shift %p"](ch,cd,delta)
+                        t[#t+1] = formatted("last: height %p depth %p shift %p",ch,cd,delta)
                     end
                 elseif t then
                     t[#t+1] = "last: not done, no content"
@@ -658,45 +659,45 @@ local snap_hlist  do
         if method[v_minheight] then
             ch = floored((h-hr*snapht)/snaphtdp)*snaphtdp + plusht
             if t then
-                t[#t+1] = formatters["minheight: %p"](ch)
+                t[#t+1] = formatted("minheight: %p",ch)
             end
         elseif method[v_maxheight] then
             ch = ceiled((h-hr*snapht)/snaphtdp)*snaphtdp + plusht
             if t then
-                t[#t+1] = formatters["maxheight: %p"](ch)
+                t[#t+1] = formatted("maxheight: %p",ch)
             end
         else
             ch = plusht
             if t then
-                t[#t+1] = formatters["set height: %p"](ch)
+                t[#t+1] = formatted("set height: %p",ch)
             end
         end
         if method[v_mindepth] then
             cd = floored((d-dr*snapdp)/snaphtdp)*snaphtdp + plusdp
             if t then
-                t[#t+1] = formatters["mindepth: %p"](cd)
+                t[#t+1] = formatted("mindepth: %p",cd)
             end
         elseif method[v_maxdepth] then
             cd = ceiled((d-dr*snapdp)/snaphtdp)*snaphtdp + plusdp
             if t then
-                t[#t+1] = formatters["maxdepth: %p"](cd)
+                t[#t+1] = formatted("maxdepth: %p",cd)
             end
         else
             cd = plusdp
             if t then
-                t[#t+1] = formatters["set depth: %p"](cd)
+                t[#t+1] = formatted("set depth: %p",cd)
             end
         end
         if method[v_top] then
             ch = ch + tlines * snaphtdp
             if t then
-                t[#t+1] = formatters["top height: %p"](ch)
+                t[#t+1] = formatted("top height: %p",ch)
             end
         end
         if method[v_bottom] then
             cd = cd + blines * snaphtdp
             if t then
-                t[#t+1] = formatters["bottom depth: %p"](cd)
+                t[#t+1] = formatted("bottom depth: %p",cd)
             end
         end
         local offset = method[v_offset]
@@ -704,14 +705,14 @@ local snap_hlist  do
             -- we need to set the attr
             if t then
                 local wd, ht, dp = getwhd(current)
-                t[#t+1] = formatters["before offset: %p (width %p height %p depth %p)"](offset,wd,ht,dp)
+                t[#t+1] = formatted("before offset: %p (width %p height %p depth %p)",offset,wd,ht,dp)
             end
             local shifted = hpack_node(getlist(current))
             setoffsets(shifted,nil,offset)
             setlist(current,shifted)
             if t then
                 local wd, ht, dp = getwhd(current)
-                t[#t+1] = formatters["after offset: %p (width %p height %p depth %p)"](offset,wd,ht,dp)
+                t[#t+1] = formatted("after offset: %p (width %p height %p depth %p)",offset,wd,ht,dp)
             end
             setattr(shifted,a_snapmethod,0)
             setattr(current,a_snapmethod,0)
@@ -719,22 +720,22 @@ local snap_hlist  do
         if not height then
             setheight(current,ch)
             if t then
-                t[#t+1] = formatters["forced height: %p"](ch)
+                t[#t+1] = formatted("forced height: %p",ch)
             end
         end
         if not depth then
             setdepth(current,cd)
             if t then
-                t[#t+1] = formatters["forced depth: %p"](cd)
+                t[#t+1] = formatted("forced depth: %p",cd)
             end
         end
         local lines = (ch+cd)/snaphtdp
         if t then
             local original = (h+d)/snaphtdp
             local whatever = (ch+cd)/(texgetdimen(d_globalbodyfontstrutheight) + texgetdimen(d_globalbodyfontstrutdepth))
-            t[#t+1] = formatters["final lines : %N -> %N (%N)"](original,lines,whatever)
-            t[#t+1] = formatters["final height: %p -> %p"](h,ch)
-            t[#t+1] = formatters["final depth : %p -> %p"](d,cd)
+            t[#t+1] = formatted("final lines : %N -> %N (%N)",original,lines,whatever)
+            t[#t+1] = formatted("final height: %p -> %p",h,ch)
+            t[#t+1] = formatted("final depth : %p -> %p",d,cd)
         end
     -- todo:
     --
@@ -1333,11 +1334,11 @@ do
             local id = getid(current)
             local ty = nodecodes[id]
             if id == penalty_code then
-                t[#t+1] = formatters["%s:%s"](ty,getpenalty(current))
+                t[#t+1] = formatted("%s:%s",ty,getpenalty(current))
             elseif id == glue_code then
-                t[#t+1] = formatters["%s:%s:%p"](ty,gluecodes[getsubtype(current)],getwidth(current))
+                t[#t+1] = formatted("%s:%s:%p",ty,gluecodes[getsubtype(current)],getwidth(current))
             elseif id == kern_code then
-                t[#t+1] = formatters["%s:%p"](ty,getkern(current))
+                t[#t+1] = formatted("%s:%p",ty,getkern(current))
             else
                 t[#t+1] = ty
             end
@@ -1351,24 +1352,31 @@ do
     end
 
     local function trace_skip(str,sc,so,sp,data)
-        trace_list[#trace_list+1] = { "skip", formatters["%s | %p | category %s | order %s | penalty %s | subtype %s"](str, getwidth(data), sc or "-", so or "-", sp or "-", gluecodes[getsubtype(data)]) }
+        trace_list[#trace_list+1] = { "skip", formatted("%s | %p | category %s | order %s | penalty %s | subtype %s",
+            str,
+            getwidth(data),
+            sc or "-",
+            so or "-",
+            sp or "-",
+            gluecodes[getsubtype(data)]
+        ) }
         tracing_info = true
     end
 
     local function trace_natural(str,data)
-        trace_list[#trace_list+1] = { "skip", formatters["%s | %p"](str, getwidth(data)) }
+        trace_list[#trace_list+1] = { "skip", formatted("%s | %p",str,getwidth(data)) }
         tracing_info = true
     end
 
     local function trace_info(message, where, what)
-        trace_list[#trace_list+1] = { "info", formatters["%s: %s/%s"](message,where,what) }
+        trace_list[#trace_list+1] = { "info", formatted("%s: %s/%s",message,where,what) }
     end
 
     local function trace_node(what)
         local nt = nodecodes[getid(what)]
         local tl = trace_list[#trace_list]
         if tl and tl[1] == "node" then
-            trace_list[#trace_list] = { "node", formatters["%s + %s"](tl[2],nt) }
+            trace_list[#trace_list] = { "node", formatted("%s + %s",tl[2],nt) }
         else
             trace_list[#trace_list+1] = { "node", nt }
         end
@@ -1392,9 +1400,9 @@ do
 
     local function trace_done(str,data)
         if getid(data) == penalty_code then
-            trace_list[#trace_list+1] = { "penalty", formatters["%s | %s"](str,getpenalty(data)) }
+            trace_list[#trace_list+1] = { "penalty", formatted("%s | %s",str,getpenalty(data)) }
         else
-            trace_list[#trace_list+1] = { "glue", formatters["%s | %p"](str,getwidth(data)) }
+            trace_list[#trace_list+1] = { "glue", formatted("%s | %p",str,getwidth(data)) }
         end
         tracing_info = true
     end
@@ -2297,7 +2305,7 @@ do
                         end
                     end
                     if trace then
-                        trace_skip(formatters["glue of type %a"](subtype),sc,so,sp,current)
+                        trace_skip(formatted("glue of type %a",subtype),sc,so,sp,current)
                     end
                     head = flush("some glue",head,current,penalty_data,glue_data,trace,force_glue,dont_discard,special_penalty)
                     reset()
@@ -2374,7 +2382,7 @@ do
                 reset()
                 current = getnext(current)
             else
-                head = flush(trace and formatters["node with id %a"](id) or "other node",head,current,penalty_data,glue_data,trace,force_glue,dont_discard,special_penalty)
+                head = flush(trace and formatted("node with id %a",id) or "other node",head,current,penalty_data,glue_data,trace,force_glue,dont_discard,special_penalty)
                 reset()
                 current = getnext(current)
             end

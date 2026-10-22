@@ -137,7 +137,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 2522, stripped down to: 1725
+-- original size: 2326, stripped down to: 1585
 
 if not modules then modules={} end modules ['l-lua']={
  version=1.001,
@@ -146,10 +146,6 @@ if not modules then modules={} end modules ['l-lua']={
  copyright="PRAGMA ADE / ConTeXt Development Team",
  license="see context related readme files"
 }
-LUAMAJORVERSION=status.lua_version_major
-LUAMINORVERSION=status.lua_version_minor
-LUAVERSION=status.lua_version
-LUAFORMAT=status.lua_format
 if not loadstring   then loadstring=load     end
 if not table.unpack then table.unpack=_G.unpack   end
 if not unpack    then _G.unpack=table.unpack   end
@@ -2168,7 +2164,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-io"] = package.loaded["l-io"] or true
 
--- original size: 11988, stripped down to: 6430
+-- original size: 6095, stripped down to: 4101
 
 if not modules then modules={} end modules ['l-io']={
  version=1.001,
@@ -2182,15 +2178,8 @@ local open,flush,write,read=io.open,io.flush,io.write,io.read
 local byte,find,gsub,format=string.byte,string.find,string.gsub,string.format
 local concat=table.concat
 local type=type
-if string.find(os.getenv("PATH") or "",";",1,true) then
- io.fileseparator,io.pathseparator="\\",";"
-else
- io.fileseparator,io.pathseparator="/",":"
-end
-local large=0x01000000 
-local medium=0x00100000 
-local small=0x00020000
-local function readall(f)
+io.fileseparator,io.pathseparator=os.getseparators()
+function io.readall(f)
  local size=f:seek("end")
  if size>0 then
   f:seek("set",0)
@@ -2199,7 +2188,6 @@ local function readall(f)
   return ""
  end
 end
-io.readall=readall
 function io.loaddata(filename,textmode) 
  local f=open(filename,(textmode and 'r') or 'rb')
  if f then
@@ -2255,15 +2243,15 @@ function io.savedata(filename,data,joiner,append)
   return false
  end
 end
-if fio and fio.readline then
- local readline=fio.readline
+do
+ local readcline=fio.readcline
  function io.loadlines(filename,n) 
   local f=open(filename,'r')
   if not f then
   elseif n then
    local lines={}
    for i=1,n do
-    local line=readline(f)
+    local line=readcline(f)
     if line then
      lines[i]=line
     else
@@ -2276,36 +2264,9 @@ if fio and fio.readline then
     return lines
    end
   else
-   local line=readline(f)
+   local line=readcline(f)
    f:close()
    if line and #line>0 then
-    return line
-   end
-  end
- end
-else
- function io.loadlines(filename,n) 
-  local f=open(filename,'r')
-  if not f then
-  elseif n then
-   local lines={}
-   for i=1,n do
-    local line=f:read("*lines")
-    if line then
-     lines[i]=line
-    else
-     break
-    end
-   end
-   f:close()
-   lines=concat(lines,"\n")
-   if #lines>0 then
-    return lines
-   end
-  else
-   local line=f:read("*line") or ""
-   f:close()
-   if #line>0 then
     return line
    end
   end
@@ -2340,101 +2301,6 @@ function io.size(filename)
   return s
  end
 end
-local function noflines(f)
- if type(f)=="string" then
-  local f=open(filename)
-  if f then
-   local n=f and noflines(f) or 0
-   f:close()
-   return n
-  else
-   return 0
-  end
- else
-  local n=0
-  for _ in f:lines() do
-   n=n+1
-  end
-  f:seek('set',0)
-  return n
- end
-end
-io.noflines=noflines
-local nextchar={
- [ 4]=function(f)
-  return f:read(1,1,1,1)
- end,
- [ 2]=function(f)
-  return f:read(1,1)
- end,
- [ 1]=function(f)
-  return f:read(1)
- end,
- [-2]=function(f)
-  local a,b=f:read(1,1)
-  return b,a
- end,
- [-4]=function(f)
-  local a,b,c,d=f:read(1,1,1,1)
-  return d,c,b,a
- end
-}
-function io.characters(f,n)
- if f then
-  return nextchar[n or 1],f
- end
-end
-local nextbyte={
- [4]=function(f)
-  local a,b,c,d=f:read(1,1,1,1)
-  if d then
-   return byte(a),byte(b),byte(c),byte(d)
-  end
- end,
- [3]=function(f)
-  local a,b,c=f:read(1,1,1)
-  if b then
-   return byte(a),byte(b),byte(c)
-  end
- end,
- [2]=function(f)
-  local a,b=f:read(1,1)
-  if b then
-   return byte(a),byte(b)
-  end
- end,
- [1]=function (f)
-  local a=f:read(1)
-  if a then
-   return byte(a)
-  end
- end,
- [-2]=function (f)
-  local a,b=f:read(1,1)
-  if b then
-   return byte(b),byte(a)
-  end
- end,
- [-3]=function(f)
-  local a,b,c=f:read(1,1,1)
-  if b then
-   return byte(c),byte(b),byte(a)
-  end
- end,
- [-4]=function(f)
-  local a,b,c,d=f:read(1,1,1,1)
-  if d then
-   return byte(d),byte(c),byte(b),byte(a)
-  end
- end
-}
-function io.bytes(f,n)
- if f then
-  return nextbyte[n or 1],f
- else
-  return nil,nil
- end
-end
 function io.ask(question,default,options)
  while true do
   write(question)
@@ -2444,7 +2310,7 @@ function io.ask(question,default,options)
   if default then
    write(format(" [%s]",default))
   end
-  write(format(" "))
+  write(" ")
   flush()
   local answer=read()
   answer=gsub(answer,"^%s*(.*)%s*$","%1")
@@ -2468,52 +2334,48 @@ function io.ask(question,default,options)
   end
  end
 end
-local function readnumber(f,n,m) 
- if m then
-  f:seek("set",n)
-  n=m
+do  
+ local readinteger1=fio.readinteger1
+ local readinteger2=fio.readinteger2
+ local readinteger3=fio.readinteger3
+ local readinteger4=fio.readinteger4
+ local readinteger1le=fio.readinteger1le
+ local readinteger2le=fio.readinteger2le
+ local readinteger3le=fio.readinteger3le
+ local readinteger4le=fio.readinteger4le
+ function io.readnumber(f,n,m) 
+  if m then
+   f:seek("set",n)
+   n=m
+  end
+  if n==1 then
+   return readinteger1(f)
+  elseif n==2 then
+   return readinteger2(f)
+  elseif n==3 then
+   return readinteger3(f)
+  elseif n==4 then
+   return readinteger4(f)
+  elseif n==-1 then
+   return readinteger1le(f)
+  elseif n==-2 then
+   return readinteger2le(f)
+  elseif n==-3 then
+   return readinteger3le(f)
+  elseif n==-4 then
+   return readinteger4le(f)
+  else
+   return 0
+  end
  end
- if n==1 then
-  return byte(f:read(1))
- elseif n==2 then
-  local a,b=byte(f:read(2),1,2)
-  return 0x100*a+b
- elseif n==3 then
-  local a,b,c=byte(f:read(3),1,3)
-  return 0x10000*a+0x100*b+c
- elseif n==4 then
-  local a,b,c,d=byte(f:read(4),1,4)
-  return 0x1000000*a+0x10000*b+0x100*c+d
- elseif n==8 then
-  local a,b=readnumber(f,4),readnumber(f,4)
-  return 0x100*a+b
- elseif n==12 then
-  local a,b,c=readnumber(f,4),readnumber(f,4),readnumber(f,4)
-  return 0x10000*a+0x100*b+c
- elseif n==-2 then
-  local b,a=byte(f:read(2),1,2)
-  return 0x100*a+b
- elseif n==-3 then
-  local c,b,a=byte(f:read(3),1,3)
-  return 0x10000*a+0x100*b+c
- elseif n==-4 then
-  local d,c,b,a=byte(f:read(4),1,4)
-  return 0x1000000*a+0x10000*b+0x100*c+d
- elseif n==-8 then
-  local h,g,f,e,d,c,b,a=byte(f:read(8),1,8)
-  return 0x100000000000000*a+0x1000000000000*b+0x10000000000*c+0x100000000*d+0x1000000*e+0x10000*f+0x100*g+h
- else
-  return 0
+ local readnstring=fio.readnstring
+ function io.readstring(f,n,m) 
+  if m then
+   f:seek("set",n)
+   n=m
+  end
+  return (readnstring(f,n)) 
  end
-end
-io.readnumber=readnumber
-function io.readstring(f,n,m)
- if m then
-  f:seek("set",n)
-  n=m
- end
- local str=gsub(f:read(n),"\000","")
- return str
 end
 
 
@@ -2523,7 +2385,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-number"] = package.loaded["l-number"] or true
 
--- original size: 2480, stripped down to: 1670
+-- original size: 2487, stripped down to: 1676
 
 if not modules then modules={} end modules ['l-number']={
  version=1.001,
@@ -2533,7 +2395,7 @@ if not modules then modules={} end modules ['l-number']={
  license="see context related readme files"
 }
 local tonumber=tonumber
-local format=sequencer.format
+local formatted=sequencer.format
 local concat=table.concat
 local floor=math.floor
 number=number or {}
@@ -2581,7 +2443,7 @@ function number.valid(str,default)
  return tonumber(str) or default or nil
 end
 local function toevenhex(n)
- local s=format("%X",n)
+ local s=formatted("%X",n)
  return (#s%2~=0) and ("0"..s) or s
 end
 function number.bytetodecimal(b)
@@ -2622,82 +2484,9 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
-package.loaded["l-set"] = package.loaded["l-set"] or true
-
--- original size: 1923, stripped down to: 1044
-
-if not modules then modules={} end modules ['l-set']={
- version=1.001,
- comment="companion to luat-lib.mkiv",
- author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
- copyright="PRAGMA ADE / ConTeXt Development Team",
- license="see context related readme files"
-}
-set=set or {}
-local nums={}
-local tabs={}
-local concat=table.concat
-local next,type=next,type
-set.create=table.tohash
-function set.tonumber(t)
- if next(t) then
-  local s=""
-  for k,v in next,t do
-   if v then
-    s=s.." "..k
-   end
-  end
-  local n=nums[s]
-  if not n then
-   n=#tabs+1
-   tabs[n]=t
-   nums[s]=n
-  end
-  return n
- else
-  return 0
- end
-end
-function set.totable(n)
- if n==0 then
-  return {}
- else
-  return tabs[n] or {}
- end
-end
-function set.tolist(n)
- if n==0 or not tabs[n] then
-  return ""
- else
-  local t,n={},0
-  for k,v in next,tabs[n] do
-   if v then
-    n=n+1
-    t[n]=k
-   end
-  end
-  return concat(t," ")
- end
-end
-function set.contains(n,s)
- if type(n)=="table" then
-  return n[s]
- elseif n==0 then
-  return false
- else
-  local t=tabs[n]
-  return t and t[s]
- end
-end
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 20768, stripped down to: 11065
+-- original size: 16237, stripped down to: 8500
 
 if not modules then modules={} end modules ['l-os']={
  version=1.001,
@@ -2707,147 +2496,53 @@ if not modules then modules={} end modules ['l-os']={
  license="see context related readme files"
 }
 local os=os
-local date,time,difftime=os.date,os.time,os.difftime
-local find,format,gsub,upper,gmatch=string.find,string.format,string.gsub,string.upper,string.gmatch
-local concat=table.concat
-local floor,ceil,abs,modf=math.floor,math.ceil,math.abs,math.modf
-local random,randomseed=math.random,math.randomseed
-local type,setmetatable,tonumber,tostring=type,setmetatable,tonumber,tostring
-do
- local selfdir=os.selfdir
- if selfdir=="" then
-  selfdir=nil
+if not os.env then
+ local upper=string.upper 
+ local ossetenv=os.setenv
+ local osgetenv=os.getenv
+ local osenv={}
+ local function setenv(k,v)
+  if v==nil then
+   v=""
+  end
+  local K=upper(k)
+  osenv[K]=v
  end
- if not selfdir then
-  if arg then
-   for i=1,#arg do
-    local a=arg[i]
-    if find(a,"^%-%-[c:]*texmfbinpath=") then
-     selfdir=gsub(a,"^.-=","")
-     break
-    end
-   end
+ local function getenv(k)
+  local K=upper(k) 
+  local v=osenv[K] or osgetenv(K) or osgetenv(k)
+  if v=="" then
+   return nil
+  else
+   return v
   end
-  if not selfdir then
-   selfdir=os.selfbin or "luatex"
-   if find(selfdir,"[/\\]") then
-    selfdir=gsub(selfdir,"[/\\][^/\\]*$","")
-   elseif os.getenv then
-    local path=os.getenv("PATH")
-    local name=gsub(selfdir,"^.*[/\\][^/\\]","")
-    local patt="[^:]+"
-    if os.type=="windows" then
-     patt="[^;]+"
-     name=name..".exe"
-    end
-    local isfile
-    if lfs then
-     local attributes=lfs.attributes
-     isfile=function(name)
-      local a=attributes(name,"mode")
-      return a=="file" or a=="link" or nil
-     end
-    else
-     local open=io.open
-     isfile=function(name)
-      local f=open(name)
-      if f then
-       f:close()
-       return true
-      end
-     end
-    end
-    for p in gmatch(path,patt) do
-     if isfile(p.."/"..name) then
-      selfdir=p
-      break
-     end
-    end
-   end
-  end
-  os.selfdir=selfdir or "."
  end
-end
-math.initialseed=tonumber(string.sub(string.reverse(tostring(ceil(socket and socket.gettime()*10000 or time()))),1,6))
-randomseed(math.initialseed)
-if not os.__getenv__ then
- os.__getenv__=os.getenv
- os.__setenv__=os.setenv
- if os.env then
-  local osgetenv=os.getenv
-  local ossetenv=os.setenv
-  local osenv=os.env   local _=osenv.PATH 
-  function os.setenv(k,v)
-   if v==nil then
-    v=""
-   end
-   local K=upper(k)
-   osenv[K]=v
-   if type(v)=="table" then
-    v=concat(v,";") 
-   end
-   ossetenv(K,v)
-  end
-  function os.getenv(k)
-   local K=upper(k)
-   local v=osenv[K] or osenv[k] or osgetenv(K) or osgetenv(k)
-   if v=="" then
-    return nil
-   else
-    return v
-   end
-  end
- else
-  local ossetenv=os.setenv
-  local osgetenv=os.getenv
-  local osenv={}
-  function os.setenv(k,v)
-   if v==nil then
-    v=""
-   end
-   local K=upper(k)
-   osenv[K]=v
-  end
-  function os.getenv(k)
-   local K=upper(k) 
-   local v=osenv[K] or osgetenv(K) or osgetenv(k)
-   if v=="" then
-    return nil
-   else
-    return v
-   end
-  end
-  local function __index(t,k)
-   return os.getenv(k)
-  end
-  local function __newindex(t,k,v)
-   os.setenv(k,v)
-  end
-  os.env={}
-  setmetatable(os.env,{ __index=__index,__newindex=__newindex } )
- end
+ os.getenv=getenv
+ os.setenv=setenv
+ os.env=setmetatable({},{
+  __index=function(t,k  ) return getenv(k)   end,
+  __newindex=function(t,k,v)  setenv(k,v) end,
+ } )
 end
 if not io.fileseparator then
- if find(os.getenv("PATH"),";",1,true) then
-  io.fileseparator,io.pathseparator,os.type="\\",";",os.type or "windows"
- else
-  io.fileseparator,io.pathseparator,os.type="/",":",os.type or "unix"
- end
+ io.fileseparator,io.pathseparator=os.getseparators()
 end
-os.type=os.type or (io.pathseparator==";"    and "windows") or "unix"
-os.name=os.name or (os.type=="windows" and "mswin"  ) or "linux"
-if os.type=="windows" then
- os.libsuffix,os.binsuffix,os.binsuffixes='dll','exe',{ 'exe','cmd','bat' }
+if os.name=="windows" then
+ os.libsuffix="dll"
+ os.binsuffix="exe"
+ os.binsuffixes={ "exe","cmd","bat" }
 elseif os.name=="macosx" then
- os.libsuffix,os.binsuffix,os.binsuffixes='dylib','',{ '' }
+ os.libsuffix="dylib"
+ os.libsuffix=""
+ os.libsuffix={ "" }
 else
- os.libsuffix,os.binsuffix,os.binsuffixes='so','',{ '' }
+ os.libsuffix="so"
+ os.libsuffix=""
+ os.libsuffix={ "" }
 end
 do
- local execute=os.execute
  local iopopen=io.popen
- local ostype=os.type
- local function resultof(command)
+ function os.resultof(command)
   local handle=iopopen(command,"r") 
   if handle then
    local result=handle:read("*all") or ""
@@ -2857,39 +2552,21 @@ do
    return ""
   end
  end
- os.resultof=resultof
  function os.pipeto(command)
   return iopopen(command,"w") 
  end
- local launchers={
-  windows="start %s",
-  macosx="open %s",
-  unix="xdg-open %s &> /dev/null &",
- }
- function os.launch(str)
-  local command=format(launchers[os.name] or launchers.unix,str)
-  execute(command)
- end
 end
 do
- local gettimeofday=os.gettimeofday or os.clock
- os.gettimeofday=gettimeofday
- local startuptime=gettimeofday()
- function os.runtime()
-  return gettimeofday()-startuptime
- end
- function os.startuptime()
-  return startuptime
- end
-end
-do
+ local find=string.find
+ local getenv=os.getenv
+ local resultof=os.resultof
  local name=os.name or "linux"
- local platform=os.getenv("MTX_PLATFORM") or ""
+ local platform=getenv("MTX_PLATFORM") or ""
  local architecture=os.uname and os.uname().machine 
- local bits=os.getenv("MTX_BITS") or find(platform,"64") and 64 or 32
+ local bits=getenv("MTX_BITS") or find(platform,"64") and 64 or 32
  if platform~="" then
- elseif os.type=="windows" then
-  architecture=string.lower(architecture or os.getenv("PROCESSOR_ARCHITECTURE") or "")
+ elseif name=="windows" then
+  architecture=string.lower(architecture or getenv("PROCESSOR_ARCHITECTURE") or "")
   if architecture=="x86_64" then
    bits,platform=64,"win64"
   elseif find(architecture,"amd64") then
@@ -2902,7 +2579,7 @@ do
    bits,platform=32,"mswin"
   end
  elseif name=="linux" then
-  architecture=architecture or os.getenv("HOSTTYPE") or resultof("uname -m") or ""
+  architecture=architecture or getenv("HOSTTYPE") or resultof("uname -m") or ""
   local musl=find(os.selfdir or "","linuxmusl")
   if find(architecture,"x86_64") then
    bits,platform=64,musl and "linuxmusl-64" or "linux-64"
@@ -2932,14 +2609,14 @@ do
    bits,platform=32,"solaris-intel"
   end
  elseif name=="freebsd" then
-  architecture=architecture or os.getenv("MACHTYPE") or resultof("uname -m") or ""
+  architecture=architecture or getenv("MACHTYPE") or resultof("uname -m") or ""
   if find(architecture,"amd64") or find(architecture,"AMD64") then
    bits,platform=64,"freebsd-amd64"
   else
    bits,platform=32,"freebsd"
   end
  elseif name=="kfreebsd" then
-  architecture=architecture or os.getenv("HOSTTYPE") or resultof("uname -m") or ""
+  architecture=architecture or getenv("HOSTTYPE") or resultof("uname -m") or ""
   if architecture=="x86_64" then
    bits,platform=64,"kfreebsd-amd64"
   else
@@ -2965,7 +2642,12 @@ do
  os.bits=bits
  os.newline=name=="windows" and "\013\010" or "\010" 
 end
-do
+do 
+ local random=math.random
+ local ceil=math.ceil
+ local format=string.format
+ math.initialseed=tonumber(string.sub(string.reverse(tostring(ceil(os.time()))),1,6))
+ math.randomseed(math.initialseed)
  local t={ 8,9,"a","b" }
  function os.uuid()
   return format("%04x%04x-4%03x-%s%03x-%04x-%04x%04x%04x",
@@ -2978,6 +2660,21 @@ do
  end
 end
 do
+ local gettimeofday=os.gettimeofday
+ local startuptime=gettimeofday()
+ function os.runtime()
+  return gettimeofday()-startuptime
+ end
+ function os.startuptime()
+  return startuptime
+ end
+ local tonumber=tonumber
+ local floor=math.floor
+ local abs=math.abs
+ local format=string.format
+ local time=os.time
+ local date=os.date
+ local difftime=os.difftime
  local td,tz
  local function timezone(difference)
   if not td then
@@ -3045,44 +2742,6 @@ do
  function os.now()
   return date("!%Y-%m-%d %H:%M:%S")
  end
-end
-do
- local cache={}
- local function which(filename)
-  local fullname=cache[filename]
-  if fullname==nil then
-   local suffix=file.suffix(filename)
-   local suffixes=suffix=="" and os.binsuffixes or { suffix }
-   for directory in gmatch(os.getenv("PATH"),"[^"..io.pathseparator.."]+") do
-    local df=file.join(directory,filename)
-    for i=1,#suffixes do
-     local dfs=file.addsuffix(df,suffixes[i])
-     if io.exists(dfs) then
-      fullname=dfs
-      break
-     end
-    end
-   end
-   if not fullname then
-    fullname=false
-   end
-   cache[filename]=fullname
-  end
-  return fullname
- end
- os.which=which
- os.where=which
-end
-if not os.sleep then
- local socket=socket
- function os.sleep(n)
-  if not socket then
-   socket=require("socket")
-  end
-  socket.sleep(n)
- end
-end
-do
  local function isleapyear(year)
   return (year%4==0) and (year%100~=0 or year%400==0)
  end
@@ -3131,6 +2790,34 @@ do
  end
 end
 do
+ local gmatch=string.gmatch
+ local cache={}
+ local function which(filename)
+  local fullname=cache[filename]
+  if fullname==nil then
+   local suffix=file.suffix(filename)
+   local suffixes=suffix=="" and os.binsuffixes or { suffix }
+   for directory in gmatch(os.getenv("PATH"),"[^"..io.pathseparator.."]+") do
+    local df=file.join(directory,filename)
+    for i=1,#suffixes do
+     local dfs=file.addsuffix(df,suffixes[i])
+     if io.exists(dfs) then
+      fullname=dfs
+      break
+     end
+    end
+   end
+   if not fullname then
+    fullname=false
+   end
+   cache[filename]=fullname
+  end
+  return fullname
+ end
+ os.which=which
+ os.where=which
+end
+do
  local osexit=os.exit
  local exitcode=nil
  function os.setexitcode(code)
@@ -3146,9 +2833,6 @@ do
   return osexit()
  end
 end
-if serial and serial.write then
- os.serialwrite=serial.write 
-end
 
 
 end -- of closure
@@ -3157,7 +2841,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-file"] = package.loaded["l-file"] or true
 
--- original size: 22655, stripped down to: 10467
+-- original size: 14802, stripped down to: 8767
 
 if not modules then modules={} end modules ['l-file']={
  version=1.001,
@@ -3168,27 +2852,16 @@ if not modules then modules={} end modules ['l-file']={
 }
 file=file or {}
 local file=file
-if not lfs then
- lfs=optionalrequire("lfs")
-end
 local insert,concat=table.insert,table.concat
 local match,find,gmatch=string.match,string.find,string.gmatch
 local lpegmatch=lpeg.match
 local getcurrentdir,attributes=lfs.currentdir,lfs.attributes
 local checkedsplit=string.checkedsplit
 local P,R,S,C,Cs,Cp,Cc,Ct=lpeg.P,lpeg.R,lpeg.S,lpeg.C,lpeg.Cs,lpeg.Cp,lpeg.Cc,lpeg.Ct
-local attributes=lfs.attributes
-function lfs.isdir(name)
- if name then
-  return attributes(name,"mode")=="directory"
- end
-end
-function lfs.isfile(name)
- if name then
-  local a=attributes(name,"mode")
-  return a=="file" or a=="link" or nil
- end
-end
+file.is_readable=lfs.isreadablefile 
+file.is_writable=lfs.iswritablefile 
+file.isreadable=lfs.isreadablefile
+file.iswritable=lfs.iswritablefile
 function lfs.isfound(name)
  if name then
   local a=attributes(name,"mode")
@@ -3197,11 +2870,6 @@ function lfs.isfound(name)
 end
 function lfs.modification(name)
  return name and attributes(name,"modification") or nil
-end
-if sandbox then
- sandbox.redefine(lfs.isfile,"lfs.isfile")
- sandbox.redefine(lfs.isdir,"lfs.isdir")
- sandbox.redefine(lfs.isfound,"lfs.isfound")
 end
 local colon=P(":")
 local period=P(".")
@@ -3346,48 +3014,6 @@ local reslasher=lpeg.replacer(P("\\"),"/")
 function file.reslash(str)
  return str and lpegmatch(reslasher,str)
 end
-if lfs.isreadablefile and lfs.iswritablefile then
- file.is_readable=lfs.isreadablefile
- file.is_writable=lfs.iswritablefile
-else
- function file.is_writable(name)
-  if not name then
-  elseif lfs.isdir(name) then
-   name=name.."/m_t_x_t_e_s_t.tmp"
-   local f=io.open(name,"wb")
-   if f then
-    f:close()
-    os.remove(name)
-    return true
-   end
-  elseif lfs.isfile(name) then
-   local f=io.open(name,"ab")
-   if f then
-    f:close()
-    return true
-   end
-  else
-   local f=io.open(name,"ab")
-   if f then
-    f:close()
-    os.remove(name)
-    return true
-   end
-  end
-  return false
- end
- local readable=P("r")*Cc(true)
- function file.is_readable(name)
-  if name then
-   local a=attributes(name)
-   return a and lpegmatch(readable,a.permissions) or false
-  else
-   return false
-  end
- end
-end
-file.isreadable=file.is_readable 
-file.iswritable=file.is_writable 
 function file.size(name)
  if name then
   local a=attributes(name)
@@ -3533,13 +3159,6 @@ end
 function file.is_rootbased_path(filename)
  return filename and lpegmatch(rootbased,filename)~=nil
 end
-function lfs.mkdirs(path)
- local full=""
- for sub in gmatch(path,"(/*[^\\/]+)") do 
-  full=full..sub
-  lfs.mkdir(full)
- end
-end
 function file.withinbase(path) 
  local l=0
  if not find(path,"^/") then
@@ -3557,40 +3176,6 @@ function file.withinbase(path)
  end
  return true
 end
-do
- local symlinktarget=lfs.symlinktarget  
- local symlinkattributes=lfs.symlinkattributes 
- if symlinktarget then
-  function lfs.readlink(name)
-   local target=symlinktarget(name)
-   return name~=target and name or nil
-  end
- elseif symlinkattributes then
-  function lfs.readlink(name)
-   return symlinkattributes(name,"target") or nil
-  end
- else
-  function lfs.readlink(name)
-   return nil
-  end
- end
-end
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
-package.loaded["l-gzip"] = package.loaded["l-gzip"] or true
-
--- original size: 268, stripped down to: 216
-
-if not modules then modules={} end modules ['l-gzip']={
- version=1.001,
- author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
- copyright="PRAGMA ADE / ConTeXt Development Team",
- license="see context related readme files"
-}
 
 
 end -- of closure
@@ -3599,7 +3184,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-md5"] = package.loaded["l-md5"] or true
 
--- original size: 3394, stripped down to: 2286
+-- original size: 1837, stripped down to: 1303
 
 if not modules then modules={} end modules ['l-md5']={
  version=1.001,
@@ -3607,53 +3192,28 @@ if not modules then modules={} end modules ['l-md5']={
  copyright="PRAGMA ADE / ConTeXt Development Team",
  license="see context related readme files"
 }
-if not md5 then
- md5=optionalrequire("md5")
-end
-if not md5 then
- md5={
-  sum=function(str) print("error: md5 is not loaded (sum     ignored)") return str end,
-  sumhexa=function(str) print("error: md5 is not loaded (sumhexa ignored)") return str end,
- }
-end
-local md5,file=md5,file
+local file=file
 local gsub=string.gsub
 local modification,isfile,touch=lfs.modification,lfs.isfile,lfs.touch
 local loaddata,savedata=io.loaddata,io.savedata
-do
- local patterns=lpeg and lpeg.patterns
- if patterns then
-  local bytestoHEX=patterns.bytestoHEX
-  local bytestohex=patterns.bytestohex
-  local bytestodec=patterns.bytestodec
-  local lpegmatch=lpeg.match
-  local md5sum=md5.sum
-  if not md5.HEX then function md5.HEX(str) if str then return lpegmatch(bytestoHEX,md5sum(str)) end end end
-  if not md5.hex then function md5.hex(str) if str then return lpegmatch(bytestohex,md5sum(str)) end end end
-  if not md5.dec then function md5.dec(str) if str then return lpegmatch(bytestodec,md5sum(str)) end end end
-  md5.sumhexa=md5.hex
-  md5.sumHEXA=md5.HEX
- end
-end
 local md5HEX=md5.HEX
 function file.needsupdating(oldname,newname,threshold) 
  local oldtime=modification(oldname)
  if oldtime then
   local newtime=modification(newname)
   if not newtime then
-   return true 
+   return true  
   elseif newtime>=oldtime then
    return false 
   elseif oldtime-newtime<(threshold or 1) then
    return false 
   else
-   return true 
+   return true  
   end
  else
-  return false 
+  return false  
  end
 end
-file.needs_updating=file.needsupdating
 function file.syncmtimes(oldname,newname)
  local oldtime=modification(oldname)
  if oldtime and isfile(newname) then
@@ -3661,29 +3221,25 @@ function file.syncmtimes(oldname,newname)
  end
 end
 local function checksum(name)
- if md5 then
-  local data=loaddata(name)
-  if data then
-   return md5HEX(data)
-  end
+ local data=loaddata(name)
+ if data then
+  return md5HEX(data)
  end
- return nil
 end
 file.checksum=checksum
 function file.savechecksum(name,sum)
- if not sum then sum=checksum(name) end
+ if not sum then
+  sum=checksum(name)
+ end
  if sum and savedata(name..".md5",sum) then
   return sum
- else
-  return nil
  end
 end
 function file.loadchecksum(name)
- if md5 then
-  local data=loaddata(name..".md5")
-  return data and (gsub(data,"%s",""))
+ local data=loaddata(name..".md5")
+ if data then
+  return(gsub(data,"%s",""))
  end
- return nil
 end
 
 
@@ -3989,7 +3545,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-dir"] = package.loaded["l-dir"] or true
 
--- original size: 19939, stripped down to: 11691
+-- original size: 20455, stripped down to: 8229
 
 if not modules then modules={} end modules ['l-dir']={
  version=1.001,
@@ -4008,37 +3564,15 @@ local dir=dir
 local lfs=lfs
 local attributes=lfs.attributes
 local scandir=lfs.dir
-local isdir=lfs.isdir  
-local isfile=lfs.isfile 
+local isdir=lfs.isdir
+local isfile=lfs.isfile
 local currentdir=lfs.currentdir
 local chdir=lfs.chdir
 local mkdir=lfs.mkdir
+dir.isreadable=lfs.isreadabledir
+dir.iswritable=lfs.iswritabledir
 local onwindows=os.type=="windows" or find(os.getenv("PATH"),";",1,true)
-if onwindows then
- local tricky=S("/\\")*P(-1)
- isdir=function(name)
-  if lpegmatch(tricky,name) then
-   return attributes(name,"mode")=="directory"
-  else
-   return attributes(name.."/.","mode")=="directory"
-  end
- end
- isfile=function(name)
-  return attributes(name,"mode")=="file"
- end
- lfs.isdir=isdir
- lfs.isfile=isfile
-else
- isdir=function(name)
-  return attributes(name,"mode")=="directory"
- end
- isfile=function(name)
-  return attributes(name,"mode")=="file"
- end
- lfs.isdir=isdir
- lfs.isfile=isfile
-end
-local isreadable=file.isreadable
+local isreadable=dir.isreadable
 local walkdir=function(p,...)
  if isreadable(p.."/.") then
   return scandir(p,...)
@@ -4201,7 +3735,7 @@ if onwindows then
   Cs(((1-S("*?/\\"))^0*slash)^0),
   Cs(P(1)^0)
  }
-else
+else 
  pattern={
   (C(P(".")+P("/")^1)+Cc("./"))*V(2)*V(3),
   C(((1-S("*?/"))^0*P("/"))^0),
@@ -4312,219 +3846,65 @@ dir.globdirs=globdirs
 function dir.ls(pattern)
  return concat(glob(pattern or ""),"\n")
 end
-local make_indeed=true 
-if onwindows then
- function dir.mkdirs(...)
-  local n=select("#",...)
-  local str
-  if n==1 then
-   str=select(1,...)
-   if isdir(str) then
-    return str,true
-   end
-  else
-   str=""
-   for i=1,n do
-    local s=select(i,...)
-    if s=="" then
-    elseif str=="" then
-     str=s
-    else
-     str=str.."/"..s
-    end
-   end
-  end
-  local pth=""
-  local drive=false
-  local first,middle,last=match(str,"^(//)(//*)(.*)$")
-  if first then
-  else
-   first,last=match(str,"^(//)/*(.-)$")
-   if first then
-    middle,last=match(str,"([^/]+)/+(.-)$")
-    if middle then
-     pth="//"..middle
-    else
-     pth="//"..last
-     last=""
-    end
-   else
-    first,middle,last=match(str,"^([a-zA-Z]:)(/*)(.-)$")
-    if first then
-     pth,drive=first..middle,true
-    else
-     middle,last=match(str,"^(/*)(.-)$")
-     if not middle then
-      last=str
-     end
-    end
-   end
-  end
-  for s in gmatch(last,"[^/]+") do
-   if pth=="" then
-    pth=s
-   elseif drive then
-    pth,drive=pth..s,false
-   else
-    pth=pth.."/"..s
-   end
-   if make_indeed and not isdir(pth) then
-    mkdir(pth)
-   end
-  end
-  return pth,(isdir(pth)==true)
- end
-else
- function dir.mkdirs(...)
-  local n=select("#",...)
-  local str,pth
-  if n==1 then
-   str=select(1,...)
-   if isdir(str) then
-    return str,true
-   end
-  else
-   str=""
-   for i=1,n do
-    local s=select(i,...)
-    if s and s~="" then 
-     if str~="" then
-      str=str.."/"..s
-     else
-      str=s
-     end
-    end
-   end
-  end
-  str=gsub(str,"/+","/")
-  if find(str,"^/") then
-   pth="/"
-   for s in gmatch(str,"[^/]+") do
-    local first=(pth=="/")
-    if first then
-     pth=pth..s
-    else
-     pth=pth.."/"..s
-    end
-    if make_indeed and not first and not isdir(pth) then
-     mkdir(pth)
-    end
-   end
-  else
-   pth="."
-   for s in gmatch(str,"[^/]+") do
-    pth=pth.."/"..s
-    if make_indeed and not isdir(pth) then
-     mkdir(pth)
-    end
-   end
-  end
-  return pth,(isdir(pth)==true)
- end
-end
+dir.mkdirs=lfs.mkdirs
 dir.makedirs=dir.mkdirs
-do
- local chdir=sandbox and sandbox.original(chdir) or chdir
- dir.expandname=lfs.expandpath
- if dir.expandname then
- elseif onwindows then
-  local xcurrentdir=dir.current
-  function dir.expandname(str) 
-   str=gsub(str,"\\","/") 
-   local first,nothing,last=match(str,"^(//)(//*)(.*)$")
-   if first then
-    first=xcurrentdir().."/" 
-   end
-   if not first then
-    first,last=match(str,"^(//)/*(.*)$")
-   end
-   if not first then
-    first,last=match(str,"^([a-zA-Z]:)(.*)$")
-    if first and not find(last,"^/") then
-     local d=currentdir() 
-     if chdir(first) then
-      first=xcurrentdir() 
-     end
-     chdir(d)
-    end
-   end
-   if not first then
-    first,last=xcurrentdir(),str
-   end
-   last=gsub(last,"//","/")
-   last=gsub(last,"/%./","/")
-   last=gsub(last,"^/*","")
-   first=gsub(first,"/*$","")
-   if last=="" or last=="." then
-    return first
-   else
-    return first.."/"..last
-   end
-  end
- else
-  function dir.expandname(str) 
-   if not find(str,"^/") then
-    str=currentdir().."/"..str
-   end
-   str=gsub(str,"//","/")
-   str=gsub(str,"/%./","/")
-   str=gsub(str,"(.)/%.$","%1")
-   return str
-  end
- end
- function dir.expandlink(dir,report)
-  local curdir=currentdir()
-  local trace=type(report)=="function"
-  if chdir(dir) then
-   local newdir=currentdir()
-   if newdir~=dir and trace then
-    report("following symlink %a to %a",dir,newdir)
-   end
-   chdir(curdir)
-   return newdir
-  else
-   if trace then
-    report("unable to check path %a",dir)
-   end
-   return dir
-  end
- end
-end
-file.expandname=dir.expandname 
-local stack={}
-function dir.push(newdir)
+function dir.expandlink(dir,report) 
  local curdir=currentdir()
- insert(stack,curdir)
- if newdir and newdir~="" and chdir(newdir) then
+ local trace=type(report)=="function"
+ if chdir(dir) then
+  local newdir=currentdir()
+  if newdir~=dir and trace then
+   report("following symlink %a to %a",dir,newdir)
+  end
+  chdir(curdir)
   return newdir
  else
-  return curdir
+  if trace then
+   report("unable to check path %a",dir)
+  end
+  return dir
  end
 end
-function dir.pop()
- local d=remove(stack)
- if d then
-  chdir(d)
+dir.expandname=lfs.expandpath
+file.expandname=dir.expandname 
+do
+ local stack={}
+ function dir.push(newdir)
+  local curdir=currentdir()
+  insert(stack,curdir)
+  if newdir and newdir~="" and chdir(newdir) then
+   return newdir
+  else
+   return curdir
+  end
  end
- return d
+ function dir.pop()
+  local d=remove(stack)
+  if d then
+   chdir(d)
+  end
+  return d
+ end
 end
-local function found(...) 
- for i=1,select("#",...) do
-  local path=select(i,...)
-  local kind=type(path)
-  if kind=="string" then
-   if isdir(path) then
-    return path
-   end
-  elseif kind=="table" then
-   local path=found(unpack(path))
-   if path then
-    return path
+do
+ local function found(...) 
+  for i=1,select("#",...) do
+   local path=select(i,...)
+   local kind=type(path)
+   if kind=="string" then
+    if isdir(path) then
+     return path
+    end
+   elseif kind=="table" then
+    local path=found(unpack(path))
+    if path then
+     return path
+    end
    end
   end
  end
+ dir.found=found
 end
-dir.found=found
 
 
 end -- of closure
@@ -4605,7 +3985,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-unicode"] = package.loaded["l-unicode"] or true
 
--- original size: 22181, stripped down to: 13820
+-- original size: 22286, stripped down to: 13847
 
 if not modules then modules={} end modules ['l-unicode']={
  version=1.001,
@@ -4618,7 +3998,7 @@ if not modules then modules={} end modules ['l-unicode']={
 utf=utf or {}
 unicode=nil
 local type=type
-local char,byte,format,sub,gmatch,rep=string.char,string.byte,string.format,string.sub,string.gmatch,string.rep
+local char,byte,sub,gmatch,rep=string.char,string.byte,string.sub,string.gmatch,string.rep
 local concat=table.concat
 local P,C,R,Cs,Ct,Cmt,Cc,Carg,Cp=lpeg.P,lpeg.C,lpeg.R,lpeg.Cs,lpeg.Ct,lpeg.Cmt,lpeg.Cc,lpeg.Carg,lpeg.Cp
 local lpegmatch=lpeg.match
@@ -4626,6 +4006,7 @@ local patterns=lpeg.patterns
 local tabletopattern=lpeg.utfchartabletopattern
 local finder=lpeg.finder
 local replacer=lpeg.replacer
+local formatted=sequencer.format
 local p_utftype=patterns.utftype
 local p_utfstricttype=patterns.utfstricttype
 local p_utf8character=patterns.utf8character
@@ -4653,7 +4034,7 @@ do
   (
    patterns.utf8one+(
      patterns.utf8two+patterns.utf8three+patterns.utf8four
-    )/function(s) local b=utfbyte(s) if b<127 then return s else return format("&#%X;",b) end end
+    )/function(s) local b=utfbyte(s) if b<127 then return s else return formatted("&#%X;",b) end end
   )^0
  )
  patterns.toentities=toentities
@@ -5076,16 +4457,16 @@ do
  end
 end
 local pattern=Cs (
- (p_utf8byte/function(unicode    ) return format("0x%04X",unicode) end)*(p_utf8byte*Carg(1)/function(unicode,separator) return format("%s0x%04X",separator,unicode) end)^0
+ (p_utf8byte/function(unicode    ) return formatted("0x%04X",unicode) end)*(p_utf8byte*Carg(1)/function(unicode,separator) return formatted("%s0x%04X",separator,unicode) end)^0
 )
 function utf.tocodes(str,separator)
  return lpegmatch(pattern,str,1,separator or " ")
 end
 function utf.ustring(s)
- return format("U+%05X",type(s)=="number" and s or utfbyte(s))
+ return formatted("U+%05X",type(s)=="number" and s or utfbyte(s))
 end
 function utf.xstring(s)
- return format("0x%05X",type(s)=="number" and s or utfbyte(s))
+ return formatted("0x%05X",type(s)=="number" and s or utfbyte(s))
 end
 function utf.toeight(str)
  if not str or str=="" then
@@ -5185,7 +4566,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-math"] = package.loaded["l-math"] or true
 
--- original size: 3573, stripped down to: 2571
+-- original size: 1527, stripped down to: 1077
 
 if not modules then modules={} end modules ['l-math']={
  version=1.001,
@@ -5194,123 +4575,45 @@ if not modules then modules={} end modules ['l-math']={
  copyright="PRAGMA ADE / ConTeXt Development Team",
  license="see context related readme files"
 }
-if not math.ceiling then
- math.ceiling=math.ceil
-end
-if not math.round then
- if xmath then
-  math.round=xmath.round
- else
-  local floor=math.floor
-  function math.round(x)
-   return x<0 and -floor(-x+0.5) or floor(x+0.5)
-  end
- end
-end
-if not math.div then
- local floor=math.floor
- function math.div(n,m) return floor(n/m) end
-end
-if not math.mod then
- function math.mod(n,m) return n%m end
-end
-if not math.sind then
- local sin,cos,tan=math.sin,math.cos,math.tan
- local pipi=2*math.pi/360
- function math.sind(d) return sin(d*pipi) end
- function math.cosd(d) return cos(d*pipi) end
- function math.tand(d) return tan(d*pipi) end
-end
-if not math.odd then
- function math.odd (n) return n%2~=0 end
- function math.even(n) return n%2==0 end
-end
-if not math.cosh then
- local exp=math.exp
- function math.cosh(x)
-  local xx=exp(x)
-  return (xx+1/xx)/2
- end
- function math.sinh(x)
-  local xx=exp(x)
-  return (xx-1/xx)/2
- end
- function math.tanh(x)
-  local xx=exp(x)
-  return (xx-1/xx)/(xx+1/xx)
- end
-end
-if not math.pow then
- function math.pow(x,y)
-  return x^y
- end
-end
-if not math.atan2 then
- math.atan2=math.atan
-end
-if not math.ldexp then
- function math.ldexp(x,e)
-  return x*2.0^e
- end
-end
-if not math.log10 then
- local log=math.log
- function math.log10(x)
-  return log(x,10)
- end
-end
-if not math.type then
- function math.type()
-  return "float"
- end
-end
-if not math.tointeger then
- math.mininteger=-0x4FFFFFFFFFFF
- math.maxinteger=0x4FFFFFFFFFFF
- local floor=math.floor
- function math.tointeger(n)
-  local f=floor(n)
-  return f==n and f or nil
- end
-end
-if not math.ult then
- local floor=math.floor
- function math.ult(m,n)
-  return floor(m)<floor(n) 
- end
-end
-if setinspector and vector then
- local inspect=inspect
+math.ceiling=math.ceil
+math.round=xmath.round
+math.log10=xmath.log10
+math.atan2=xmath.atan2
+math.tanh=xmath.tanh
+math.sinh=xmath.sinh
+math.cosh=xmath.cosh
+math.sind=xmath.sind
+math.cosd=xmath.cosd
+math.tand=xmath.tand
+math.pow=xmath.pow
+math.div=xmath.div
+math.mod=xmath.mod
+math.odd=xmath.odd
+math.even=xmath.even
+if setinspector and vector and mesh then
  local isvector=vector.isvector
- local totable=vector.totable
+ local ismesh=mesh  .ismesh
+ local ispoints=vector.ispoints
+ local totable=mesh  .totable
+ local inspect=inspect
  setinspector("vector",function(v)
   if isvector(v) then
    inspect(totable(v))
    return true
   end
  end)
- local mesh=vector.mesh
- if mesh then
-  local ismesh=mesh.ismesh
-  local totable=mesh.totable
-  setinspector("mesh",function(v)
-   if ismesh(v) then
-    inspect(totable(v))
-    return true
-   end
-  end)
- end
- local points=vector.points
- if points then
-  local ispoints=points.ispoints
-  local totable=points.totable
-  setinspector("points",function(v)
-   if ispoints(v) then
-    inspect(totable(v))
-    return true
-   end
-  end)
- end
+ setinspector("mesh",function(v)
+  if ismesh(v) then
+   inspect(totable(v))
+   return true
+  end
+ end)
+ setinspector("points",function(v)
+  if ispoints(v) then
+   inspect(totable(v))
+   return true
+  end
+ end)
 end
 
 
@@ -5463,7 +4766,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 44108, stripped down to: 24288
+-- original size: 44124, stripped down to: 24306
 
 if not modules then modules={} end modules ['util-str']={
  version=1.001,
@@ -5509,8 +4812,8 @@ local spaceortab=patterns.spaceortab
 local digit=patterns.digit
 local sign=patterns.sign
 local period=patterns.period
-local ptf=1/65536
-local bpf=(7200/7227)/65536
+local ptf <const> =1/65536
+local bpf <const> =(7200/7227)/65536
 local function points(n)
  if n==0 then
   return "0pt"
@@ -8021,7 +7324,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-fmt"] = package.loaded["util-fmt"] or true
 
--- original size: 3379, stripped down to: 2273
+-- original size: 3422, stripped down to: 2308
 
 if not modules then modules={} end modules ['util-fmt']={
  version=1.001,
@@ -8033,9 +7336,10 @@ if not modules then modules={} end modules ['util-fmt']={
 utilities=utilities or {}
 utilities.formatters=utilities.formatters or {}
 local formatters=utilities.formatters
-local concat,format=table.concat,string.format
 local tostring,type,unpack=tostring,type,unpack
+local concat=table.concat
 local strip=string.strip
+local formatted=string.formatted or string.format
 local lpegmatch=lpeg.match
 local stripper=lpeg.patterns.stripzeros
 function formatters.stripzeros(str)
@@ -8103,7 +7407,7 @@ function formatters.formatcolumns(result,between,header)
   end
   local template=strip(concat(templates))
   for i=1,#result do
-   local str=format(template,unpack(result[i]))
+   local str=formatted(template,unpack(result[i]))
    result[i]=strip(str)
   end
   if header then
@@ -8119,7 +7423,7 @@ function formatters.formatcolumns(result,between,header)
    end
    local template=strip(concat(templates))
    for i=1,#header do
-    local str=format(template,unpack(header[i]))
+    local str=formatted(template,unpack(header[i]))
     header[i]=strip(str)
    end
   end
@@ -9165,7 +8469,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
 
--- original size: 15792, stripped down to: 11722
+-- original size: 16005, stripped down to: 11849
 
 if not modules then modules={} end modules ['trac-inf']={
  version=1.001,
@@ -9209,7 +8513,10 @@ function statistics.show()
   end)
   register("used engine",function()
    return formatted("%s version: %s, functionality level: %s, format id: %s, memory mode: %i, compiler: %s, cversion: %i",
-    LUATEXENGINE,LUATEXVERBOSE,LUATEXFUNCTIONALITY,LUATEXFORMATID,
+    environment.luametatexengine,
+    environment.luametatexverbose,
+    environment.luametatexfunctionality,
+    environment.luametatexformatid,
     status.tex_memory_mode,
     status.used_compiler,
     status.used_cversion
@@ -9226,7 +8533,12 @@ function statistics.show()
   register("lua properties",function()
    local mask=load([[τεχ = 1]]) and "utf" or "ascii"
    return formatted("engine: lua %s, format %s, used memory: %s, symbol mask: %s (%s)",
-    LUAVERSION,LUAFORMAT,statistics.memused(),mask,mask=="utf" and "τεχ" or "tex")
+    environment.luaversion,
+    environment.luaformat,
+    statistics.memused(),
+    mask,
+    mask=="utf" and "τεχ" or "tex"
+   )
   end)
   register("runtime",statistics.runtime)
   logs.newline() 
@@ -10417,7 +9729,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sbx"] = package.loaded["util-sbx"] or true
 
--- original size: 10473, stripped down to: 7194
+-- original size: 10464, stripped down to: 7188
 
 if not modules then modules={} end modules ['util-sbx']={
  version=1.001,
@@ -10660,19 +9972,19 @@ local function normalizedreadable(name,finalized)
   return normalized(valid)
  end
 end
-local function writeable(name,finalized)
+local function writable(name,finalized)
  return validfilename(name,"w")
 end
-local function normalizedwriteable(name,finalized)
+local function normalizedwritable(name,finalized)
  local valid=validfilename(name,"w")
  if valid then
   return normalized(valid)
  end
 end
 validators.readable=readable
-validators.writeable=normalizedwriteable
+validators.writable=normalizedwritable
 validators.normalizedreadable=normalizedreadable
-validators.normalizedwriteable=writeable
+validators.normalizedwritable=writable
 validators.filename=readable
 table.setmetatableindex(validators,function(t,k)
  if k then
@@ -10709,7 +10021,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-mrg"] = package.loaded["util-mrg"] or true
 
--- original size: 7819, stripped down to: 5881
+-- original size: 8033, stripped down to: 5956
 
 if not modules then modules={} end modules ['util-mrg']={
  version=1.001,
@@ -10782,7 +10094,8 @@ local optionalspaces=space^0/""
 local mandatespaces=space^1/""
 local optionalspacing=(eol+space)^0/""
 local mandatespacing=(eol+space)^1/""
-local pack=digit*space^1*operator4*optionalspacing+optionalspacing*operator1*optionalspacing+optionalspacing*operator2*optionalspaces+mandatespacing*operator3*mandatespaces+optionalspaces*separator*optionalspaces
+local keep=(optionalspacing*P("<const>")*optionalspacing)/" <const> "
+local pack=keep+digit*space^1*operator4*optionalspacing+optionalspacing*operator1*optionalspacing+optionalspacing*operator2*optionalspaces+mandatespacing*operator3*mandatespaces+optionalspaces*separator*optionalspaces
 local lines=emptyline^2/"\n"
 local spaces=(space*space)/" "
 local spaces=(space*space*space*space)/" "
@@ -11077,9 +10390,9 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-env"] = package.loaded["luat-env"] or true
 
--- original size: 6293, stripped down to: 4141
+-- original size: 6292, stripped down to: 4140
 
- if not modules then modules={} end modules ['luat-env']={
+if not modules then modules={} end modules ['luat-env']={
  version=1.001,
  comment="companion to luat-lib.mkiv",
  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -17361,7 +16674,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tmp"] = package.loaded["data-tmp"] or true
 
--- original size: 17391, stripped down to: 12369
+-- original size: 17439, stripped down to: 12427
 
 if not modules then modules={} end modules ['data-tmp']={
  version=1.100,
@@ -17375,13 +16688,16 @@ local pcall,loadfile,collectgarbage=pcall,loadfile,collectgarbage
 local format,lower,gsub=string.format,string.lower,string.gsub
 local concat,serialize,fastserialize,serializetofile=table.concat,table.serialize,table.fastserialize,table.tofile
 local mkdirs,expanddirname,isdir,isfile=dir.mkdirs,dir.expandname,lfs.isdir,lfs.isfile
-local is_writable,is_readable=file.is_writable,file.is_readable
 local collapsepath,joinfile,addsuffix,dirname=file.collapsepath,file.join,file.addsuffix,file.dirname
 local savedata=file.savedata
 local formatters=string.formatters
 local osexit,osdate,osuuid=os.exit,os.date,os.uuid
 local removefile=os.remove
 local md5hex=md5.hex
+local fileisreadable=file.isreadable
+local fileiswritable=file.iswritable
+local dirisreadable=dir.isreadable
+local diriswritable=dir.iswritable
 local trace_locating=false  trackers.register("resolvers.locating",function(v) trace_locating=v end)
 local trace_cache=false  trackers.register("resolvers.cache",function(v) trace_cache=v end)
 local report_caches=logs.reporter("resolvers","caches")
@@ -17407,7 +16723,7 @@ local readables={}
 local usedreadables={}
 local compilelua=luautilities.compile
 local luasuffixes=luautilities.suffixes
-caches.base=caches.base or (LUATEXENGINE and LUATEXENGINE.."-cache") or "luatex-cache"  
+caches.base=caches.base or "luametatex-cache"
 caches.more=caches.more or "context"    
 caches.defaults={ "TMPDIR","TEMPDIR","TMP","TEMP","HOME","HOMEPATH" }
 local direct_cache=false 
@@ -17449,17 +16765,17 @@ local function identify()
     cachepath=collapsepath(cachepath)
     local valid=isdir(cachepath)
     if valid then
-     if is_readable(cachepath) then
+     if dirisreadable(cachepath) then
       readables[#readables+1]=cachepath
-      if not writable and is_writable(cachepath) then
+      if not writable and diriswritable(cachepath) then
        writable=cachepath
       end
      end
     elseif not writable then
      local cacheparent=dirname(cachepath)
-     if is_writable(cacheparent) then 
+     if diriswritable(cacheparent) then 
       mkdirs(cachepath)
-      if isdir(cachepath) and is_writable(cachepath) then
+      if isdir(cachepath) and diriswritable(cachepath) then
        report_caches("path %a created",cachepath)
        writable=cachepath
        readables[#readables+1]=cachepath
@@ -17478,8 +16794,8 @@ local function identify()
     cachepath=resolvepath(cachepath)
     cachepath=cleanpath(cachepath)
     local valid=isdir(cachepath)
-    if valid and is_readable(cachepath) then
-     if not writable and is_writable(cachepath) then
+    if valid and dirisreadable(cachepath) then
+     if not writable and diriswritable(cachepath) then
       readables[#readables+1]=cachepath
       writable=cachepath
       break
@@ -17592,14 +16908,14 @@ local function setluanames(path,name)
 end
 local function getfirstreadablefile(filename,...)
  local fullname,path=setfirstwritablefile(filename,...)
- if is_readable(fullname) then
+ if fileisreadable(fullname) then
   return fullname,path 
  end
  local rd=getreadablepaths(...)
  for i=1,#rd do
   local path=rd[i]
   local fullname=joinfile(path,filename)
-  if is_readable(fullname) then
+  if fileisreadable(fullname) then
    usedreadables[i]=true
    return fullname,path 
   end
@@ -17653,7 +16969,7 @@ function caches.loaddata(readables,name,writable)
 end
 function caches.is_writable(filepath,filename)
  local tmaname,tmcname=setluanames(filepath,filename)
- return is_writable(tmaname)
+ return fileiswritable(tmaname)
 end
 if sequencer then
  serialize=sequencer.serialize
@@ -20109,7 +19425,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-use"] = package.loaded["data-use"] or true
 
--- original size: 6168, stripped down to: 3201
+-- original size: 6170, stripped down to: 3200
 
 if not modules then modules={} end modules ['data-use']={
  version=1.001,
@@ -20134,18 +19450,18 @@ function statistics.savefmtstatus(texname,formatbanner,sourcefile,banner)
    formatbanner=formatbanner,
    sourcehash=md5.hex(io.loaddata(findfile(sourcefile)) or "unknown"),
    sourcefile=sourcefile,
-   luaversion=LUAVERSION,
-   luaformat=LUAFORMAT or 0,
-   formatid=LUATEXFORMATID,
-   functionality=LUATEXFUNCTIONALITY,
+   luaversion=environment.luaversion,
+   luaformat=environment.luaformat,
+   formatid=environment.luametatexformatid,
+   functionality=environment.luametatexfunctionality,
   }
   io.savedata(luvname,table.serialize(luvdata,true))
   lua.registerinitexfinalizer(function()
-   if jit then
-    logs.report("format banner","%s  lua: %s jit",banner,LUAVERSION)
-   else
-    logs.report("format banner","%s  lua: %s, format: %s",banner,LUAVERSION,LUAFORMAT)
-   end
+   logs.report("format banner","%s  lua: %s, format: %s",
+    banner,
+    environment.luaversion,
+    environment.luaformat
+   )
    logs.newline()
   end,"show banner")
  end
@@ -20167,17 +19483,17 @@ function statistics.checkfmtstatus(texname)
      return format("source mismatch (luv: %s <> bin: %s)",luvhash,sourcehash)
     end
     local luvluaversion=luv.luaversion or 0
-    local engluaversion=LUAVERSION or 0
+    local engluaversion=status.lua_version
     if luvluaversion~=engluaversion then
      return format("lua mismatch (luv: %s <> bin: %s)",luvluaversion,engluaversion)
     end
     local luvluaformat=luv.luaformat or 0
-    local engluaformat=LUAFORMAT or 0
+    local engluaformat=status.lua_format
     if luvluaformat~=engluaformat then
      return format("lua bytecode format mismatch (luv: %s <> bin: %s)",luvluaformat,engluaformat)
     end
     local luvfunctionality=luv.functionality or 0
-    local engfunctionality=status.development_id or 0
+    local engfunctionality=status.functionality or 0
     if luvfunctionality~=engfunctionality then
      return format("functionality mismatch (luv: %s <> bin: %s)",luvfunctionality,engfunctionality)
     end
@@ -20778,7 +20094,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-sbx"] = package.loaded["luat-sbx"] or true
 
--- original size: 7567, stripped down to: 5330
+-- original size: 7560, stripped down to: 5326
 
 if not modules then modules={} end modules ['luat-sbx']={
  version=1.001,
@@ -20809,7 +20125,7 @@ do
  local expandname=dir.expandname
  local pathpart=file.pathpart
  local readable={}
- local writeable={}
+ local writable={}
  function initializers.files()
   local function register(str,target)
    local trees=cleanedpathlist(str)
@@ -20818,13 +20134,13 @@ do
    end
   end
   local selfdir=expandname(".")
-  readable [1]=selfdir
-  writeable[1]=selfdir
+  readable[1]=selfdir
+  writable[1]=selfdir
   register("TEXINPUTS",readable)
   register("MPINPUTS",readable)
   register("TEXMF",readable)
   local rp=topattern(readable)
-  local wp=topattern(writeable)
+  local wp=topattern(writable)
   setchecker(1,function(s,action) 
    local path=pathpart(s)
    local okay=path=="" or lpegmatch(rp,path)
@@ -21943,7 +21259,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-jsn"] = package.loaded["util-jsn"] or true
 
--- original size: 17324, stripped down to: 8984
+-- original size: 17492, stripped down to: 9173
 
 if not modules then modules={} end modules ['util-jsn']={
  version=1.001,
@@ -22010,27 +21326,27 @@ do
 end
 do
  local escaper
- local f_start_hash='%w{'
- local f_start_array='%w['
- local f_start_hash_new="\n"..'%w{'
- local f_start_array_new="\n"..'%w['
- local f_start_hash_key="\n"..'%w"%s" : {'
- local f_start_array_key="\n"..'%w"%s" : ['
- local f_stop_hash="\n"..'%w}'
- local f_stop_array="\n"..'%w]'
- local f_key_val_seq="\n"..'%w"%s" : %s'
- local f_key_val_str="\n"..'%w"%s" : "%s"'
- local f_key_val_num=f_key_val_seq
- local f_key_val_yes="\n"..'%w"%s" : true'
- local f_key_val_nop="\n"..'%w"%s" : false'
- local f_key_val_null="\n"..'%w"%s" : null'
- local f_val_num="\n"..'%w%s'
- local f_val_str="\n"..'%w"%s"'
- local f_val_yes="\n"..'%wtrue'
- local f_val_nop="\n"..'%wfalse'
- local f_val_null="\n"..'%wnull'
- local f_val_empty="\n"..'%w{ }'
- local f_val_seq=f_val_num
+ local f_start_hash <const> ='%w{'
+ local f_start_array <const> ='%w['
+ local f_start_hash_new <const> ="\n"..'%w{'
+ local f_start_array_new <const> ="\n"..'%w['
+ local f_start_hash_key <const> ="\n"..'%w"%s" : {'
+ local f_start_array_key <const> ="\n"..'%w"%s" : ['
+ local f_stop_hash <const> ="\n"..'%w}'
+ local f_stop_array <const> ="\n"..'%w]'
+ local f_key_val_seq <const> ="\n"..'%w"%s" : %s'
+ local f_key_val_str <const> ="\n"..'%w"%s" : "%s"'
+ local f_key_val_num <const> =f_key_val_seq
+ local f_key_val_yes <const> ="\n"..'%w"%s" : true'
+ local f_key_val_nop <const> ="\n"..'%w"%s" : false'
+ local f_key_val_null <const> ="\n"..'%w"%s" : null'
+ local f_val_num <const> ="\n"..'%w%s'
+ local f_val_str <const> ="\n"..'%w"%s"'
+ local f_val_yes <const> ="\n"..'%wtrue'
+ local f_val_nop <const> ="\n"..'%wfalse'
+ local f_val_null <const> ="\n"..'%wnull'
+ local f_val_empty <const> ="\n"..'%w{ }'
+ local f_val_seq <const> =f_val_num
  local t={}
  local n=0
  local function is_simple_table(tt) 
@@ -22316,10 +21632,10 @@ package.loaded.json=json
 
 end -- of closure
 
--- used libraries    : l-bit32.lmt l-lua.lmt l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lmt l-io.lua l-number.lmt l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lmt l-math.lua util-for.lmt util-str.lmt util-tab.lmt util-fil.lmt util-sac.lmt util-sto.lua util-prs.lmt util-fmt.lua trac-set.lmt trac-log.lua util-tmr.lua trac-tmr.lua trac-inf.lmt trac-pro.lua util-lua.lmt util-deb.lmt util-srv.lmt util-tpl.lua util-sbx.lmt util-mrg.lua util-env.lmt luat-env.lua util-zip.lua util-sig.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lmt data-con.lua data-use.lua data-zip.lua data-tre.lua luat-sbx.lmt data-sch.lmt data-lua.lua data-tmf.lua data-lst.lua libs-ini.lmt luat-sta.lua luat-fmt.lua util-jsn.lmt
+-- used libraries    : l-bit32.lmt l-lua.lmt l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lmt l-io.lmt l-number.lmt l-os.lmt l-file.lmt l-md5.lmt l-sha.lua l-url.lua l-dir.lmt l-boolean.lua l-unicode.lmt l-math.lmt util-for.lmt util-str.lmt util-tab.lmt util-fil.lmt util-sac.lmt util-sto.lua util-prs.lmt util-fmt.lua trac-set.lmt trac-log.lua util-tmr.lua trac-tmr.lua trac-inf.lmt trac-pro.lua util-lua.lmt util-deb.lmt util-srv.lmt util-tpl.lua util-sbx.lmt util-mrg.lua util-env.lmt luat-env.lua util-zip.lua util-sig.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lmt data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lmt data-con.lua data-use.lmt data-zip.lua data-tre.lua luat-sbx.lmt data-sch.lmt data-lua.lua data-tmf.lua data-lst.lua libs-ini.lmt luat-sta.lua luat-fmt.lua util-jsn.lmt
 -- skipped libraries : -
--- original bytes    : 936336
--- stripped bytes    : 389244
+-- original bytes    : 913384
+-- stripped bytes    : 379702
 
 -- end library merge
 
@@ -22353,19 +21669,18 @@ local ownlibs = {
     'l-function.lua',
     'l-string.lua',
     'l-table.lmt',
-    'l-io.lua',
+    'l-io.lmt',
     'l-number.lmt',
-    'l-set.lua',
-    'l-os.lua',
-    'l-file.lua',
-    'l-gzip.lua',
-    'l-md5.lua',
+ -- 'l-set.lua',
+    'l-os.lmt',
+    'l-file.lmt',
+    'l-md5.lmt',
     'l-sha.lua',
     'l-url.lua',
-    'l-dir.lua',
+    'l-dir.lmt',
     'l-boolean.lua',
     'l-unicode.lmt',
-    'l-math.lua',
+    'l-math.lmt',
 
     'util-for.lmt',
     'util-str.lmt', -- will go away once we moved some
@@ -22422,7 +21737,7 @@ local ownlibs = {
     'data-ini.lua',
     'data-exp.lua',
     'data-env.lua',
-    'data-tmp.lua',
+    'data-tmp.lmt',
     'data-met.lua',
     'data-res.lua',
     'data-pre.lua',
@@ -22430,7 +21745,7 @@ local ownlibs = {
     'data-out.lua',
     'data-fil.lmt',
     'data-con.lua',
-    'data-use.lua',
+    'data-use.lmt',
     'data-zip.lua',
     'data-tre.lua',
 

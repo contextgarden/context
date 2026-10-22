@@ -26,7 +26,7 @@
 %registerctxluafile{node-ltp}{optimize}
 \registerctxluafile{node-ltp}{autosuffix} % this one has to be updated!
 \registerctxluafile{trac-par}{}
-\registerctxluafile{typo-par}{}
+\registerctxluafile{typo-par}{autosuffix}
 
 %D Just a reminder:
 %D

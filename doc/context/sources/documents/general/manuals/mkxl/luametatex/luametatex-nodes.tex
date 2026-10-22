@@ -5,15 +5,6 @@
 %
 % node.direct.getlocalparboxstate
 %
-% node.direct.appendaftertail
-% node.direct.appendtocurrentlist
-% node.direct.prependbeforehead
-% node.direct.getcurrenttail
-% node.direct.setcurrenttail
-% node.direct.appendcurrenttail
-% node.direct.prependcurrenttail
-% node.direct.insertcurrenthead
-%
 % node.direct.findattributerange
 % node.direct.ignoremathskip
 % node.direct.makeextensible
@@ -21,7 +12,6 @@
 % node.direct.exchange
 % node.direct.getnormalizedline
 % node.direct.migrate
-% node.direct.repack
 % node.direct.reverse
 
 % node.direct.getnodes
@@ -54,9 +44,6 @@
 % node.direct.usedlist
 % node.direct.usesfont
 % node.direct.verticalbreak
-% node.direct.xscaled
-% node.direct.yscaled
-% node.direct.isloop -- undocumented
 
 % node.shared.size
 % node.shared.id
@@ -2307,6 +2294,25 @@ that has space properties, it will deduce the scale value from a previous or nex
 glyph. This can be used to calculate a space which is the reason that only fonts
 with such a character are valid, otherwise the scale is just 1.
 
+You can scale a dimension by the scale factors used for a glyph. The properties
+of the glyph don't change!
+
+\starttyping[option=LUA]
+function node.direct.xscaled (
+    <t:direct>  glyph,
+    <t:integer> dimension
+)
+    return <t:integer>
+end
+
+function node.direct.yscaled (
+    <t:direct>  glyph,
+    <t:integer> dimension
+)
+    return <t:integer>
+end
+\stoptyping
+
 The control field defines if and how specific typesetting related features get
 applies as specified with the glyph option and/or various related mechanisms.
 
@@ -3358,10 +3364,11 @@ function node.direct.dimensions (
 end
 \stoptyping
 
-This alternative calling method takes glue settings into account and is especially useful for
-finding the actual width of a sublist of nodes that are already boxed, for
-example in code like this, which prints the width of the space in between the
-\type {a} and \type {b} as it would be if \type {\box0} was used as-is:
+This alternative calling method takes glue settings into account and is
+especially useful for finding the actual width of a sublist of nodes that are
+already boxed, for example in code like this, which prints the width of the space
+in between the \type {a} and \type {b} as it would be if \type {\box0} was used
+as-is:
 
 \starttyping
 \setbox0 = \hbox to 20pt {a b}
@@ -3658,6 +3665,7 @@ function node.direct.getparstate (
 )
     return <t:table> -- a huge table (some 50 entries)
 end
+
 function node.direct.getparstate (
     <t:direct>  n,
     <t:boolean> limited
@@ -3672,6 +3680,19 @@ is set, the options will be kept.
 
 \starttyping[option=LUA]
 function node.direct.getparstate ( <t:direct> par, <t:table> list) end
+\stoptyping
+
+We discussed the \type {hpack} and \type {vpack} functions, but there is also
+\type {repack}. The second and third argument are optional.
+
+\starttyping[option=LUA]
+function node.direct.repack (
+    <t:direct>  list,
+    <t:integer> width,
+    <t:string>  info -- "additional" | "exactly"
+)
+    -- no return value
+end
 \stoptyping
 
 \stopsubsection
@@ -4267,6 +4288,103 @@ end
 When messing with them, it is the user's responsibility to make sure that these
 lists remain valid, for instance horizontal and vertical lists have expectations
 with regards to the kind of nodes they contain.
+
+\stopsubsection
+
+\startsubsection[title={Current lists}]
+
+When you nest content, for instance a box inside a box or a box on the main
+vertical list the engine pushes the parent on a stack. The current list maintains
+a head and tail where new content in appended. if you build your own list you
+also have a head and tail and ideally have the list properly linked. We have a
+collection of helpers that fit into this linked-list model.
+
+\starttyping[option=LUA]
+function node.direct.prependbeforehead (
+    <t:direct> list,
+    <t:direct> node
+)
+    -- no return value
+end
+
+function node.direct.appendaftertail (
+    <t:direct> list,
+    <t:direct> node
+)
+    -- no return value
+end
+\stoptyping
+
+% node.direct.appendtocurrentlist % commented in source
+
+The tail of the currently active list can be fetched with:
+
+\starttyping[option=LUA]
+function node.direct.getcurrenttail (
+    <t:direct> node
+)
+    return
+        <t:direct>, -- node
+        <t:integer> -- mode
+end
+\stoptyping
+
+The setters also accept a user data node. Actually we can pass a list and the new
+tail is then the tail of that list. If the list is empty this works ok too.
+
+\starttyping[option=LUA]
+function node.direct.setcurrenttail (
+    <t:direct> node
+)
+    -- no return value
+end
+\stoptyping
+
+The next setter inserts the list before the head of the current list:
+
+\starttyping[option=LUA]
+function node.direct.insertcurrenthead (
+    <t:direct> node
+)
+    -- no return value
+end
+\stoptyping
+
+The next setter inserts the list after the tail of the current list:
+
+\starttyping[option=LUA]
+function node.direct.appendcurrenttail (
+    <t:direct> node
+)
+    -- no return value
+end
+\stoptyping
+
+The next setter inserts the list before the tail of the current list:
+
+\starttyping[option=LUA]
+function node.direct.prependcurrenttail (
+    <t:direct> node
+)
+    -- no return value
+end
+\stoptyping
+
+The difference between \typ {setcurrenttail} and \typ {appendcurrenttail} is that
+the second one is a bit less picky, the first one only appends when the list is
+not yet empty. Otherwise it just sets the tail based on the passed list.
+
+When you mess with lists there is a possibility that you introduce a loop and for
+that we provide a helper that can be used to check for it. The method used is
+\quote {Floyd's cycle finding}. Of course it is never water-tight.
+
+\starttyping[option=LUA]
+function node.direct.isloop (
+    <t:direct> node
+)
+    return <t:boolean>
+end
+\stoptyping
 
 \stopsubsection
 

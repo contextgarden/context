@@ -28,13 +28,13 @@ local p_parentheses = lpeg.patterns.nestedparents -- todo: remove outer
 
 local formatted     = string.formatted
 
------ f_wrapup      = "  %s\n"
-local f_call_s      = "  mfun_lsystem_%s(iteration)\n"
-local f_call_n      = "  mfun_lsystem_%s(iteration-1)\n"
-local f_options     = "  mfun_lsystem_options(%s)\n"
------ f_expression  = "  mfun_lsystem_expression(%s)\n"
------ f_expression  = "  hide(%s)\n"
-local f_expression  = "  hide%s\n"
+----- f_wrapup      <const> = "  %s\n"
+local f_call_s      <const> = "  mfun_lsystem_%s(iteration)\n"
+local f_call_n      <const> = "  mfun_lsystem_%s(iteration-1)\n"
+local f_options     <const> = "  mfun_lsystem_options(%s)\n"
+----- f_expression  <const> = "  mfun_lsystem_expression(%s)\n"
+----- f_expression  <const> = "  hide(%s)\n"
+local f_expression  <const> = "  hide%s\n"
 
 ----- trace  = false
 local report = logs.reporter("metapost")

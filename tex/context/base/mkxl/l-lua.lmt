@@ -6,13 +6,6 @@ if not modules then modules = { } end modules ['l-lua'] = {
     license   = "see context related readme files"
 }
 
--- compatibility hacks and helpers
-
-LUAMAJORVERSION = status.lua_version_major
-LUAMINORVERSION = status.lua_version_minor
-LUAVERSION      = status.lua_version
-LUAFORMAT       = status.lua_format
-
 if not loadstring      then loadstring      = load              end
 if not table.unpack    then table.unpack    = _G.unpack         end
 if not unpack          then _G.unpack       = table.unpack      end

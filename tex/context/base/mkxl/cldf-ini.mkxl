@@ -42,7 +42,7 @@
 \permanent          \untraced\def\cldcontext    #1{\directlua{context(#1)}}
 \permanent          \untraced\def\cldcommand    #1{\directlua{context.#1}}
 
-\permanent\untraced\def\luametatexverboseversion{\cldcontext{environment.luatexverbose}}
-\permanent\untraced\def\luametatexfunctionality {\cldcontext{environment.luatexfunctionality}}
+\permanent\untraced\def\luametatexverboseversion{\cldcontext{environment.luametatexverbose}}
+\permanent\untraced\def\luametatexfunctionality {\cldcontext{environment.luametatexfunctionality}}
 
 \endinput

@@ -289,6 +289,9 @@
                 <flag name="parallellist">
                     <short>process commands in this file (lines that start with 'context')</short>
                 </flag>
+                <flag name="terminal">
+                    <short>show parallel log output (=color)</short>
+                </flag>
             </subcategory>
             <subcategory>
                 <flag name="sandbox">

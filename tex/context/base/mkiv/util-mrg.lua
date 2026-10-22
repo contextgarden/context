@@ -106,7 +106,9 @@ local optionalspaces  = space^0 / ""
 local mandatespaces   = space^1 / ""
 local optionalspacing = (eol+space)^0 / ""
 local mandatespacing  = (eol+space)^1 / ""
-local pack            = digit * space^1 * operator4 * optionalspacing +
+local keep            = (optionalspacing * P("<const>") * optionalspacing) / " <const> "
+local pack            = keep +
+                        digit * space^1 * operator4 * optionalspacing +
                         optionalspacing * operator1 * optionalspacing +
                         optionalspacing * operator2 * optionalspaces  +
                         mandatespacing  * operator3 * mandatespaces   +
@@ -134,6 +136,9 @@ local stripreturn = Cs((1-P("return") * space^1 * P(1-space-eol)^1 * (space+eol)
 function merger.compact(data)
     return lpegmatch(strip,lpegmatch(compact,data))
 end
+
+-- print(merger.compact("test <const> = 123"))
+-- print(merger.compact("test<const> = 123"))
 
 local function self_compact(data)
     local delta = 0

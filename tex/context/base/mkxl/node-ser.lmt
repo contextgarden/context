@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['node-ser'] = {
 
 local type, tostring = type, tostring
 local concat, tohash, sortedkeys, sortedhash, printtable, serialize = table.concat, table.tohash, table.sortedkeys, table.sortedhash, table.print, table.serialize
-local formatters, format, rep = string.formatters, string.format, string.rep
+local rep = string.rep
 
 local allocate = utilities.storage.allocate
 
@@ -27,9 +27,7 @@ local tonut       = nodes.tonut
 local hlist_code  <const> = nodecodes.hlist
 local vlist_code  <const> = nodecodes.vlist
 
-local f_char      = formatters["%U"]
-local f_attr      = formatters["<attribute : %i>"]
-local f_recurse   = formatters["<recursive : %i>"]
+local formatted   = string.formatted
 
 -- flat    : don't use next, but indexes
 -- verbose : also add type
@@ -113,7 +111,7 @@ setinspector("node",function(v) if isnode(v) then printtable(astable(v),tostring
 local function to_table(n,flat,verbose,noattributes,done)
     local d = tonut(n)
     if done[d] then
-        return f_recurse(d)
+        return formatted("<recursive : %i>",d)
     else
         done[d] = true
         local fields = fieldtypes[n.id]
@@ -160,7 +158,7 @@ local function to_table(n,flat,verbose,noattributes,done)
                 for k, v in next, canbechar do
                     local v = result[k]
                     if v then
-                        result[k] = f_char(v)
+                        result[k] = formatted("%U",v)
                     end
                 end
             end
@@ -216,13 +214,11 @@ function nodes.visualizebox(n,flat,verbose,noattributes,name)
     context.tocontext(totable(tex.box[n],flat,verbose,noattributes),name)
 end
 
-local f_node = formatters["%w%S"]
-
 local function listnodes(head,n,t) -- name might change to nodes.type -- to be checked .. will move to module anyway
     head = tonode(head)
     while head do
         local id = head.id
-        t[#t+1] = f_node(n,head)
+        t[#t+1] = formatted("%w%S",n,head)
         if id == hlist_code or id == vlist_code then
             listnodes(head.list,n+1,t)
         end
@@ -235,7 +231,7 @@ local function printnodes(head,n)
     head = tonode(head)
     while head do
         local id = head.id
-        logs.writer(f_node(n,head))
+        logs.writer(formatted("%w%S",n,head))
         if id == hlist_code or id == vlist_code then
             printnodes(head.list,n+1)
         end

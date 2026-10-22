@@ -40,8 +40,8 @@ local usedfont   = false
 
 local formatted  = string.formatted
 
-local f_status_y = "%i : badness=%i costs=%i height=%p depth=%p stretch=%p shrink=%p hasfil=%l"
-local f_status_n = "%i"
+local f_status_y <const> = "%i : badness=%i costs=%i height=%p depth=%p stretch=%p shrink=%p hasfil=%l"
+local f_status_n <const> = "%i"
 
 local variables  = interfaces.variables
 local v_after    <const> = variables.after

@@ -542,7 +542,7 @@ typedef enum convert_codes {
     font_specification_code,  /*tex command code for |\fontspecification| */
     job_name_code,            /*tex command code for |\jobname| */
     format_name_code,         /*tex command code for |\AlephVersion| */
-    luatex_banner_code,       /*tex command code for |\luatexbanner| */
+    luametatex_banner_code,   /*tex command code for |\luametatexbanner| */
     font_identifier_code,     /*tex command code for |tex.fontidentifier| (virtual) */
 } convert_codes;
 
@@ -592,8 +592,7 @@ typedef enum some_item_codes {
     luametatex_major_version_code, /*tex |\luametatexversion| */
     luametatex_minor_version_code, /*tex |\luametatexrevision| */
     luametatex_release_code,       /*tex |\luametatexrelease| */
-    luatex_version_code,           /*tex |\luatexversion| (old) */
-    luatex_revision_code,          /*tex |\luatexrevision| (old) */
+    luametatex_version_code,       /*tex |\luametatexversion| */
     current_group_level_code,      /*tex |\currentgrouplevel| */
     current_group_type_code,       /*tex |\currentgrouptype| */
     current_stack_size_code,       /*tex |\currentstacksize| */

@@ -22,9 +22,9 @@ local report_lua       = logs.reporter("system","lua")
 local report_tex       = logs.reporter("system","status")
 local report_tempfiles = logs.reporter("resolvers","tempfiles")
 
-luatex        = luatex or { }
-local luatex  = luatex
-local synctex = luatex.synctex
+luatex                 = luatex or { }
+local luatex           = luatex
+local synctex          = luatex.synctex
 
 if not synctex then
     synctex        = table.setmetatableindex(function() return function() end end)
@@ -304,7 +304,8 @@ callbacks.register {
 
 local report     = logs.reporter("csname overload")
 local reported   = { }
-local formatters = string.formatters
+
+local formatted  = string.formatted
 
 local function handle_overload_callback(fatal,overload,csname,flags,index)
     if not reported[csname] then
@@ -316,11 +317,11 @@ local function handle_overload_callback(fatal,overload,csname,flags,index)
         local flags      = tokens.flags and tokens.flags(csname) or { }
         local active, n  = tokens.isactivestring(csname)
         if active and n then
-           csname = formatters["active character 0x%X"](n)
+           csname = formatted("active character 0x%X",n)
         elseif index then
-           csname = formatters["%s register %i"](csname,index)
+           csname = formatted("%s register %i",csname,index)
         else
-           csname = formatters["control sequence %a"](csname)
+           csname = formatted("control sequence %a",csname)
         end
         if filename and linenumber then
             report("%s, protection level %i, %s, properties '% t', file %a, line %i",
@@ -332,7 +333,7 @@ local function handle_overload_callback(fatal,overload,csname,flags,index)
         logs.newline()
         if fatal then
             -- new:
-            tracers.processerror("overload",formatters["you can't redefine %a"](csname))
+            tracers.processerror("overload",formatted("you can't redefine %a",csname))
             --
             cleanup_run()
             setexitcode(1)

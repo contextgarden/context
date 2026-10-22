@@ -15,7 +15,7 @@
 
 \writestatus{loading}{ConTeXt Tracing Macros / Splitpoints}
 
-\registerctxluafile{trac-vsp}{}
+\registerctxluafile{trac-vsp}{autosuffix}
 
 \unprotect
 

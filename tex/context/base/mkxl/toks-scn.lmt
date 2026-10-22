@@ -315,45 +315,45 @@ tokens.converters = {
 -- the gain is only some 10 percent but if we don't have keywords with numbers it might
 -- make sense in the end, some day.
 
-local f_if           =     "  if scankeywordcs('%s') then data['%s'] = scan%s()"
-local f_elseif       = "  elseif scankeywordcs('%s') then data['%s'] = scan%s()"
+local f_if           <const> =     "  if scankeywordcs('%s') then data['%s'] = scan%s()"
+local f_elseif       <const> = "  elseif scankeywordcs('%s') then data['%s'] = scan%s()"
 
------ f_if_x         =     "  if not data['%s'] and scankeywordcs('%s') then data['%s'] = scan%s()"
------ f_elseif_x     = "  elseif not data['%s'] and scankeywordcs('%s') then data['%s'] = scan%s()"
+----- f_if_x         <const> =     "  if not data['%s'] and scankeywordcs('%s') then data['%s'] = scan%s()"
+----- f_elseif_x     <const> = "  elseif not data['%s'] and scankeywordcs('%s') then data['%s'] = scan%s()"
 
------ f_if           = "  local key = scanletters() if key == '' then break elseif key == '%s' then data['%s'] = scan%s()"
------ f_elseif       = "  elseif key == '%s' then data['%s'] = scan%s()"
+----- f_if           <const> = "  local key = scanletters() if key == '' then break elseif key == '%s' then data['%s'] = scan%s()"
+----- f_elseif       <const> = "  elseif key == '%s' then data['%s'] = scan%s()"
 
-local f_local        = "local scan%s = scanners.%s"
-local f_scan         = "scan%s()"
-local f_shortcut     = "local %s = scanners.converters.%s"
+local f_local        <const> = "local scan%s = scanners.%s"
+local f_scan         <const> = "scan%s()"
+local f_shortcut     <const> = "local %s = scanners.converters.%s"
 
-local f_if_c         =     "  if scankeywordcs('%s') then data['%s'] = %s(scan%s())"
-local f_elseif_c     = "  elseif scankeywordcs('%s') then data['%s'] = %s(scan%s())"
-local f_scan_c       = "%s(scan%s())"
+local f_if_c         <const> =     "  if scankeywordcs('%s') then data['%s'] = %s(scan%s())"
+local f_elseif_c     <const> = "  elseif scankeywordcs('%s') then data['%s'] = %s(scan%s())"
+local f_scan_c       <const> = "%s(scan%s())"
 
 -- see above
 
------ f_if_c         = "  local key = scanletters() if key == '' then break elseif key == '%s' then data['%s'] = %s(scan%s())"]
------ f_elseif_c     = "  elseif k == '%s' then data['%s'] = %s(scan%s())"]
+----- f_if_c         <const> = "  local key = scanletters() if key == '' then break elseif key == '%s' then data['%s'] = %s(scan%s())"]
+----- f_elseif_c     <const> = "  elseif k == '%s' then data['%s'] = %s(scan%s())"]
 
-local f_any          = "  else local key = scanword(true) if key then data[key] = scan%s() else break end end"
-local f_any_c        = "  else local key = scanword(true) if key then data[key] = %s(scan%s()) else break end end"
+local f_any          <const> = "  else local key = scanword(true) if key then data[key] = scan%s() else break end end"
+local f_any_c        <const> = "  else local key = scanword(true) if key then data[key] = %s(scan%s()) else break end end"
 local s_done         <const> = "  else break end"
 
-local f_any_all      = "  local key = scanword(true) if key then data[key] = scan%s() else break end"
-local f_any_all_c    = "  local key = scanword(true) if key then data[key] = %s(scan%s()) else break end"
+local f_any_all      <const> = "  local key = scanword(true) if key then data[key] = scan%s() else break end"
+local f_any_all_c    <const> = "  local key = scanword(true) if key then data[key] = %s(scan%s()) else break end"
 
-local f_table        = "%\nt\nreturn function()\n  local data = { }\n%s\n  return %s\nend\n"
-local f_sequence     = "%\nt\n%\nt\n%\nt\nreturn function()\n    return %s\nend\n"
-local f_singular     = "%\nt\n%\nt\n\nreturn function(%s)\n    return %s\nend\n"
-local f_simple       = "%\nt\nreturn function()\n    return %s\nend\n"
-local f_string       = "%q"
-local f_action_f     = "action%s(%s)"
-local f_action_s     = "local action%s = tokens._action[%s]"
-local f_nested       = "local function scan%s()\n  local data = { }\n%s\n  return data\nend\n"
+local f_table        <const> = "%\nt\nreturn function()\n  local data = { }\n%s\n  return %s\nend\n"
+local f_sequence     <const> = "%\nt\n%\nt\n%\nt\nreturn function()\n    return %s\nend\n"
+local f_singular     <const> = "%\nt\n%\nt\n\nreturn function(%s)\n    return %s\nend\n"
+local f_simple       <const> = "%\nt\nreturn function()\n    return %s\nend\n"
+local f_string       <const> = "%q"
+local f_action_f     <const> = "action%s(%s)"
+local f_action_s     <const> = "local action%s = tokens._action[%s]"
+local f_nested       <const> = "local function scan%s()\n  local data = { }\n%s\n  return data\nend\n"
 
-local f_check = [[
+local f_check <const> = [[
   local wrapped = scanopen()
   while true do
     ]] .. "%\nt\n" .. [[

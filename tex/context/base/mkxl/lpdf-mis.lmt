@@ -188,12 +188,6 @@ end
 lpdf.registerpagefinalizer    (flushpageactions,    "page actions")
 lpdf.registerdocumentfinalizer(flushdocumentactions,"document actions")
 
--- the code above will move to scrn-ini
-
--- or when we want to be able to set things after page 1:
---
--- lpdf.registerdocumentfinalizer(setupidentity,1,"identity")
-
 local function flushjavascripts()
     local t = interactions.javascripts.flushpreambles()
     if #t > 0 then

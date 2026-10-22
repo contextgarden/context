@@ -7,15 +7,16 @@ if not modules then modules = { } end modules ['mlib-ctx'] = {
 }
 
 local type, tostring = type, tostring
-local format, concat = string.format, table.concat
+local concat = table.concat
 local settings_to_hash = utilities.parsers.settings_to_hash
-local formatters = string.formatters
 
 local report_metapost = logs.reporter ("metapost")
 local status_metapost = logs.messenger("metapost")
 
 local starttiming     = statistics.starttiming
 local stoptiming      = statistics.stoptiming
+
+local formatted       = string.formatted
 
 local trace_graphic   = false
 
@@ -208,7 +209,7 @@ end
 
 function metapost.tographic(t,f,s,...)
     local d = t.data
-    d[#d+1] = s and formatters[f](s,...) or f
+    d[#d+1] = s and formatted(f,s,...) or f
 end
 
 implement {
@@ -245,7 +246,7 @@ function metapost.getclippath(specification) -- why not a special instance for t
     if mpx and data ~= "" then
         starttiming(metapost)
         starttiming(metapost.exectime)
-        local result = mpx:execute ( format ( "%s;%s;beginfig(1);%s;%s;endfig;",
+        local result = mpx:execute ( formatted ( "%s;%s;beginfig(1);%s;%s;endfig;",
             specification.extensions or "",
             specification.inclusions or "",
             specification.initializations or "",
@@ -303,7 +304,7 @@ implement {
             local b = number.dimenfactors.bp
             local w = b * (specification.width or 0)
             local h = b * (specification.height or 0)
-            p = formatters["0 0 m %.6N 0 l %.6N %.6N l 0 %.6N l"](w,w,h,h)
+            p = formatted("0 0 m %.6N 0 l %.6N %.6N l 0 %.6N l",w,w,h,h)
         end
         setmacro("MPclippath",p,"global")
     end,
@@ -332,7 +333,7 @@ statistics.register("metapost", function()
         local runs, stats = metapost.nofscriptruns()
         local instances,
               memory      = metapost.getstatistics(true)
-        return format("%s seconds, loading: %s, execution: %s, n: %s, average: %s, instances: %i, luacalls: %s, memory: %0.3f M",
+        return formatted("%s seconds, loading: %s, execution: %s, n: %s, average: %s, instances: %i, luacalls: %s, memory: %0.3f M",
             elapsedtime(metapost), elapsedtime(mplib), elapsedtime(metapost.exectime), n,
             elapsedtime((elapsed(metapost) + elapsed(mplib) + elapsed(metapost.exectime)) / n),
             instances, stats and stats or runs, memory/(1024*1024))

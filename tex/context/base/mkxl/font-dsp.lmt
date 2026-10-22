@@ -2264,7 +2264,7 @@ do
         return lookups
     end
 
-    local f_lookupname = "%s_%s_%s"
+    local f_lookupname <const> = "%s_%s_%s"
 
     local function resolvelookups(f,lookupoffset,fontdata,lookups,lookuptypes,lookuphandlers,what,tableoffset)
 

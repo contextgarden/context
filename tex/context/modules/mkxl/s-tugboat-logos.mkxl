@@ -10,8 +10,8 @@
 
 \unprotect \pushoverloadmode
 
-\protected\def\Dash {\unskip\thinspace\emdash\thinspace\ignorespaces} % |=|
-\protected\def\slash{/\penalty\zerocount\hskip\zeropoint\relax}       % |/|
+% \protected\def\Dash {\unskip\thinspace\emdash\thinspace\ignorespaces} % |=|
+% \protected\def\slash{/\penalty\zerocount\hskip\zeropoint\relax}       % |/|
 
 %D This needs a cleanup ... if we define a document in context speak it should also
 %D process in another style.

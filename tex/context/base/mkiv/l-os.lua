@@ -249,8 +249,6 @@ do
 
     function os.launch(str)
         local command = format(launchers[os.name] or launchers.unix,str)
-        -- todo: pcall
-    --     print(command)
         execute(command)
     end
 
@@ -293,10 +291,13 @@ end
 
 do
 
+    local getenv       = os.getenv
+    local resultof     = os.resultof
+
     local name         = os.name or "linux"
-    local platform     = os.getenv("MTX_PLATFORM") or ""
+    local platform     = getenv("MTX_PLATFORM") or ""
     local architecture = os.uname and os.uname().machine -- lmtx
-    local bits         = os.getenv("MTX_BITS") or find(platform,"64") and 64 or 32
+    local bits         = getenv("MTX_BITS") or find(platform,"64") and 64 or 32
 
     if platform ~= "" then
 
@@ -307,7 +308,7 @@ do
         -- PROCESSOR_ARCHITECTURE : binary platform
         -- PROCESSOR_ARCHITEW6432 : OS platform
 
-        architecture = string.lower(architecture or os.getenv("PROCESSOR_ARCHITECTURE") or "")
+        architecture = string.lower(architecture or getenv("PROCESSOR_ARCHITECTURE") or "")
         if architecture == "x86_64" then
             bits, platform = 64, "win64"
         elseif find(architecture,"amd64") then
@@ -328,7 +329,7 @@ do
         -- the right one. So probably it expects users to compile locally in which
         -- case we don't care to much as they can then sort it out.
 
-        architecture = architecture or os.getenv("HOSTTYPE") or resultof("uname -m") or ""
+        architecture = architecture or getenv("HOSTTYPE") or resultof("uname -m") or ""
         local musl = find(os.selfdir or "","linuxmusl")
         if find(architecture,"x86_64") then
             bits, platform = 64, musl and "linuxmusl-64" or "linux-64"
@@ -371,7 +372,7 @@ do
 
     elseif name == "freebsd" then
 
-        architecture = architecture or os.getenv("MACHTYPE") or resultof("uname -m") or ""
+        architecture = architecture or getenv("MACHTYPE") or resultof("uname -m") or ""
         if find(architecture,"amd64") or find(architecture,"AMD64") then
             bits, platform = 64, "freebsd-amd64"
         else
@@ -380,7 +381,7 @@ do
 
     elseif name == "kfreebsd" then
 
-        architecture = architecture or os.getenv("HOSTTYPE") or resultof("uname -m") or ""
+        architecture = architecture or getenv("HOSTTYPE") or resultof("uname -m") or ""
         if architecture == "x86_64" then
             bits, platform = 64, "kfreebsd-amd64"
         else

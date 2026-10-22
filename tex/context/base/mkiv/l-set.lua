@@ -73,15 +73,14 @@ function set.contains(n,s)
     end
 end
 
---~ local c = set.create{'aap','noot','mies'}
---~ local s = set.tonumber(c)
---~ local t = set.totable(s)
---~ print(t['aap'])
---~ local c = set.create{'zus','wim','jet'}
---~ local s = set.tonumber(c)
---~ local t = set.totable(s)
---~ print(t['aap'])
---~ print(t['jet'])
---~ print(set.contains(t,'jet'))
---~ print(set.contains(t,'aap'))
-
+-- local c = set.create{'aap','noot','mies'}
+-- local s = set.tonumber(c)
+-- local t = set.totable(s)
+-- print(t['aap'])
+-- local c = set.create{'zus','wim','jet'}
+-- local s = set.tonumber(c)
+-- local t = set.totable(s)
+-- print(t['aap'])
+-- print(t['jet'])
+-- print(set.contains(t,'jet'))
+-- print(set.contains(t,'aap'))

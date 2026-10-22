@@ -9,10 +9,10 @@ if not modules then modules = { } end modules ['l-number'] = {
 -- See l-number.lua for the more generic (also 5.2) versions of the
 -- functions below ... that file evolved over time.
 
-local tonumber = tonumber
-local format   = sequencer.format
-local concat   = table.concat
-local floor    = math.floor
+local tonumber  = tonumber
+local formatted = sequencer.format
+local concat    = table.concat
+local floor     = math.floor
 
 number       = number or { }
 local number = number
@@ -70,7 +70,7 @@ function number.valid(str,default)
 end
 
 local function toevenhex(n)
-    local s = format("%X", n)
+    local s = formatted("%X", n)
     return (#s % 2 ~= 0) and ("0" .. s) or s
 end
 

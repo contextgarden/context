@@ -13,16 +13,18 @@ if not modules then modules = { } end modules ['strc-tag'] = {
 
 local type, next = type, next
 local insert, remove, unpack, concat, merge, sortedhash = table.insert, table.remove, table.unpack, table.concat, table.merge, table.sortedhash
-local find, topattern, format = string.find, string.topattern, string.format
+local find, topattern = string.find, string.topattern
 local lpegmatch, P, S, C, Cc = lpeg.match, lpeg.P, lpeg.S, lpeg.C, lpeg.Cc
 local allocate = utilities.storage.allocate
 local settings_to_hash = utilities.parsers.settings_to_hash
 local setmetatableindex = table.setmetatableindex
 
-local trace_tags   = false  trackers.register("structures.tags",        function(v) trace_tags   = v end)
-local trace_levels = false  trackers.register("structures.tags.levels", function(v) trace_levels = v end)
+local trace_tags      = false  trackers.register("structures.tags",        function(v) trace_tags   = v end)
+local trace_levels    = false  trackers.register("structures.tags.levels", function(v) trace_levels = v end)
 
-local report_tags = logs.reporter("structure","tags")
+local report_tags     = logs.reporter("structure","tags")
+
+local formatted       = string.formatted
 
 local attributes      = attributes
 local structures      = structures
@@ -757,9 +759,9 @@ statistics.register("structure elements", function()
             for i=1,stacksize do
                 if not chain[i] then chain[i] = "ERROR" end
             end
-            return format("%s element chains identified, open chain: %s ",#taglist,concat(chain," => ",1,stacksize))
+            return formatted("%s element chains identified, open chain: %s ",#taglist,concat(chain," => ",1,stacksize))
         else
-            return format("%s element chains identified",#taglist)
+            return formatted("%s element chains identified",#taglist)
         end
     end
 end)

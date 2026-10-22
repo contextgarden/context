@@ -18,7 +18,7 @@
 \registerctxluafile{char-tex}{autosuffix}
 \registerctxluafile{char-ent}{}
 \registerctxluafile{char-scr}{}
-%registerctxluafile{char-brl}{}
+%registerctxluafile{char-brl}{autosuffix}
 
 \unprotect
 

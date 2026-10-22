@@ -2776,6 +2776,7 @@ static inline void strlib_aux_format_eEgG(
     int                width,
     int                pad_zero,
     int                left_align,
+    int                space_flag, 
     int                has_precision,
     int                precision
 )
@@ -2789,7 +2790,8 @@ static inline void strlib_aux_format_eEgG(
                 if (lmt_buffer_has_room(b, req_room)) {
                     size_t available = b->size - b->length;
                     char fmt_str[32];
-                    snprintf(fmt_str, sizeof(fmt_str), "%%%s%s%s.*%c",
+                    snprintf(fmt_str, sizeof(fmt_str), "%%%s%s%s%s.*%c",
+                        space_flag ? " " : "",
                         left_align ? "-" : "",
                         pad_zero   ? "0" : "",
                         width > 0  ? "*" : "",
@@ -3487,14 +3489,21 @@ static void strlib_aux_addformat(
                                     strlib_aux_format_padded_number(b, prefix, prefix_len, temp, len, width, precision, has_precision, pad_zero, left_align);
                                 }
                                 break;
-                            /* float */
+                            /* float (in " m.n") the m is the total and a space is used for minus alignment */
                             case 'f':
                                 {
-                                    lua_Number val = lua_tonumber(L, arg_idx++);
-                                    int        prc = has_precision ? precision : 6;
-                                    if (lmt_buffer_has_room(b, (size_t) prc + (size_t) width + 350)) {
-                                        int len = double_to_string_z(val, b->buffer + b->length, b->size - b->length, prc);
+                                    lua_Number val       = lua_tonumber(L, arg_idx++);
+                                    int        prc       = has_precision ? precision : 6;
+                                    int        has_space = (space_flag && val >= 0.0);
+                                    size_t     space_len = has_space ? 1 : 0;
+                                    if (lmt_buffer_has_room(b, (size_t) prc + (size_t) width + space_len + 350)) {
+                                        char *s = b->buffer + b->length;
+                                        if (has_space) {
+                                            s[0] = ' ';
+                                        }
+                                        int len = double_to_string_z(val, s + space_len, b->size - b->length - space_len, prc);
                                         if (len > 0) {
+                                            len += (int) space_len;
                                             strlib_aux_format_padded_float(b, len, width, pad_zero, left_align);
                                         }
                                     }
@@ -3521,7 +3530,7 @@ static void strlib_aux_addformat(
                             case 'E':
                             case 'g':
                             case 'G':
-                                strlib_aux_format_eEgG(L, b, &arg_idx, spec, width, pad_zero, left_align, has_precision, precision);
+                                strlib_aux_format_eEgG(L, b, &arg_idx, spec, width, pad_zero, left_align, space_flag, has_precision, precision);
                                 break;
                             /* sparse exponential float (%j / %J) */
                             case 'j':

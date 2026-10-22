@@ -1264,6 +1264,10 @@
 \ifdefined\fmtname    \else \permanent\def\fmtname   {ConTeXt Initial TeX} \fi
 \ifdefined\fmtversion \else \permanent\def\fmtversion{3.1415926}           \fi
 
+\permanent\aliased\let\luatexversion \luametatexversion
+\permanent\aliased\let\luatexrevision\luametatexrelease
+\permanent\aliased\let\luatexbanner  \luametatexbanner
+
 %D A few bonus macros:
 
 %permanent\def\modulonumber#1#2{\tointeger{#2-((((#2+(#1/2))/#1)-1)*#1)}}

@@ -18,7 +18,7 @@ if not modules then modules = { } end modules ['lpdf-u3d'] = {
 -- it makes sense to add the same activation code as with swf.
 
 local tonumber = tonumber
-local formatters, find = string.formatters, string.find
+local formatted, find = string.formatted, string.find
 local cos, sin, sqrt, pi, atan2, abs = math.cos, math.sin, math.sqrt, math.pi, math.atan2, math.abs
 
 local nodeinjections           = backends.registered.pdf.nodeinjections
@@ -347,7 +347,7 @@ end
 
 local stored_js, stored_3d, stored_pr, streams = { }, { }, { }, { }
 
-local f_image = formatters["q /GS gs %.6N 0 0 %.6N 0 0 cm /IM Do Q"]
+local f_image = "q /GS gs %.6N 0 0 %.6N 0 0 cm /IM Do Q"
 
 local function insert3d(spec) -- width, height, factor, display, controls, label, foundname
 
@@ -430,7 +430,7 @@ local function insert3d(spec) -- width, height, factor, display, controls, label
     local preview = checkedkey(param,"preview","string")
     if preview then
         activationdict.A = pdfconstant("XA")
-        local tag = formatters["%s:%s:%s"](label,stream,preview)
+        local tag = formatted("%s:%s:%s",label,stream,preview)
         local ref = stored_pr[tag]
         if not ref then
             local figure = embedimage {
@@ -462,7 +462,7 @@ local function insert3d(spec) -- width, height, factor, display, controls, label
                                 }
                             },
             }
-            local pwd = pdfflushstreamobject(f_image(factor*width,factor*height),pw)
+            local pwd = pdfflushstreamobject(formatted(f_image,factor*width,factor*height),pw)
             annot.AP = pdfdictionary {
                 N = pdfreference(pwd)
             }

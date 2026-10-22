@@ -1052,9 +1052,9 @@ do
 
     -- we could have a helper for this
 
-    local f_1 = formatting("%02X")
-    local f_3 = formatting("%02X%02X%02X")
-    local f_4 = formatting("%02X%02X%02X%02X")
+    local f_1 <const> = formatting("%02X")
+    local f_3 <const> = formatting("%02X%02X%02X")
+    local f_4 <const> = formatting("%02X%02X%02X%02X")
 
     local function pack(specification,what)
         local t = { }

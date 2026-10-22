@@ -123,7 +123,7 @@ static int securitylib_gettargets(lua_State *L)
     lua_createtable(L, 7, 1);
     lua_set_string_by_index(L, security_generic,    "generic");
     lua_set_string_by_index(L, security_readable,   "readable");
-    lua_set_string_by_index(L, security_writeable,  "writeable");
+    lua_set_string_by_index(L, security_writable,   "writable");
     lua_set_string_by_index(L, security_executable, "executable");
     lua_set_string_by_index(L, security_library,    "library");
     lua_set_string_by_index(L, security_loadable,   "loadable");

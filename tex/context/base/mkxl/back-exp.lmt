@@ -67,7 +67,6 @@ local lpegmatch = lpeg.match
 local utfchar, utfvalues, utflen = utf.char, utf.values, utf.len
 local concat, merge, sort, setmetatableindex = table.concat, table.merge, table.sort, table.setmetatableindex
 local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
-local formatters = string.formatters
 local todimen = number.todimen
 local replacetemplate = utilities.templates.replace
 local settings_to_array = utilities.parsers.settings_to_array
@@ -110,6 +109,8 @@ local fontchar          = fonts.hashes.characters
 local fontquads         = fonts.hashes.quads
 
 local texgetcount       = tex.getcount
+
+local formatted         = string.formatted
 
 local references        = structures.references
 local structurestags    = structures.tags
@@ -184,7 +185,7 @@ local p_entity          = lpeg.replacer(entities) -- was: entityremapper = utf.r
 local p_attribute       = lpeg.replacer(attribentities)
 local p_escaped         = lpeg.patterns.xml.escaped
 
-local f_tagid           = formatters["%s-%04i"]
+local f_tagid   <const> = "%s-%04i"
 
 -- local alignmapping = {
 --     flushright = "right",
@@ -204,14 +205,14 @@ setmetatableindex(used, function(t,k)
     end
 end)
 
-local f_entity    = formatters["&#x%X;"]
-local f_attribute = formatters[" %s=%q"]
-local f_property  = formatters[" %s%s=%q"]
+local f_entity    <const> = "&#x%X;"
+local f_attribute <const> = " %s=%q"
+local f_property  <const> = " %s%s=%q"
 
 setmetatableindex(specialspaces, function(t,k)
     local v = utfchar(k)
     t[k] = v
-    entities[v] = f_entity(k)
+    entities[v] = formatted(f_entity,k)
     somespace[k] = true
     somespace[v] = true
     return v
@@ -252,7 +253,7 @@ local mathtags = {
 local function attribute(key,value)
     -- maybe cache
     if value and value ~= "" then
-        return f_attribute(key,lpegmatch(p_attribute,value))
+        return formatted(f_attribute,key,lpegmatch(p_attribute,value))
     else
         return ""
     end
@@ -426,7 +427,7 @@ local styletemplate <const> = [[
             width   = width,
             align   = align,
             hyphens = hyphen,
-            zoom    = formatters["%0.3f"](zoom),
+            zoom    = formatted("%0.3f",zoom),
         })
         --
         local colorspecification = xml.css.colorspecification
@@ -508,17 +509,17 @@ local imagetemplate_2 <const> = [[
     position   : relative ;
 }]]
 
-    local f_svgname = formatters["%s.svg"]
-    local f_svgpage = formatters["%s-page-%s.svg"]
+    local f_svgname = "%s.svg"
+    local f_svgpage = "%s-page-%s.svg"
     local collected = { }
 
     local function usedname(name,page)
         if filesuffix(name) == "pdf" then
             -- temp hack .. we will have a remapper
             if page and page > 1 then
-                name = f_svgpage(nameonly(name),page)
+                name = formatted(f_svgpage,nameonly(name),page)
             else
-                name = f_svgname(nameonly(name))
+                name = formatted(f_svgname,nameonly(name))
             end
         end
         local scheme = url.hasscheme(name)
@@ -693,54 +694,54 @@ end
 
 do
 
-    local f_detail                     = formatters[' detail="%s"']
-    local f_chain                      = formatters[' chain="%s"']
-    local f_index                      = formatters[' n="%s"']
-    local f_spacing                    = formatters['<c p="%s">%s</c>']
+    local f_detail                     <const> = ' detail="%s"'
+    local f_chain                      <const> = ' chain="%s"'
+    local f_index                      <const> = ' n="%s"'
+    local f_spacing                    <const> = '<c p="%s">%s</c>'
 
-    local f_empty_inline               = formatters["<%s/>"]
-    local f_empty_mixed                = formatters["%w<%s/>\n"]
-    local f_empty_display              = formatters["\n%w<%s/>\n"]
-    local f_empty_inline_attr          = formatters["<%s%s/>"]
-    local f_empty_mixed_attr           = formatters["%w<%s%s/>"]
-    local f_empty_display_attr         = formatters["\n%w<%s%s/>\n"]
+    local f_empty_inline               <const> = "<%s/>"
+    local f_empty_mixed                <const> = "%w<%s/>\n"
+    local f_empty_display              <const> = "\n%w<%s/>\n"
+    local f_empty_inline_attr          <const> = "<%s%s/>"
+    local f_empty_mixed_attr           <const> = "%w<%s%s/>"
+    local f_empty_display_attr         <const> = "\n%w<%s%s/>\n"
 
-    local f_begin_inline               = formatters["<%s>"]
-    local f_begin_mixed                = formatters["%w<%s>"]
-    local f_begin_display              = formatters["\n%w<%s>\n"]
-    local f_begin_inline_attr          = formatters["<%s%s>"]
-    local f_begin_mixed_attr           = formatters["%w<%s%s>"]
-    local f_begin_display_attr         = formatters["\n%w<%s%s>\n"]
+    local f_begin_inline               <const> = "<%s>"
+    local f_begin_mixed                <const> = "%w<%s>"
+    local f_begin_display              <const> = "\n%w<%s>\n"
+    local f_begin_inline_attr          <const> = "<%s%s>"
+    local f_begin_mixed_attr           <const> = "%w<%s%s>"
+    local f_begin_display_attr         <const> = "\n%w<%s%s>\n"
 
-    local f_end_inline                 = formatters["</%s>"]
-    local f_end_mixed                  = formatters["</%s>\n"]
-    local f_end_display                = formatters["%w</%s>\n"]
+    local f_end_inline                 <const> = "</%s>"
+    local f_end_mixed                  <const> = "</%s>\n"
+    local f_end_display                <const> = "%w</%s>\n"
 
-    local f_begin_inline_comment       = formatters["<!-- %s --><%s>"]
-    local f_begin_mixed_comment        = formatters["%w<!-- %s --><%s>"]
-    local f_begin_display_comment      = formatters["\n%w<!-- %s -->\n%w<%s>\n"]
-    local f_begin_inline_attr_comment  = formatters["<!-- %s --><%s%s>"]
-    local f_begin_mixed_attr_comment   = formatters["%w<!-- %s --><%s%s>"]
-    local f_begin_display_attr_comment = formatters["\n%w<!-- %s -->\n%w<%s%s>\n"]
+    local f_begin_inline_comment       <const> = "<!-- %s --><%s>"
+    local f_begin_mixed_comment        <const> = "%w<!-- %s --><%s>"
+    local f_begin_display_comment      <const> = "\n%w<!-- %s -->\n%w<%s>\n"
+    local f_begin_inline_attr_comment  <const> = "<!-- %s --><%s%s>"
+    local f_begin_mixed_attr_comment   <const> = "%w<!-- %s --><%s%s>"
+    local f_begin_display_attr_comment <const> = "\n%w<!-- %s -->\n%w<%s%s>\n"
 
-    local f_comment_begin_inline       = formatters["<!-- begin %s -->"]
-    local f_comment_begin_mixed        = formatters["%w<!-- begin %s -->"]
-    local f_comment_begin_display      = formatters["\n%w<!-- begin %s -->\n"]
+    local f_comment_begin_inline       <const> = "<!-- begin %s -->"
+    local f_comment_begin_mixed        <const> = "%w<!-- begin %s -->"
+    local f_comment_begin_display      <const> = "\n%w<!-- begin %s -->\n"
 
-    local f_comment_end_inline         = formatters["<!-- end %s -->"]
-    local f_comment_end_mixed          = formatters["<!-- end %s -->\n"]
-    local f_comment_end_display        = formatters["%w<!-- end %s -->\n"]
+    local f_comment_end_inline         <const> = "<!-- end %s -->"
+    local f_comment_end_mixed          <const> = "<!-- end %s -->\n"
+    local f_comment_end_display        <const> = "%w<!-- end %s -->\n"
 
-    local f_metadata_begin             = formatters["\n%w<metadata>\n"]
-    local f_metadata                   = formatters["%w<metavariable name=%q>%s</metavariable>\n"]
-    local f_metadata_end               = formatters["%w</metadata>\n"]
+    local f_metadata_begin             <const> = "\n%w<metadata>\n"
+    local f_metadata                   <const> = "%w<metavariable name=%q>%s</metavariable>\n"
+    local f_metadata_end               <const> = "%w</metadata>\n"
 
     local function attributes(a)
         local r = { }
         local n = 0
         for k, v in next, a do
             n = n + 1
-            r[n] = f_attribute(k,tostring(v)) -- tostring because of %q
+            r[n] = formatted(f_attribute,k,tostring(v)) -- tostring because of %q
         end
         sort(r)
         return concat(r,"")
@@ -751,7 +752,7 @@ do
         local n = 0
         for k, v in next, a do
             n = n + 1
-            r[n] = f_property(exportproperties,k,tostring(v)) -- tostring because of %q
+            r[n] = formatted(f_property,exportproperties,k,tostring(v)) -- tostring because of %q
         end
         sort(r)
         return concat(r,"")
@@ -765,19 +766,19 @@ do
         local s
         if a then -- happens seldom
             if nature == "display" then
-                s = f_empty_display_attr(depth,element,attributes(a))
+                s = formatted(f_empty_display_attr,depth,element,attributes(a))
             elseif nature == "mixed" then
-                s = f_empty_mixed_attr(depth,element,attributes(a))
+                s = formatted(f_empty_mixed_attr,depth,element,attributes(a))
             else
-                s = f_empty_inline_attr(element,attributes(a))
+                s = formatted(f_empty_inline_attr,element,attributes(a))
             end
         else
             if nature == "display" then
-                s = f_empty_display(depth,element)
+                s = formatted(f_empty_display,depth,element)
             elseif nature == "mixed" then
-                s = f_empty_mixed(depth,element)
+                s = formatted(f_empty_mixed,depth,element)
             else
-                s = f_empty_inline(element)
+                s = formatted(f_empty_inline,element)
             end
         end
         result[#result+1] = s
@@ -821,14 +822,14 @@ do
             if show_comment then
                 local s
                 if nature == "inline" or inline > 0 then
-                    s = f_comment_begin_inline(element)
+                    s = formatted(f_comment_begin_inline,element)
                     inline = inline + 1
                 elseif nature == "mixed" then
-                    s = f_comment_begin_mixed(depth,element)
+                    s = formatted(f_comment_begin_mixed,depth,element)
                     depth = depth + 1
                     inline = 1
                 else
-                    s = f_comment_begin_display(depth,element)
+                    s = formatted(f_comment_begin_display,depth,element)
                     depth = depth + 1
                 end
                 result[#result+1] = s
@@ -843,18 +844,18 @@ do
                 detail = gsub(detail,"[^A-Za-z0-9]+","-")
                 specification.detail = detail -- we use it later in for the div
                 n = n + 1
-                r[n] = f_detail(detail)
+                r[n] = formatted(f_detail,detail)
             end
             local parents = specification.parents
             if parents then
                 parents = gsub(parents,"[^A-Za-z0-9 ]+","-")
                 specification.parents = parents -- we use it later in for the div
                 n = n + 1
-                r[n] = f_chain(parents)
+                r[n] = formatted(f_chain,parents)
             end
             if indexing and index then
                 n = n + 1
-                r[n] = f_index(index)
+                r[n] = formatted(f_index,index)
             end
             --
             local extra = extras[element]
@@ -893,24 +894,24 @@ do
                 local s
                 if nature == "inline" or inline > 0 then
                     if show_comment and comment then
-                        s = f_begin_inline_comment(comment,element)
+                        s = formatted(f_begin_inline_comment,comment,element)
                     else
-                        s = f_begin_inline(element)
+                        s = formatted(f_begin_inline,element)
                     end
                     inline = inline + 1
                 elseif nature == "mixed" then
                     if show_comment and comment then
-                        s = f_begin_mixed_comment(depth,comment,element)
+                        s = formatted(f_begin_mixed_comment,depth,comment,element)
                     else
-                        s = f_begin_mixed(depth,element)
+                        s = formatted(f_begin_mixed,depth,element)
                     end
                     depth = depth + 1
                     inline = 1
                 else
                     if show_comment and comment then
-                        s = f_begin_display_comment(depth,comment,depth,element)
+                        s = formatted(f_begin_display_comment,depth,comment,depth,element)
                     else
-                        s = f_begin_display(depth,element)
+                        s = formatted(f_begin_display,depth,element)
                     end
                     depth = depth + 1
                 end
@@ -920,24 +921,24 @@ do
                 r = concat(r,"",1,n)
                 if nature == "inline" or inline > 0 then
                     if show_comment and comment then
-                        s = f_begin_inline_attr_comment(comment,element,r)
+                        s = formatted(f_begin_inline_attr_comment,comment,element,r)
                     else
-                        s = f_begin_inline_attr(element,r)
+                        s = formatted(f_begin_inline_attr,element,r)
                     end
                     inline = inline + 1
                 elseif nature == "mixed" then
                     if show_comment and comment then
-                        s = f_begin_mixed_attr_comment(depth,comment,element,r)
+                        s = formatted(f_begin_mixed_attr_comment,depth,comment,element,r)
                     else
-                        s = f_begin_mixed_attr(depth,element,r)
+                        s = formatted(f_begin_mixed_attr,depth,element,r)
                     end
                     depth = depth + 1
                     inline = 1
                 else
                     if show_comment and comment then
-                        s = f_begin_display_attr_comment(depth,comment,depth,element,r)
+                        s = formatted(f_begin_display_attr_comment,depth,comment,depth,element,r)
                     else
-                        s = f_begin_display_attr(depth,element,r)
+                        s = formatted(f_begin_display_attr,depth,element,r)
                     end
                     depth = depth + 1
                 end
@@ -948,13 +949,13 @@ do
         -- also in last else ?
         local metadata = specification.metadata
         if metadata and next(metadata) then
-            result[#result+1] = f_metadata_begin(depth)
+            result[#result+1] = formatted(f_metadata_begin,depth)
             for k, v in sortedhash(metadata) do
                 if v ~= "" then
-                    result[#result+1] = f_metadata(depth+1,k,lpegmatch(p_entity,v))
+                    result[#result+1] = formatted(f_metadata,depth+1,k,lpegmatch(p_entity,v))
                 end
             end
-            result[#result+1] = f_metadata_end(depth)
+            result[#result+1] = formatted(f_metadata_end,depth)
         end
     end
 
@@ -964,15 +965,15 @@ do
                 local s
                 if nature == "display" and (inline == 0 or inline == 1) then
                     depth = depth - 1
-                    s = f_comment_end_display(depth,element)
+                    s = formatted(f_comment_end_display,depth,element)
                     inline = 0
                 elseif nature == "mixed" and (inline == 0 or inline == 1) then
                     depth = depth - 1
-                    s = f_comment_end_mixed(element)
+                    s = formatted(f_comment_end_mixed,element)
                     inline = 0
                 else
                     inline = inline - 1
-                    s = f_comment_end_inline(element)
+                    s = formatted(comment_end_inline,element)
                 end
                 result[#result+1] = s
             end
@@ -982,15 +983,15 @@ do
             local s
             if nature == "display" and (inline == 0 or inline == 1) then
                 depth = depth - 1
-                s = f_end_display(depth,element)
+                s = formatted(f_end_display,depth,element)
                 inline = 0
             elseif nature == "mixed" and (inline == 0 or inline == 1) then
                 depth = depth - 1
-                s = f_end_mixed(element)
+                s = formatted(f_end_mixed,element)
                 inline = 0
             else
                 inline = inline - 1
-                s = f_end_inline(element)
+                s = formatted(f_end_inline,element)
             end
             result[#result+1] = s
         end
@@ -1036,14 +1037,14 @@ do
                     if i == nofdata and sub(content,-1) == "\n" then -- move check
                         -- can be an end of line in par but can also be the last line
                         if trace_spacing then
-                            result[#result+1] = f_spacing(di.parnumber or 0,sub(content,1,-2))
+                            result[#result+1] = formatted(f_spacing,di.parnumber or 0,sub(content,1,-2))
                         else
                             result[#result+1] = sub(content,1,-2)
                         end
                         result[#result+1] = " "
                     else
                         if trace_spacing then
-                            result[#result+1] = f_spacing(di.parnumber or 0,content)
+                            result[#result+1] = formatted(f_spacing,di.parnumber or 0,content)
                         else
                             result[#result+1] = content
                         end
@@ -1653,7 +1654,7 @@ local collectresults  do -- too many locals otherwise
         if trace_export then
             report("%w<!-- possible paragraph (%i,%i) mixup at %C case %i -->",currentdepth,paragraph or 0,ap or 0,c,case)
         else
-            local s = formatters["%C"](c)
+            local s = formatted("%C",c)
             if maybewrong then
                 maybewrong[#maybewrong+1] = s
             else
@@ -2488,7 +2489,7 @@ local htmltemplate <const> = [[
     }
 
     local addclicks   = true
-    local f_onclick   = formatters[ [[location.href='%s']] ]
+    local f_onclick   <const> = [[location.href='%s']]
 
     local p_cleanid   = lpeg.replacer { [":"] = "-" }
     local p_cleanhref = lpeg.Cs(lpeg.P("#") * p_cleanid)
@@ -2623,7 +2624,7 @@ local htmltemplate <const> = [[
                                 class   = class,
                                 id      = id,
                                 href    = href,
-                                onclick = addclicks and f_onclick(href) or nil,
+                                onclick = addclicks and formatted(f_onclick,href) or nil,
                             }
                         else
                             attr = {
@@ -2637,7 +2638,7 @@ local htmltemplate <const> = [[
                             attr = {
                                 class   = class,
                                 href    = href,
-                                onclick = addclicks and f_onclick(href) or nil,
+                                onclick = addclicks and formatted(f_onclick,href) or nil,
                             }
                         else
                             attr = {

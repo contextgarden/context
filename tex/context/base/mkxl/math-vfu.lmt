@@ -38,7 +38,8 @@ local report_virtual    = logs.reporter("fonts","virtual math")
 
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
-local formatters        = string.formatters
+
+local formatted         = string.formatted
 
 local chardata          = characters.data
 
@@ -108,7 +109,7 @@ do
         local data       = characters[unicode]
         if force or not data then
             local height = main.mathparameters.defaultrulethickness or 4*65536/10
-            local f_rule = rule and formatters["M-HORIBAR-M-%H"](rule)
+            local f_rule = rule and formatted("M-HORIBAR-M-%H",rule)
             local p_rule = rule and hasprivate(main,f_rule)
             local ndata  = normal and characters[normal]
             if rule and left and right and normal then
@@ -124,8 +125,8 @@ if unicode == normal then
     height = ndata.height
     down   = 0
 end                --
-                local f_left  = left  and formatters["M-HORIBAR-L-%H"](left)
-                local f_right = right and formatters["M-HORIBAR-R-%H"](right)
+                local f_left  = left  and formatted("M-HORIBAR-L-%H",left)
+                local f_right = right and formatted("M-HORIBAR-R-%H",right)
                 local p_left  = left  and hasprivate(main,f_left)
                 local p_right = right and hasprivate(main,f_right)
                 --
@@ -236,8 +237,8 @@ end
         end
     end
 
-    -- local rootbarmiddle -- false = addprivate(main,formatters["M-R-%H"](next))
-    -- local rootbarright  -- false = addprivate(main,formatters["M-R-%H"](next))
+    -- local rootbarmiddle -- false = addprivate(main,formatted("M-R-%H",next))
+    -- local rootbarright  -- false = addprivate(main,formatted("M-R-%H",next))
 
     local function rootbar(main,unicode,rule,right,normal)
         local characters = main.characters
@@ -252,8 +253,8 @@ end
                 local nwidth = ndata.width or 0
                 local down   = (mdata.height / 2) - height
                 --
-                local f_rule  = rule  and formatters["M-ROOTBAR-M-%H"](rule)
-                local f_right = right and formatters["M-ROOTBAR-R-%H"](right)
+                local f_rule  = rule  and formatted("M-ROOTBAR-M-%H",rule)
+                local f_right = right and formatted("M-ROOTBAR-R-%H",right)
                 local p_rule  = rule  and hasprivate(main,f_rule)
                 local p_right = right and hasprivate(main,f_right)
                 --
@@ -657,7 +658,7 @@ keepvirtual = true,
                 commands[#commands+1] = tc
                 local next = c.next
                 if next then
-                    local p = addprivate(main,formatters["M-R-%H"](next))
+                    local p = addprivate(main,formatted("M-R-%H",next))
                     repeated(main,p,next,n,fraction)
                     next = p
                 end
@@ -782,7 +783,7 @@ local function copy_glyph(main,target,original,unicode,slot)
                     smaller      = oldnextdata.smaller,
                     commands     = { slotcommand[slot][nextglyph] },
                 }
-                local newnextglyph = addprivate(main,formatters["M-N-%H"](nextglyph),newnextdata)
+                local newnextglyph = addprivate(main,formatted("M-N-%H",nextglyph),newnextdata)
                 newdata.next = newnextglyph
                 local nextnextglyph = oldnextdata.next
                 if nextnextglyph == nextglyph then
@@ -814,13 +815,13 @@ local function copy_glyph(main,target,original,unicode,slot)
                     unicode   = olddata.unicode,
                     commands  = { slotcommand[slot][oldglyph] },
                 }
-                newpart.glyph = addprivate(main,formatters["M-P-%H"](oldglyph),newdata)
+                newpart.glyph = addprivate(main,formatted("M-P-%H",oldglyph),newdata)
             end
         end
         local smaller = olddata.smaller
         if smaller then
             local smallerdata = copy_glyph(main,target,original,smaller,slot)
-            glyphdata.smaller = addprivate(main,formatters["M-S-%H"](smaller),smallerdata)
+            glyphdata.smaller = addprivate(main,formatted("M-S-%H",smaller),smallerdata)
         end
         return glyphdata
     end
@@ -939,7 +940,6 @@ function vfmath.define(specification,virtual,goodies)
     local start    = (trace_virtual or trace_timings) and clock()
     local okset    = { }
     local n        = 0
-    local f_extra  = formatters["virtual.extra.%05X"]
     local setlist  = virtual.recipe or virtual
     for s=1,#setlist do
         local ss     = setlist[s]
@@ -1208,7 +1208,7 @@ function vfmath.define(specification,virtual,goodies)
                                     -- get rid of ugly antykwa bar
                                 elseif not done[uni] then
                                     local t = virtualize(s,uni,fci,skewchar,tonumber(badones and badones[name]),mathparameters,nil,fp,characters)
-                                    local o = addprivate(main,f_extra(offset))
+                                    local o = addprivate(main,formatted("virtual.extra.%05X",offset))
                                     extras[uni] = o
                                     characters[o] = t
                                     done[uni] = t

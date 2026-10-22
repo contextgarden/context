@@ -19,7 +19,8 @@ local trace_namespaces = false  trackers.register("interfaces.namespaces", funct
 
 local report_namespaces = logs.reporter("interface","namespaces")
 
-local v_yes, v_list = variables.yes, variables.list
+local v_yes  = variables.yes
+local v_list = variables.list
 
 local prefix  = "????"
 local meaning = "@@@@"

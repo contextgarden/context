@@ -17,7 +17,7 @@
 
 \writestatus{loading}{ConTeXt Tracing Macros / Breakpoints}
 
-\registerctxluafile{trac-brk}{}
+\registerctxluafile{trac-brk}{autosuffix}
 
 % \linebreakchecks : currently a bitset but maybe just values
 %

@@ -11,8 +11,7 @@ if not modules then modules = { } end modules ['lpdf-epa'] = {
 -- embedded files ... not bound to a page
 
 local type, tonumber, next = type, tonumber, next
-local format, gsub, lower, find, match = string.format, string.gsub, string.lower, string.find, string.match
-local formatters = string.formatters
+local gsub, lower, find, match = string.gsub, string.lower, string.find, string.match
 local concat, merged = table.concat, table.merged
 local abs = math.abs
 local expandname = file.expandname
@@ -28,6 +27,8 @@ local report_link       = logs.reporter("backend","link")
 local report_comment    = logs.reporter("backend","comment")
 local report_field      = logs.reporter("backend","field")
 local report_outline    = logs.reporter("backend","outline")
+
+local formatted         = string.formatted
 
 local context           = context
 
@@ -172,11 +173,9 @@ function codeinjections.flushmergelayer()
     end
 end
 
-local f_namespace = formatters["lpdf-epa-%s-"]
-
 local function makenamespace(filename)
     filename = gsub(lower(nameonly(filename)),"[^%a%d]+","-")
-    return f_namespace(filename)
+    return formatted("lpdf-epa-%s-",filename)
 end
 
 local function add_link(x,y,w,h,destination,what)
@@ -238,7 +237,7 @@ local function link_uri(x,y,w,h,document,annotation)
      -- url = lpegmatch(urlescaper,url)
      -- url = lpegmatch(utftohigh,url)
         url = escapetex(url)
-        add_link(x,y,w,h,formatters["url(%s)"](url),"url")
+        add_link(x,y,w,h,formatted("url(%s)",url),"url")
     end
 end
 
@@ -267,9 +266,9 @@ local function link_file(x,y,w,h,document,annotation)
             filename = escapetex(filename)
             local destination = a.D
             if not destination then
-                add_link(x,y,w,h,formatters["file(%s)"](filename),"file")
+                add_link(x,y,w,h,formatted("file(%s)",filename),"file")
             elseif type(destination) == "string" then
-                add_link(x,y,w,h,formatters["%s::%s"](filename,destination),"file (named)")
+                add_link(x,y,w,h,formatted("%s::%s",filename,destination),"file (named)")
             else
                 -- hm, zero offset so maybe: destination + 1
                 destination = tonumber(destination[1]) -- array
@@ -283,10 +282,10 @@ local function link_file(x,y,w,h,document,annotation)
                             report_link("reference to an also loaded file %a, consider using directive: figures.embedded",filename)
                             reported[filename] = true
                         end
-                        add_link(x,y,w,h,formatters["%s::page(%s)"](filename,destination),"file (page)")
+                        add_link(x,y,w,h,formatted("%s::page(%s)",filename,destination),"file (page)")
                     end
                 else
-                    add_link(x,y,w,h,formatters["file(%s)"](filename),"file")
+                    add_link(x,y,w,h,formatted("file(%s)",filename),"file")
                 end
             end
         end

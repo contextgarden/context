@@ -3241,7 +3241,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-io"] = package.loaded["l-io"] or true
 
--- original size: 11988, stripped down to: 6430
+-- original size: 11980, stripped down to: 6422
 
 if not modules then modules={} end modules ['l-io']={
  version=1.001,
@@ -3517,7 +3517,7 @@ function io.ask(question,default,options)
   if default then
    write(format(" [%s]",default))
   end
-  write(format(" "))
+  write(" ")
   flush()
   local answer=read()
   answer=gsub(answer,"^%s*(.*)%s*$","%1")
@@ -3723,7 +3723,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-set"] = package.loaded["l-set"] or true
 
--- original size: 1923, stripped down to: 1044
+-- original size: 1911, stripped down to: 1044
 
 if not modules then modules={} end modules ['l-set']={
  version=1.001,
@@ -3796,7 +3796,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 20768, stripped down to: 11065
+-- original size: 20774, stripped down to: 11099
 
 if not modules then modules={} end modules ['l-os']={
  version=1.001,
@@ -3982,13 +3982,15 @@ do
  end
 end
 do
+ local getenv=os.getenv
+ local resultof=os.resultof
  local name=os.name or "linux"
- local platform=os.getenv("MTX_PLATFORM") or ""
+ local platform=getenv("MTX_PLATFORM") or ""
  local architecture=os.uname and os.uname().machine 
- local bits=os.getenv("MTX_BITS") or find(platform,"64") and 64 or 32
+ local bits=getenv("MTX_BITS") or find(platform,"64") and 64 or 32
  if platform~="" then
  elseif os.type=="windows" then
-  architecture=string.lower(architecture or os.getenv("PROCESSOR_ARCHITECTURE") or "")
+  architecture=string.lower(architecture or getenv("PROCESSOR_ARCHITECTURE") or "")
   if architecture=="x86_64" then
    bits,platform=64,"win64"
   elseif find(architecture,"amd64") then
@@ -4001,7 +4003,7 @@ do
    bits,platform=32,"mswin"
   end
  elseif name=="linux" then
-  architecture=architecture or os.getenv("HOSTTYPE") or resultof("uname -m") or ""
+  architecture=architecture or getenv("HOSTTYPE") or resultof("uname -m") or ""
   local musl=find(os.selfdir or "","linuxmusl")
   if find(architecture,"x86_64") then
    bits,platform=64,musl and "linuxmusl-64" or "linux-64"
@@ -4031,14 +4033,14 @@ do
    bits,platform=32,"solaris-intel"
   end
  elseif name=="freebsd" then
-  architecture=architecture or os.getenv("MACHTYPE") or resultof("uname -m") or ""
+  architecture=architecture or getenv("MACHTYPE") or resultof("uname -m") or ""
   if find(architecture,"amd64") or find(architecture,"AMD64") then
    bits,platform=64,"freebsd-amd64"
   else
    bits,platform=32,"freebsd"
   end
  elseif name=="kfreebsd" then
-  architecture=architecture or os.getenv("HOSTTYPE") or resultof("uname -m") or ""
+  architecture=architecture or getenv("HOSTTYPE") or resultof("uname -m") or ""
   if architecture=="x86_64" then
    bits,platform=64,"kfreebsd-amd64"
   else
@@ -4256,7 +4258,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-file"] = package.loaded["l-file"] or true
 
--- original size: 22655, stripped down to: 10467
+-- original size: 22720, stripped down to: 10501
 
 if not modules then modules={} end modules ['l-file']={
  version=1.001,
@@ -4632,11 +4634,13 @@ end
 function file.is_rootbased_path(filename)
  return filename and lpegmatch(rootbased,filename)~=nil
 end
-function lfs.mkdirs(path)
- local full=""
- for sub in gmatch(path,"(/*[^\\/]+)") do 
-  full=full..sub
-  lfs.mkdir(full)
+if not lfs.mkdirs then
+ function lfs.mkdirs(path)
+  local full=""
+  for sub in gmatch(path,"(/*[^\\/]+)") do 
+   full=full..sub
+   lfs.mkdir(full)
+  end
  end
 end
 function file.withinbase(path) 
@@ -4674,22 +4678,6 @@ do
   end
  end
 end
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
-package.loaded["l-gzip"] = package.loaded["l-gzip"] or true
-
--- original size: 268, stripped down to: 216
-
-if not modules then modules={} end modules ['l-gzip']={
- version=1.001,
- author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
- copyright="PRAGMA ADE / ConTeXt Development Team",
- license="see context related readme files"
-}
 
 
 end -- of closure
@@ -5088,7 +5076,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-dir"] = package.loaded["l-dir"] or true
 
--- original size: 19939, stripped down to: 11691
+-- original size: 19895, stripped down to: 11692
 
 if not modules then modules={} end modules ['l-dir']={
  version=1.001,
@@ -5300,7 +5288,7 @@ if onwindows then
   Cs(((1-S("*?/\\"))^0*slash)^0),
   Cs(P(1)^0)
  }
-else
+else 
  pattern={
   (C(P(".")+P("/")^1)+Cc("./"))*V(2)*V(3),
   C(((1-S("*?/"))^0*P("/"))^0),
@@ -6424,7 +6412,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-math"] = package.loaded["l-math"] or true
 
--- original size: 3573, stripped down to: 2571
+-- original size: 2679, stripped down to: 1909
 
 if not modules then modules={} end modules ['l-math']={
  version=1.001,
@@ -6516,39 +6504,6 @@ if not math.ult then
  local floor=math.floor
  function math.ult(m,n)
   return floor(m)<floor(n) 
- end
-end
-if setinspector and vector then
- local inspect=inspect
- local isvector=vector.isvector
- local totable=vector.totable
- setinspector("vector",function(v)
-  if isvector(v) then
-   inspect(totable(v))
-   return true
-  end
- end)
- local mesh=vector.mesh
- if mesh then
-  local ismesh=mesh.ismesh
-  local totable=mesh.totable
-  setinspector("mesh",function(v)
-   if ismesh(v) then
-    inspect(totable(v))
-    return true
-   end
-  end)
- end
- local points=vector.points
- if points then
-  local ispoints=points.ispoints
-  local totable=points.totable
-  setinspector("points",function(v)
-   if ispoints(v) then
-    inspect(totable(v))
-    return true
-   end
-  end)
  end
 end
 
@@ -10012,7 +9967,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-fmt"] = package.loaded["util-fmt"] or true
 
--- original size: 3379, stripped down to: 2273
+-- original size: 3422, stripped down to: 2308
 
 if not modules then modules={} end modules ['util-fmt']={
  version=1.001,
@@ -10024,9 +9979,10 @@ if not modules then modules={} end modules ['util-fmt']={
 utilities=utilities or {}
 utilities.formatters=utilities.formatters or {}
 local formatters=utilities.formatters
-local concat,format=table.concat,string.format
 local tostring,type,unpack=tostring,type,unpack
+local concat=table.concat
 local strip=string.strip
+local formatted=string.formatted or string.format
 local lpegmatch=lpeg.match
 local stripper=lpeg.patterns.stripzeros
 function formatters.stripzeros(str)
@@ -10094,7 +10050,7 @@ function formatters.formatcolumns(result,between,header)
   end
   local template=strip(concat(templates))
   for i=1,#result do
-   local str=format(template,unpack(result[i]))
+   local str=formatted(template,unpack(result[i]))
    result[i]=strip(str)
   end
   if header then
@@ -10110,7 +10066,7 @@ function formatters.formatcolumns(result,between,header)
    end
    local template=strip(concat(templates))
    for i=1,#header do
-    local str=format(template,unpack(header[i]))
+    local str=formatted(template,unpack(header[i]))
     header[i]=strip(str)
    end
   end
@@ -13988,7 +13944,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
 
--- original size: 5370, stripped down to: 4067
+-- original size: 5467, stripped down to: 4122
 
 if not modules then modules={} end modules ['trac-inf']={
  version=1.001,
@@ -14033,7 +13989,11 @@ function statistics.show()
   end)
   register("used engine",function()
    return format("%s version: %s, functionality level: %s, banner: %s",
-    LUATEXENGINE,LUATEXVERSION,LUATEXFUNCTIONALITY,lower(status.banner))
+    environment.luatexengine,
+    environment.luatexversion,
+    environment.luatexfunctionality,
+    lower(status.banner)
+   )
   end)
   register("used hash slots",function()
    return format("%s of %s + %s",status.cs_count,status.hash_size,status.hash_extra)
@@ -14905,7 +14865,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sbx"] = package.loaded["util-sbx"] or true
 
--- original size: 21529, stripped down to: 13493
+-- original size: 21520, stripped down to: 13487
 
 if not modules then modules={} end modules ['util-sbx']={
  version=1.001,
@@ -15075,19 +15035,19 @@ local function normalizedreadable(name,finalized)
   return normalized(valid)
  end
 end
-local function writeable(name,finalized)
+local function writable(name,finalized)
  return validfilename(name,"w")
 end
-local function normalizedwriteable(name,finalized)
+local function normalizedwritable(name,finalized)
  local valid=validfilename(name,"w")
  if valid then
   return normalized(valid)
  end
 end
 validators.readable=readable
-validators.writeable=normalizedwriteable
+validators.writable=normalizedwritable
 validators.normalizedreadable=normalizedreadable
-validators.normalizedwriteable=writeable
+validators.normalizedwritable=writable
 validators.filename=readable
 table.setmetatableindex(validators,function(t,k)
  if k then
@@ -15431,7 +15391,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-mrg"] = package.loaded["util-mrg"] or true
 
--- original size: 7819, stripped down to: 5881
+-- original size: 8033, stripped down to: 5956
 
 if not modules then modules={} end modules ['util-mrg']={
  version=1.001,
@@ -15504,7 +15464,8 @@ local optionalspaces=space^0/""
 local mandatespaces=space^1/""
 local optionalspacing=(eol+space)^0/""
 local mandatespacing=(eol+space)^1/""
-local pack=digit*space^1*operator4*optionalspacing+optionalspacing*operator1*optionalspacing+optionalspacing*operator2*optionalspaces+mandatespacing*operator3*mandatespaces+optionalspaces*separator*optionalspaces
+local keep=(optionalspacing*P("<const>")*optionalspacing)/" <const> "
+local pack=keep+digit*space^1*operator4*optionalspacing+optionalspacing*operator1*optionalspacing+optionalspacing*operator2*optionalspaces+mandatespacing*operator3*mandatespaces+optionalspaces*separator*optionalspaces
 local lines=emptyline^2/"\n"
 local spaces=(space*space)/" "
 local spaces=(space*space*space*space)/" "
@@ -15833,9 +15794,9 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-env"] = package.loaded["luat-env"] or true
 
--- original size: 6293, stripped down to: 4141
+-- original size: 6292, stripped down to: 4140
 
- if not modules then modules={} end modules ['luat-env']={
+if not modules then modules={} end modules ['luat-env']={
  version=1.001,
  comment="companion to luat-lib.mkiv",
  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -26884,10 +26845,10 @@ end
 
 end -- of closure
 
--- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua util-tmr.lua trac-tmr.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua util-sig.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua util-jsn.lua
+-- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua util-tmr.lua trac-tmr.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua util-sig.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua util-jsn.lua
 -- skipped libraries : -
--- original bytes    : 1076949
--- stripped bytes    : 429615
+-- original bytes    : 1076138
+-- stripped bytes    : 429463
 
 -- end library merge
 
@@ -26940,7 +26901,6 @@ local ownlibs = {
     'l-set.lua',
     'l-os.lua',
     'l-file.lua',
-    'l-gzip.lua',
     'l-md5.lua',
     'l-sha.lua',
     'l-url.lua',

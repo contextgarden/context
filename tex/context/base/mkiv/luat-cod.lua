@@ -115,8 +115,11 @@ if LUATEXENGINE == nil then
 end
 
 if LUATEXVERSION == nil then
-    LUATEXVERSION = status.luatex_version/100
-                  + tonumber(status.luatex_revision)/10000
+    LUATEXVERSION = string.format(
+                        "%1.2f.%i",
+                        tonumber(status.luatex_version)/100,
+                        tonumber(status.luatex_revision) or 0
+                    )
 end
 
 if CONTEXTLMTXMODE == nil then

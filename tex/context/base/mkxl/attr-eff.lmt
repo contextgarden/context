@@ -37,7 +37,7 @@ local data              = effects.data
 local registered        = effects.registered
 local values            = effects.values
 
-local f_stamp           = "%s:%s:%s"
+local f_stamp   <const> = "%s:%s:%s"
 
 storage.register("attributes/effects/registered", registered, "attributes.effects.registered")
 storage.register("attributes/effects/values",     values,     "attributes.effects.values")

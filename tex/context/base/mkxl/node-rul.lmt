@@ -859,9 +859,9 @@ do
     local s_close     <const> = "h"
     local s_stroke    <const> = "S"
 
-    local f_linewidth = "%N w"
-    local f_moveto    = "%N %N m"
-    local f_lineto    = "%N %N l"
+    local f_linewidth <const> = "%N w"
+    local f_moveto    <const> = "%N %N m"
+    local f_lineto    <const> = "%N %N l"
 
     local formatted   = string.formatted
 

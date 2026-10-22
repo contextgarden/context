@@ -36,8 +36,8 @@ do
     local expandname      = dir.expandname
     local pathpart        = file.pathpart
 
-    local readable  = { }
-    local writeable = { }
+    local readable = { }
+    local writable = { }
 
     function initializers.files()
 
@@ -49,16 +49,16 @@ do
         end
 
         local selfdir = expandname(".")
-        readable [1] = selfdir
-        writeable[1] = selfdir
+        readable[1] = selfdir
+        writable[1] = selfdir
 
         register("TEXINPUTS", readable)
         register("MPINPUTS",  readable)
         register("TEXMF",     readable)
-     -- register("TEXMFCACHE",writeable)
+     -- register("TEXMFCACHE",writable)
 
         local rp = topattern(readable)
-        local wp = topattern(writeable)
+        local wp = topattern(writable)
 
         setchecker(1,function(s,action) -- readable
             local path = pathpart(s)
@@ -71,7 +71,7 @@ do
             return okay
         end)
 
-        setchecker(2,function(s,action) -- writeable
+        setchecker(2,function(s,action) -- writable
             local path = pathpart(s)
             local okay = path == "" or lpegmatch(wp,path)
             if trace then

@@ -516,8 +516,8 @@ do
         actions   = { dictionaries.groupsetgroup, context },
     }
 
-    local f_dictionary = formatting("properties [%04X:%04X:%04X] [%s] %U : %s")
-    local whatdetail   = "all"
+    local f_dictionary <const> = formatting("properties [%04X:%04X:%04X] [%s] %U : %s")
+    local whatdetail           = "all"
 
     local function get_math_dictionary_callback(n,properties,group,index,font,char)
      -- local properties, group, index, font, char = nodes.nuts.getchardict(n)

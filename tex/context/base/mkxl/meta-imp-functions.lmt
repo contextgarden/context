@@ -6,8 +6,8 @@ if not modules then modules = { } end modules ['meta-imp-functions'] = {
     license   = "see context related readme files",
 }
 
-local formatters = string.formatters
-local sequenced  = table.sequenced
+local formatted    = string.formatted
+local sequenced    = table.sequenced
 
 local noffunctions = 0
 local version      = 1
@@ -17,7 +17,7 @@ local function preparecache(p)
 local action = p.action
 p.action = nil
     local hash = md5.HEX(sequenced(p))
-    local name = formatters["mkiv-%s-m-f-%03i.lua"](tex.jobname,noffunctions)
+    local name = formatted("mkiv-%s-m-f-%03i.lua",tex.jobname,noffunctions)
 p.action = action
     return name, hash
 end

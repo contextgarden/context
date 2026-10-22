@@ -41,7 +41,6 @@ local format, match, gmatch, find, gsub = string.format, string.match, string.gm
 local concat, sortedhash, sortedkeys, setmetatableindex = table.concat, table.sortedhash, table.sortedkeys, table.setmetatableindex
 local lpegmatch, P, S, C = lpeg.match, lpeg.P, lpeg.S, lpeg.C
 local settings_to_hash, settings_to_array = utilities.parsers.settings_to_hash, utilities.parsers.settings_to_array
-local formatters = string.formatters
 
 local trace_tags       = false
 local trace_info       = false
@@ -80,7 +79,10 @@ local c_realpageno <const> = tex.iscount("realpageno")
 
 directives.register("structures.tags.math.detail", function(v) detailedmath = v end)
 
-local report = logs.reporter("backend","tags")
+local report              = logs.reporter("backend","tags")
+
+local formatting          = string.formatting
+local formatted           = string.formatted
 
 local pdfbackend          = backends.registered.pdf
 local nodeinjections      = pdfbackend.nodeinjections
@@ -454,7 +456,7 @@ end)
 statistics.register("pdf tags", function()
     local k, v = next(missingua)
     if k then
-        return format("unknown tags mapped to %s: % t",v,sortedkeys(missingua))
+        return formatted("unknown tags mapped to %s: % t",v,sortedkeys(missingua))
     end
 end)
 
@@ -573,11 +575,11 @@ statistics.register("problematic tags", function()
         end
         maxp = (2 + maxp//100) * 2
         maxa = (2 + maxa//100) * 2
-        local f = formatters["%" .. maxp .. "i  %" .. maxa .. "i : %s : %s"]
+        local f = "%" .. maxp .. "i  %" .. maxa .. "i : %s : %s"
         for page, specification in sortedhash(problems) do
             for i=1,#specification do
                 local s = specification[i]
-                specification[i] = f(s.parnumber,s.attribute,s.tagname,s.prevtag)
+                specification[i] = formatted(f,s.parnumber,s.attribute,s.tagname,s.prevtag)
             end
             table.sort(specification)
             local last = false
@@ -1040,7 +1042,7 @@ local collectedsuspects   = { }
 
 statistics.register("pdf tags", function()
     if #collectedsuspects > 0 then
-        return formatters["suspects: % t"](collectedsuspects)
+        return formatted("suspects: % t",collectedsuspects)
     end
 end)
 
@@ -1150,8 +1152,8 @@ local makeelement  do
 
     do
 
-        local f_tagid = formatters["math-%04X"]      -- todo: auto adapt to nofblobs
-        local f_tagfn = formatters["math-%04X.xml"]
+        local f_tagid <const> = formatting("math-%04X")      -- todo: auto adapt to nofblobs
+        local f_tagfn <const> = formatting("math-%04X.xml")
 
         local shared  = { }
         local bindex  = 0
@@ -1159,7 +1161,7 @@ local makeelement  do
 
         function blobfunctions.math(tagname,specification)
             local tagindex = specification.tagindex
-            local id       = f_tagid(tagindex)
+            local id       = formatted(f_tagid,tagindex)
             local blob     = specification.blob
             local af       = nil
             if blob then
@@ -1175,8 +1177,8 @@ local makeelement  do
                         btags[blob] = index[2]
                     else
                         bindex = bindex + 1
-                        local blobname = f_tagid(blobindex)
-                        local blobfile = f_tagfn(blobindex)
+                        local blobname = formatted(f_tagid,blobindex)
+                        local blobfile = formatted(f_tagfn,blobindex)
                         local blobdata = mathematics.getmathblob("pdf",blob)
                         af = codeinjections.embedfile {
                             force          = true,
@@ -1223,7 +1225,7 @@ local makeelement  do
             if blob and not blobdone[blob] then
                 local bname = btags[blob]
                 if bname then
-                    bname = "M " .. blob .. " " .. f_tagid(bname)
+                    bname = "M " .. blob .. " " .. formatted(f_tagid,bname)
                 else
                     bname = "M " .. blob
                 end
@@ -1283,8 +1285,8 @@ local makeelement  do
 
     do
 
-        local f_tagid = formatters["cite-%s"]      -- todo: auto adapt to nofblobs
-        local f_tagfn = formatters["cite-%s.bib"]
+        local f_tagid <const> = "cite-%s"      -- todo: auto adapt to nofblobs
+        local f_tagfn <const> = "cite-%s.bib"
 
         local shared  = { }
         local bindex  = 0
@@ -1295,7 +1297,7 @@ local makeelement  do
             if detail then
                 local dataset, tag = match(detail,"^(.+)::(.+)$")
                 local index = shared[tag]
-                local id    = f_tagid(tag)
+                local id    = formatted(f_tagid,tag)
                 local af    = nil
                 if index then
                     af = index[1]
@@ -1303,8 +1305,8 @@ local makeelement  do
                 else
                     bindex = bindex + 1
                     local data     = publications.datasets[dataset].luadata[tag] or "no data"
-                    local blobname = id -- f_tagid(tag)
-                    local blobfile = f_tagfn(tag)
+                    local blobname = id -- formatted(f_tagid,tag)
+                    local blobfile = formatted(f_tagfn,tag)
                     local blobdata = publications.savers.bib(false,false,{ [tag] = data }) -- converttoxml(dataset,true,false,true,false,true,true)
                     af = codeinjections.embedfile {
                         force          = true,
@@ -1354,8 +1356,8 @@ local makeelement  do
 
     do
 
-        local f_tagid = formatters["%s-%s"]      -- todo: auto adapt to nofblobs
-        local f_tagfn = formatters["%s-%s.txt"]
+        local f_tagid <const> = "%s-%s"      -- todo: auto adapt to nofblobs
+        local f_tagfn <const> = "%s-%s.txt"
 
         local shared  = { }
         local bindex  = 0
@@ -1388,15 +1390,15 @@ local makeelement  do
                     return
                 end
                 local index = shared[tag]
-                local id    = f_tagid(detail,tag)
+                local id    = formatted(f_tagid,detail,tag)
                 local af    = nil
                 if index then
                     af = index[1]
                     btags[tag] = index[2]
                 else
                     bindex = bindex + 1
-                    local blobname = id -- f_tagid(detail,tag)
-                    local blobfile = f_tagfn(detail,tag)
+                    local blobname = id -- formatted(f_tagid,detail,tag)
+                    local blobfile = formatted(f_tagfn,detail,tag)
                     local blobdata = data
                     af = codeinjections.embedfile {
                         force          = true,
@@ -1443,9 +1445,6 @@ local makeelement  do
      -- blobfunctions.description = nil-- disabled by default
 
     end
-
-    local lastid = 0
-    local f_id   = formatters["%X"]
 
     local symbols = setmetatableindex (
         { -- None
@@ -1666,8 +1665,6 @@ end
 
 end
 
-local f_BDC = formatters["/%s <</MCID %s>> BDC"]
-
 local a_destination <const> = attributes.private('destination')
 local a_reference   <const> = attributes.private('reference')
 
@@ -1710,7 +1707,7 @@ local function makecontent(start,parent,id,specification,range)
     --
     list[index] = parent.pref -- page related list
     --
-    return f_BDC(tag,last)
+    return formatted("/%s <</MCID %s>> BDC",tag,last)
 end
 
 local function makeignore(specification,range)
@@ -2236,7 +2233,7 @@ stoptag()
                 if not left and trace_suspects then
                     local name = specification.tagname
                     if name == "mrow" then -- todo
-                        collectedsuspects[#collectedsuspects+1] = formatters["%i:%s"](pagenum,name)
+                        collectedsuspects[#collectedsuspects+1] = formatted("%i:%s",pagenum,name)
                         left, right = tagtracers.suspect(name)
                     end
                 end
@@ -2377,7 +2374,7 @@ do
     local function namespacename(detail,parent)
         if parent or detail then
             usernamecount = usernamecount + 1
-            return formatters["user-%04X"](usernamecount)
+            return formatted("user-%04X",usernamecount)
         else
             return "user"
         end

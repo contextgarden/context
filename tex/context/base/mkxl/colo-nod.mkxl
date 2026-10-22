@@ -15,6 +15,6 @@
 
 %D In \LMTX\ we moved some code here.
 
-\registerctxluafile{colo-nod}{}
+\registerctxluafile{colo-nod}{autosuffix}
 
 \endinput

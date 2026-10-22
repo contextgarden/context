@@ -306,14 +306,14 @@ static int oslib_execute(lua_State *L)
 static int oslib_remove(lua_State *L)
 {
     const char *filename = luaL_checkstring(L, 1);
-    return luaL_fileresult(L, lmt_valid_target(L, security_writeable, filename, security_remove_file) ? aux_utf8_remove(filename) == 0 : 0, filename);
+    return luaL_fileresult(L, lmt_valid_target(L, security_writable, filename, security_remove_file) ? aux_utf8_remove(filename) == 0 : 0, filename);
 }
 
 static int oslib_rename(lua_State *L)
 {
     const char *fromname = luaL_checkstring(L, 1);
     const char *toname   = luaL_checkstring(L, 2);
-    return luaL_fileresult(L, lmt_valid_target(L, security_writeable, toname, security_rename_file) ? aux_utf8_rename(fromname, toname) == 0 : 0, NULL);
+    return luaL_fileresult(L, lmt_valid_target(L, security_writable, toname, security_rename_file) ? aux_utf8_rename(fromname, toname) == 0 : 0, NULL);
 }
 
 # ifdef _WIN32
@@ -582,19 +582,40 @@ static int oslib_launch(lua_State *L)
     return 1;
 }
 
+# if defined(_WIN32) || defined(_WIN64)
+
+    static int oslib_getseparators(lua_State *L)
+    {
+        lua_pushstring(L, "\\");
+        lua_pushstring(L, ";");
+        return 2;
+    }
+
+# else
+
+    static int oslib_getseparators(lua_State *L)
+    {
+        lua_pushstring(L, "/");
+        lua_pushstring(L, ":");
+        return 2;
+    }
+
+# endif
+
 static const luaL_Reg oslib_function_list[] = {
     { "sleep",          oslib_sleep          },
     { "uname",          oslib_uname          },
     { "gettimeofday",   oslib_gettimeofday   },
-    { "setenv",         oslib_setenv         }, /* security : todo */
-    { "execute",        oslib_execute        }, /* security : todo */
-    { "launch",         oslib_launch         }, /* security : todo */
-    { "rename",         oslib_rename         }, /* security : writeable */
-    { "remove",         oslib_remove         }, /* security : writeable */
+    { "setenv",         oslib_setenv         },
+    { "execute",        oslib_execute        },
+    { "launch",         oslib_launch         },
+    { "rename",         oslib_rename         },
+    { "remove",         oslib_remove         },
     { "setlocale",      oslib_setlocale      },
 # ifdef _WIN32
     { "getenv",         oslib_getenv         },
 # endif
+    { "getseparators",  oslib_getseparators  },
     { "enableansi",     oslib_enableansi     },
     { "getcodepage",    oslib_getcodepage    },
     { "getnamevalues",  oslib_getnamevalues  },

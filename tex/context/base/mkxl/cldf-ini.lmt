@@ -29,7 +29,7 @@ if not modules then modules = { } end modules ['cldf-ini'] = {
 -- in some cases.
 --
 -- context(lpeg.match(lpeg.patterns.texescape,"${}"))
--- context(string.formatters["%!tex!"]("${}"))
+-- context(string.formatted("%!tex!","${}"))
 -- context("%!tex!","${}")
 --
 -- We try not to polute the context namespace too much. For that reason the commands are
@@ -74,7 +74,6 @@ local setmetatableindex    = table.setmetatableindex
 local setmetatablecall     = table.setmetatablecall
 local setmetatablenewindex = table.setmetatablenewindex
 
------ formatters = string.formatters
 local formatting = string.formatting
 local formatted  = string.formatted
 
@@ -962,7 +961,6 @@ local caller = function(parent,f,a,...)
              --     report_context("empty argument to context()")
              -- end
             elseif a then
-             -- flush(contentcatcodes,formatters[f](a,...)) -- was currentcatcodes
                 flush(contentcatcodes,formatted(f,a,...)) -- was currentcatcodes
             elseif processlines and lpegmatch(containseol,f) then
                 flushlines(f)
@@ -1045,14 +1043,12 @@ end
 function context.fprint(first,second,third,...)
     if type(first) == "number" then
         if third then
-         -- flush(first,formatters[second](third,...))
             flush(first,formatted(second,third,...))
         else
             flush(first,second)
         end
     else
         if second then
-         -- flush(formatters[first](second,third,...))
             flush(formatted(first,second,third,...))
         else
             flush(first)
@@ -1103,13 +1099,10 @@ local luacalls = {
 
 local function userdata(argument)
     if isnode(argument) then
-     -- return formatters["<< %s node %i>>"](nodes.nodecodes[argument.id],tonut(argument))
         return formatted("<< %s node %i>>",nodes.nodecodes[argument.id],tonut(argument))
     elseif istoken(argument) then
         local csname = argument.csname
         if csname then
-         -- return formatters["<<\\%s>>"](csname)
-         -- return formatters["\\%s"](csname)
             return formatted("\\%s",csname) --or just "\\" .. csname
         end
         if luacalls[argument.cmdname] then
@@ -1140,7 +1133,6 @@ local tracedwriter = function(parent,...) -- also catcodes ?
             elseif argtype == "userdata" then
                 s[i] = userdata(argument)
             else
-             -- s[i] = formatters["<<%S>>"](argument)
                 s[i] = formatted("<<%S>>",argument)
             end
         end
@@ -1174,7 +1166,6 @@ local traced = function(one,two,...)
         -- only catcodes if 'one' is number
         local catcodes  = type(one) == "number" and one
         local arguments = catcodes and { two, ... } or { one, two, ... }
-     -- local collapsed = { formatters["f : %s : "](catcodes or '-') }
         local collapsed = { formatted("f : %s : ",catcodes or '-') }
         local c         = 1
         for i=1,#arguments do
@@ -1188,7 +1179,6 @@ local traced = function(one,two,...)
             elseif argtype == "userdata" then
                 collapsed[c] = userdata(argument)
             else
-             -- collapsed[c] = formatters["<<%S>>"](argument)
                 collapsed[c] = formatted("<<%S>>",argument)
             end
         end
@@ -1197,16 +1187,12 @@ local traced = function(one,two,...)
         -- no catcodes
         local argtype = type(one)
         if argtype == "string" then
-         -- currenttrace(formatters["f : - : %s"](lpegmatch(visualizer,one)))
             currenttrace(formatted("f : - : %s",lpegmatch(visualizer,one)))
         elseif argtype == "number" then
-         -- currenttrace(formatters["f : - : %s"](one))
             currenttrace(formatted("f : - : %s",one))
         elseif argtype == "userdata" then
-         -- currenttrace(formatters["F : - : %s"](userdata(one)))
             currenttrace(formatted("F : - : %s",userdata(one)))
         else
-         -- currenttrace(formatters["f : - : <<%S>>"](one))
             currenttrace(formatted("f : - : <<%S>>",one))
         end
     end
@@ -1513,12 +1499,10 @@ do
         elseif type(catcodes) == "number" then
             local result
             pushcatcodes(catcodes)
-         -- result = writer(parent,c,formatters[fmt](...))
             result = writer(parent,c,formatted(fmt,...))
             popcatcodes()
             return result
         else
-         -- return writer(parent,c,formatters[catcodes](fmt,...))
             return writer(parent,c,formatted(catcodes,fmt,...))
         end
     end
@@ -1553,10 +1537,8 @@ do
         elseif not fmt then
             flush(catcodes)
         elseif type(catcodes) == "number" then
-         -- flush(catcodes,formatters[fmt](...))
             flush(catcodes,formatted(fmt,...))
         else
-         -- flush(formatters[catcodes](fmt,...))
             flush(formatted(catcodes,fmt,...))
         end
     end
@@ -1586,7 +1568,7 @@ do
     setmetatablecall(metafun,defaultcaller)
 
     function metafun.color(name) -- obsolete
-        return name -- formatters[ [[\MPcolor{%s}]] ](name)
+        return name
     end
 
     -- metafun.delayed

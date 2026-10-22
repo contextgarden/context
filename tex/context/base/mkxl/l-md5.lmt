@@ -1,0 +1,69 @@
+if not modules then modules = { } end modules ['l-md5'] = {
+    version   = 1.001,
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local file = file
+local gsub = string.gsub
+local modification, isfile, touch = lfs.modification, lfs.isfile, lfs.touch
+local loaddata, savedata = io.loaddata, io.savedata
+
+local md5HEX = md5.HEX
+
+function file.needsupdating(oldname,newname,threshold) -- size modification access change
+    local oldtime = modification(oldname)
+    if oldtime then
+        local newtime = modification(newname)
+        if not newtime then
+            return true  -- no new file, so no updating needed
+        elseif newtime >= oldtime then
+            return false -- new file definitely needs updating
+        elseif oldtime - newtime < (threshold or 1) then
+            return false -- new file is probably still okay
+        else
+            return true  -- new file has to be updated
+        end
+    else
+        return false     -- no old file, so no updating needed
+    end
+end
+
+function file.syncmtimes(oldname,newname)
+    local oldtime = modification(oldname)
+    if oldtime and isfile(newname) then
+        touch(newname,oldtime,oldtime)
+    end
+end
+
+local function checksum(name)
+    local data = loaddata(name)
+    if data then
+        return md5HEX(data)
+ -- else
+ --     return nil
+    end
+end
+
+file.checksum = checksum
+
+function file.savechecksum(name,sum)
+    if not sum then
+        sum = checksum(name)
+    end
+    if sum and savedata(name .. ".md5",sum) then
+        return sum
+ -- else
+ --     return nil
+    end
+end
+
+function file.loadchecksum(name)
+    local data = loaddata(name .. ".md5")
+    if data then
+        return(gsub(data,"%s",""))
+ -- else
+ --     return nil
+    end
+end

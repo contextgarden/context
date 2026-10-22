@@ -15,7 +15,7 @@ if not modules then modules = { } end modules ['lpdf-crp.lmt'] = {
 -- to few in NL before).
 
 local type, tonumber, rawget = type, tonumber, rawget
-local gsub, formatters, lower = string.gsub, string.formatters, string.lower
+local gsub, lower = string.gsub, string.lower
 local concat, setmetatableindex, sortedhash = table.concat, table.setmetatableindex, table.sortedhash
 
 local getpagecontent = lpdf.epdf.getpagecontent
@@ -23,6 +23,8 @@ local getpagecontent = lpdf.epdf.getpagecontent
 local xmlescaped = xml.escaped
 
 local softhyphen = utf.char(0xAD) .. " +"
+
+local formatted  = string.formatted
 
 local function striphyphens(str)
     return str and gsub(str,softhyphen,"") or ""
@@ -220,14 +222,13 @@ function lpdf.collectcontent(pdffile,options)
     -- at some point we can use the template mechanism because we can then be
     -- selective but it is slower (no that relevant here)
 
-    local f_text      = formatters[ [[%w%s]] ]
-    local f_simple_b  = formatters[ [[%w<%s>]] ]
-    local f_simple_e  = formatters[ [[%w</%s>]] ]
- -- local f_element_b = formatters[ [[%w<%s namespace="%s" rolemap="%s">]] ]
-    local f_element_e = f_simple_e
-    local f_comment   = formatters[ [[%w<!-- %s -->]] ]
+    local f_text      <const> = [[%w%s]]
+    local f_simple_b  <const> = [[%w<%s>]]
+    local f_simple_e  <const> = [[%w</%s>]]
+    local f_element_e <const> = f_simple_e
+    local f_comment   <const> = [[%w<!-- %s -->]]
 
-    local common =
+    local common <const> =
         [[%?overload: overload="%overload%"?%]] ..
         [[%?title: title="%title%"?%]] ..
         [[%?language: language="%language%"?%]] ..
@@ -237,12 +238,12 @@ function lpdf.collectcontent(pdffile,options)
         [[%?description: description="%description%"?%]] ..
         [[%?continue: continue="%continue%"?%]]
 
-    local detail =
+    local detail <const> =
         [[%?attribute: attribute="%attribute%"?%]] ..
         [[%?namespace: ns="%namespace%"?%]] ..
         [[%?rolemap: pdf="%rolemap%"?%]]
 
-    local fuzzy =
+    local fuzzy <const> =
         [[%?attribute: attribute="%attribute%"?%]] ..
         [[%?namespace: ns="%namespace%"?%]] ..
         [[%?overload: overload="%overload%"?%]] ..
@@ -295,12 +296,8 @@ function lpdf.collectcontent(pdffile,options)
  --     [[</%element%>]]
  -- )
 
-    local f_simple_url = formatters [
-        [[%w<%s name="%s" index="%s" url="%s">]]
-    ]
-    local f_simple_map = formatters [
-        [[%w<%s user="%s" pdf="%s" />]]
-    ]
+    local f_simple_url <const> = [[%w<%s name="%s" index="%s" url="%s">]]
+    local f_simple_map <const> = [[%w<%s user="%s" pdf="%s" />]]
 
     local f_element_kv = utilities.templates.replacer (
         [[%:w:level%]] ..
@@ -336,7 +333,7 @@ function lpdf.collectcontent(pdffile,options)
                 text = concat(text," ")
                 collected[index] = false
                 if #text > 0 then
-                    r = r + 1 ; result[r] = f_text(level,xmlescaped(striphyphens(text)))
+                    r = r + 1 ; result[r] = formatted(f_text,level,xmlescaped(striphyphens(text)))
                     nofendpoints = nofendpoints + 1
                 end
             else
@@ -419,7 +416,7 @@ function lpdf.collectcontent(pdffile,options)
                 -- end
                 if type(attached) == "string" then
                     if addaltascomment and type(alternate) == "string" then
-                        r = r + 1 ; result[r] = f_comment(level,xmlescaped(alternate))
+                        r = r + 1 ; result[r] = formatted(f_comment,level,xmlescaped(alternate))
                     end
                     attached = gsub(attached,"[\r\n]+","\n" .. nspaces[level])
                     if details then
@@ -439,7 +436,7 @@ function lpdf.collectcontent(pdffile,options)
                             attribute = attribute,
                         }
                     end
-                    r = r + 1 ; result[r] = f_text(level,attached)
+                    r = r + 1 ; result[r] = formatted(f_text,level,attached)
                     nofattachments = nofattachments + 1
                 elseif type(contents) == "string" and (element == "link" or element == "reference") then
                     r = r + 1 ; result[r] = f_element_f {
@@ -452,7 +449,7 @@ function lpdf.collectcontent(pdffile,options)
                     }
                     nofelements = nofelements + 1
                 elseif type(alternate) == "string" then
-                    r = r + 1 ; result[r] = f_text(level,xmlescaped(alternate))
+                    r = r + 1 ; result[r] = formatted(f_text,level,xmlescaped(alternate))
                     nofalternates = nofalternates + 1
                 elseif not kids then
                     -- go on
@@ -461,7 +458,6 @@ function lpdf.collectcontent(pdffile,options)
                     nofbreaks = nofbreaks + 1
                 elseif details then
                     local original = realelement or element
-                 -- r = r + 1 ; result[r] = f_element_b(level,element,namespace,rolemap)
                     r = r + 1 ; result[r] = f_element_b {
                         level     = level,
                         element   = original,
@@ -476,10 +472,9 @@ function lpdf.collectcontent(pdffile,options)
                         overload  = realelement ~= element and element or nil,
                     }
                     showkids(kids,level+1)
-                    r = r + 1 ; result[r] = f_element_e(level,original)
+                    r = r + 1 ; result[r] = formatted(f_element_e,level,original)
                     nofelements = nofelements + 1
                 else
-                 -- r = r + 1 ; result[r] = f_simple_b(level,element)
                     r = r + 1 ; result[r] = f_simple_l {
                         level     = level,
                         element   = element,
@@ -487,7 +482,7 @@ function lpdf.collectcontent(pdffile,options)
                         language  = language
                     }
                     showkids(kids,level+1)
-                    r = r + 1 ; result[r] = f_simple_e(level,element)
+                    r = r + 1 ; result[r] = formatted(f_simple_e,level,element)
                     nofelements = nofelements + 1
                 end
                 if level > noflevels then
@@ -539,54 +534,54 @@ function lpdf.collectcontent(pdffile,options)
     if not kids then
         return -- no need to show something
     elseif details then
-        r = r + 1 ; result[r] = f_simple_b(0,"pdfstructure")
-        r = r + 1 ; result[r] = f_simple_b(1,"pdfcontent")
+        r = r + 1 ; result[r] = formatted(f_simple_b,0,"pdfstructure")
+        r = r + 1 ; result[r] = formatted(f_simple_b,1,"pdfcontent")
         showkids(kids,2)
-        r = r + 1 ; result[r] = f_simple_e(1,"pdfcontent")
+        r = r + 1 ; result[r] = formatted(f_simple_e,1,"pdfcontent")
         if next(namespaces) then
-            r = r + 1 ; result[r] = f_simple_b(1,"pdfnamespaces")
+            r = r + 1 ; result[r] = formatted(f_simple_b,1,"pdfnamespaces")
             for k, v in sortedhash(namespaces) do
-                r = r + 1 ; result[r] = f_simple_url(2,"pdfnamespace", v.name or "*", v.index, xmlescaped(v.url or""))
+                r = r + 1 ; result[r] = formatted(f_simple_url,2,"pdfnamespace", v.name or "*", v.index, xmlescaped(v.url or""))
                 for k, v in sortedhash(v.map) do
-                    r = r + 1 ; result[r] = f_simple_map(3,"pdfrolemap",k,v)
+                    r = r + 1 ; result[r] = formatted(f_simple_map,3,"pdfrolemap",k,v)
                     nofspacedroles = nofspacedroles + 1
                 end
-                r = r + 1 ; result[r] = f_simple_e(2,"pdfnamespace")
+                r = r + 1 ; result[r] = formatted(f_simple_e,2,"pdfnamespace")
             end
-            r = r + 1 ; result[r] = f_simple_e(1,"pdfnamespaces")
+            r = r + 1 ; result[r] = formatted(f_simple_e,1,"pdfnamespaces")
         end
         if next(sharedroles) then
-            r = r + 1 ; result[r] = f_simple_b(1,"pdfroles")
+            r = r + 1 ; result[r] = formatted(f_simple_b,1,"pdfroles")
             for k, v in sortedhash(sharedroles) do
-                r = r + 1 ; result[r] = f_simple_map(2,"pdfrolemap",k,v)
+                r = r + 1 ; result[r] = formatted(f_simple_map,2,"pdfrolemap",k,v)
                 nofsharedroles = nofsharedroles + 1
             end
-            r = r + 1 ; result[r] = f_simple_e(1,"pdfroles")
+            r = r + 1 ; result[r] = formatted(f_simple_e,1,"pdfroles")
         end
         local tagging = pdffile.catalog.LMTX_Tagging
         if tagging then
-            r = r + 1 ; result[r] = f_simple_b(1,"pdfprofiles")
+            r = r + 1 ; result[r] = formatted(f_simple_b,1,"pdfprofiles")
             flush_kv(2,"comment",tagging.Comment)
             flush_kv(2,"version",tagging.Version)
             local profiles = tagging.Profiles
             if profiles then
                 for i=1,#profiles do
                     local profile = profiles[i]
-                    r = r + 1 ; result[r] = f_simple_b(2,"profile")
+                    r = r + 1 ; result[r] = formatted(f_simple_b,2,"profile")
                     flush_kv(3,"name",     profile.name)
                     flush_kv(3,"version",  profile.version)
                     flush_kv(3,"size",     profile.size)
                     flush_kv(3,"mapping",  profile.mapping)
                     flush_kv(3,"remapping",profile.remapping)
                     flush_kv(3,"endpoints",profile.endpoints)
-                    r = r + 1 ; result[r] = f_simple_e(2,"profile")
+                    r = r + 1 ; result[r] = formatted(f_simple_e,2,"profile")
                 end
             end
-            r = r + 1 ; result[r] = f_simple_e(1,"pdfprofiles")
+            r = r + 1 ; result[r] = formatted(f_simple_e,1,"pdfprofiles")
         end
 
         --
-        r = r + 1 ; result[r] = f_simple_e(0,"pdfstructure")
+        r = r + 1 ; result[r] = formatted(f_simple_e,0,"pdfstructure")
     else
         showkids(kids,0)
     end

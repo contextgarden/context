@@ -34,11 +34,11 @@ local trace_unicodes       = false  trackers.register("otf.unicodes",      funct
 local readers              = fonts.handlers.otf.readers
 local privateoffset        = fonts.constructors and fonts.constructors.privateoffset or 0xF0000 -- 0x10FFFF
 
-local f_private            = formatting("P%05X")
-local f_unicode            = formatting("U%05X")
-local f_index              = formatting("I%05X")
-local f_character_y        = formatting("%C")
-local f_character_n        = formatting("[ %C ]")
+local f_private            <const> = formatting("P%05X")
+local f_unicode            <const> = formatting("U%05X")
+local f_index              <const> = formatting("I%05X")
+local f_character_y        <const> = formatting("%C")
+local f_character_n        <const> = formatting("[ %C ]")
 
 local check_duplicates     = true    -- can become an option (pseudo feature) / always needed anyway
 local check_soft_hyphen    = context -- only in context

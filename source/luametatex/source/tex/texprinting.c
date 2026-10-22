@@ -435,7 +435,7 @@ void tex_print_banner(void)
     fprintf(
         stdout,
         "%s %s\n",
-        lmt_engine_state.luatex_banner,
+        lmt_engine_state.luametatex_banner,
         lmt_engine_state.dump_name
     );
 }
@@ -445,7 +445,7 @@ void tex_print_log_banner(void)
     fprintf(
         lmt_print_state.logfile,
         "engine: %s, format id: %s, time stamp: %d-%d-%d %d:%d, startup file: %s, job name: %s",
-        lmt_engine_state.luatex_banner,
+        lmt_engine_state.luametatex_banner,
         lmt_engine_state.dump_name,
         year_par, month_par > 12 ? 0 : month_par, day_par, time_par / 60, time_par % 60,
         lmt_engine_state.startup_filename ? lmt_engine_state.startup_filename : "-",
@@ -455,7 +455,7 @@ void tex_print_log_banner(void)
 
 void tex_print_version_banner(void)
 {
-    fputs(lmt_engine_state.luatex_banner, stdout);
+    fputs(lmt_engine_state.luametatex_banner, stdout);
 }
 
 /*tex

@@ -37,7 +37,7 @@ local new_kern       = nuts.pool.kern
 -- hm, seems to gobble the first \char
 -- the tounicode is a bit messy here
 
-local f_boxsetup = "box:%s:%S"
+local f_boxsetup     <const> = "box:%s:%S"
 
 local a_exportstatus <const> = attributes.private('exportstatus')
 

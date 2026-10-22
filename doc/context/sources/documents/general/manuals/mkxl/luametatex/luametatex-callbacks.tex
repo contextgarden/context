@@ -1358,6 +1358,122 @@ end
 
 \stopsubsection
 
+\startsubsection[title=append_adjust]
+
+This callback can be used to inject something based on an adjust node. The return
+value is a node (or head of a list) that gets injected. The whereabouts are \typ
+{preadjust} and \typ {postadjust}.
+
+\starttyping[option=LUA]
+function (
+    <t:node>    head,
+    <t:node>    tail,
+    <t:integer> where,
+    <t:integer> index
+)
+    return <t:node> -- head
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=append_migrate]
+
+This callback can be used to inject something based on an migrated node (mark or
+insert). The return value is a node (or head of a list) that gets injected. The
+whereabouts are \typ {premigrated} and \typ {postmigrated}.
+
+\starttyping[option=LUA]
+function (
+    <t:node>    head,
+    <t:node>    tail,
+    <t:integer> where
+)
+    return <t:node> -- head
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=handle_uinsert]
+
+Balancing is something specific to \LUAMETATEX\ (and thereby \CONTEXT) and so are
+these user inserts. The \prm {insert} command has two optional parameters: \typ
+{callback} and \typ {index}. When the first is set, a callback is triggered when
+the inserts gets packaged. This permits some additional processing (for instance,
+in our case, of top and bottom floats).
+
+\starttyping[option=LUA]
+function (
+    <t:integer> callback,
+    <t:integer> index,
+    <t:integer> order,
+    <t:node>    packed,
+    <t:integer> height,
+    <t:integer> amount
+)
+    return <t:node> -- packed
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=insert_check_split]
+
+In \CONTEXT\ we use this callback for tracing. The callback gets the lines of an
+insert before and after a split. You can manipulate the line but be aware of side
+effect because the caller is not ware of what you do.
+
+\starttyping[option=LUA]
+function (
+    <t:integer> where,
+    <t:integer> index,
+    <t:node>    box
+)
+    -- no return value
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=page_boundary]
+
+A \prm {pageboundary} takes two arguments. In its simplest form we have a zero
+and a penalty. It is a way to trigger the page builder without side effects. When the
+first value is larger than zero, a callback is triggered that gets the two values
+and expects a result.
+
+\starttyping[option=LUA]
+function (
+    <t:integer> action,
+    <t:integer> detail
+)
+    return <t:node> -- to be appended
+end
+\stoptyping
+
+When there is a result, that will be the next node seen in the builder. The
+boundary node is of course discarded. So we basically have three outcomes: a
+penalty, a node, and discard.
+
+\stopsubsection
+
+\startsubsection[title=insert_boundary]
+
+This is a rather dumb callback: it gets two values and that's it. In \CONTEXT\ we
+use this to change some parameters that control insert handling on-the-spot.
+
+\starttyping[option=LUA]
+function (
+    <t:integer> action,
+    <t:integer> detail
+)
+    -- no return value
+end
+\stoptyping
+
+\stopsubsection
+
 \stopsection
 
 \startsection[title=Tracing]
@@ -1754,7 +1870,7 @@ end
 \stopsubsection
 
 \startsubsection[title=get_math_dictionary]
-    todo
+    {\em todo}
 \stopsubsection
 
 \startsubsection[title=show_lua_call]
@@ -1798,7 +1914,101 @@ anyway, be in in a less graceful way that you might like.
 
 \startsubsection[title=paragraph_pass]
 
-{\em This callback is not yet stable.}
+When a subpass is checked this callback kicks in when we trigger the next pass
+based on various criteria. When the first returned boolean is \type {true} we
+continue. The second boolean let us retry the pass. The first return value can be
+a table with some new parameters but this is only used for experiments; we might
+pick up that thread some day.
+
+\starttyping[option=LUA]
+function (
+    <t:node>    head,
+    <t:integer> identifier,
+    <t:integer> subpass,
+    <t:integer> callback,
+    <t:integer> overfull,
+    <t:integer> underfull,
+    <t:integer> verdict,
+    <t:integer> classified,
+    <t:integer> threshold,
+    <t:integer> badness,
+    <t:integer> classes
+)
+    return
+        <t:boolean> success,
+        <t:boolean> repeat
+
+end
+\stoptyping
+
+The \type {callback} argument comes from the set value in a pass so one can let
+actions depend on it.
+
+\stopsubsection
+
+\startsubsection[title=show_vsplit]
+
+Callbacks like this were introduced when we were experimenting with new features.
+Their usage pattern is therefore pretty much determined by \CONTEXT. When set,
+the callback is triggered several times and the arguments differ:
+
+\starttabulate[|T|TPl|]
+\FL
+\NC location   \NC arguments \NC \NR
+\ML
+\NC initialize \NC where checks current height depth extra \NC \NR
+\NC continue   \NC where checks current height depth total penalty \NC \NR
+\NC check      \NC where checks current height depth total penalty badness costs \NC \NR
+\NC quit       \NC where checks current height depth total penalty badness costs \NC \NR
+\NC wrapup     \NC where checks best    height depth stretch shrink \NC \NR
+\LL
+\stoptabulate
+
+When a so called vertical break if triggered the \typ {initialize} kicks in, and
+a split loop is entered. There a penalty triggers either a \typ {quit} or \typ
+{check} event and other nodes a \typ {continue}. After the (possibly quit) job
+the \typ {wrapup} happens.
+
+\stopsubsection
+
+\startsubsection[title=linebreak_check]
+
+This is also a rather (\CONTEXT) specific callback, one that is triggered at
+various places in the line break routine.
+
+\starttabulate[|T|TPl|]
+\FL
+\NC location   \NC arguments \NC \NR
+\ML
+\NC initialize \NC checks subpasses \NC \NR
+\NC start      \NC checks pass subpass classes decent \NC \NR
+\NC report     \NC checks pass subpass currentserial previousserial line kind
+                   class classes badness demerits breakpoint short glue width \NC \NR
+\NC stop       \NC checks demerits \NC \NR
+\NC collect    \NC \NC \NR
+\NC line       \NC checks line badness overshoot shrink stretch linumber serial \NC \NR
+\NC list       \NC checks currentserial refcount \NC \NR
+\NC delete     \NC checks currentserial refcount \NC \NR
+\NC wrapup     \NC checks demerits looseness \NC \NR
+\LL
+\stoptabulate
+
+We \typ {initialize} when we start breaking a paragraph into lines. When a break
+is investigated (tried) the \typ {report} kicks in. It returns the (new) \quote
+{active total demerits} so you can influence the results. When at some point a
+passive node is removed the \typ {delete} is triggered. The \typ {start} and \typ
+{stop} events happen before and after each sub path. When done we \typ {wrapup}.
+The \typ {collect} is called in the post line break routine, so when the
+resulting lines are wrapped and added to the vertical list; here every line added
+triggers a \typ {line}. All this assumes that you have an understanding of how
+the builder works.
+
+\stopsubsection
+
+\startsubsection[title=balance_check]
+
+This callback is similar to the \type{linebreak_check} but with pages instead of
+lines. It is available when we balance using balance shapes and passes.
 
 \stopsubsection
 

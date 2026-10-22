@@ -86,10 +86,11 @@ local context    = context
 local concat     = table.concat
 local insert     = table.insert
 local remove     = table.remove
-local formatters = string.formatters
 local utfchar    = utf.char
 local utfbyte    = utf.byte
 local utfvalues  = utf.values
+
+local formatted  = string.formatted
 
 if not characters then
     require("char-ini")
@@ -252,7 +253,7 @@ local nofwords   = 0
 local nofhashed  = 0
 
 local steps     = nil
-local f_show    = formatters["%w%s"]
+local f_show    <const> = "%w%s"
 
 local function show_log()
     if trace_steps == true then
@@ -268,7 +269,7 @@ end
 
 local function show_1(wsplit)
     local u = concat(wsplit," ")
-    steps = { { f_show(0,u), f_show(0,u) } }
+    steps = { { formatted(f_show,0,u), formatted(f_show,0,u) } }
 end
 
 local function show_2(c,m,wsplit,done,i,spec)
@@ -284,11 +285,20 @@ local function show_2(c,m,wsplit,done,i,spec)
     local l = #t
     local s = spec and table.sequenced(spec) or ""
     if m == 0 then
-        steps[#steps+1] = { f_show(m,  concat(t,"",2)),      f_show(1,concat(done," ",2,#done),s) }
+        steps[#steps+1] = {
+            formatted(f_show,m,  concat(t,"",2)),
+            formatted(f_show,1,concat(done," ",2,#done),s)
+        }
     elseif i+1 == w then
-        steps[#steps+1] = { f_show(m-1,concat(t,"",1,#t-1)), f_show(1,concat(done," ",2,#done),s) }
+        steps[#steps+1] = {
+            formatted(f_show,m-1,concat(t,"",1,#t-1)),
+            formatted(f_show,1,concat(done," ",2,#done),s)
+        }
     else
-        steps[#steps+1] = { f_show(m-1,concat(t)),           f_show(1,concat(done," ",2,#done),s) }
+        steps[#steps+1] = {
+            formatted(f_show,m-1,concat(t)),
+            formatted(f_show,1,concat(done," ",2,#done),s)
+        }
     end
 end
 
@@ -306,7 +316,10 @@ local function show_3(wsplit,done)
         t[#t+1] = w
         h[#h+1] = w
     end
-    steps[#steps+1] = { f_show(0,concat(h)), f_show(0,concat(t)) }
+    steps[#steps+1] = {
+        formatted(f_show,0,concat(h)),
+        formatted(f_show,0,concat(t))
+    }
     show_log()
 end
 
@@ -505,10 +518,10 @@ function traditional.installmethod(name,f)
     end
 end
 
-local s_detail_1 = "-"
-local f_detail_2 = formatters["%s-%s"]
-local f_detail_3 = formatters["{%s}{%s}{}"]
-local f_detail_4 = formatters["{%s%s}{%s%s}{%s}"]
+local s_detail_1 <const> = "-"
+local f_detail_2 <const> = "%s-%s"
+local f_detail_3 <const> = "{%s}{%s}{}"
+local f_detail_4 <const> = "{%s%s}{%s%s}{%s}"
 
 function traditional.injecthyphens(dictionary,word,specification)
     if not word then
@@ -549,7 +562,7 @@ function traditional.injecthyphens(dictionary,word,specification)
                 result[rsize] = word[position]
                 rsize = rsize + 1
                 if leftchar and rightchar then
-                    result[rsize] = f_detail_3(rightchar,leftchar)
+                    result[rsize] = formatted(f_detail_3,rightchar,leftchar)
                 else
                     result[rsize] = s_detail_1
                 end
@@ -572,9 +585,9 @@ function traditional.injecthyphens(dictionary,word,specification)
                     end
                     rsize = rsize + 1
                     if leftchar and rightchar then
-                        result[rsize] = f_detail_4(h.before,rightchar,leftchar,h.after,concat(word,"",b,e))
+                        result[rsize] = formatted(f_detail_4,h.before,rightchar,leftchar,h.after,concat(word,"",b,e))
                     else
-                        result[rsize] = f_detail_2(h.before,h.after)
+                        result[rsize] = formatted(f_detail_2,h.before,h.after)
                     end
                     position = e + 1
                 else
@@ -1605,7 +1618,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
 
     statistics.register("hyphenation",function()
         if nofwords > 0 or statistics.elapsed(traditional) > 0 then
-            return string.format("%s words hyphenated, %s unique, used time %s",
+            return formatted("%s words hyphenated, %s unique, used time %s",
                 nofwords,nofhashed,statistics.elapsedseconds(traditional) or 0)
         end
     end)

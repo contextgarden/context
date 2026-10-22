@@ -56,7 +56,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \permanent\edef\contextformat {\jobname}
-\permanent\edef\contextversion{2026.10.16 13:39}
+\permanent\edef\contextversion{2026.10.22 11:29}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -182,6 +182,7 @@
 
 \loadmkxlfile{core-ini}
 \loadmkxlfile{core-env}
+\loadmkxlfile{core-sys}
 
 \loadmkxlfile{layo-ini}
 
@@ -231,7 +232,7 @@
 \loadmklxfile{file-syn}
 \loadmklxfile{file-mod}
 
-\loadmkxlfile{core-sys}
+% \loadmkxlfile{core-sys}
 \loadmkxlfile{core-con}
 
 \loadmkxlfile{cont-fil}
@@ -655,7 +656,7 @@
 
 \loadmkxlfile{tabl-itm} % some late plugins
 
-\loadmkxlfile{syst-cmp} % compatibility stuff moved here
+%loadmkxlfile{syst-cmp} % compatibility stuff moved here
 
 \loadmkxlfile{libs-ini}
 
@@ -707,179 +708,3 @@
 % end of test section
 
 \errorstopmode \dump \endinput
-
-% Some lua files are (still) shared with mkiv amd some are large and rather
-% generic. However there are some that can be improved in lmtx. At some point
-% we will definitely freeze mkiv and then use lmt files for futher development
-% of lmtx. We also no longer use the macro feature to replace 5.3 compatible
-% function calls by native 5.4 features as lmt files assume 5.4 anyway. This
-% makes format generation a little faster (not that it's that slow). It might
-% take a while before we dealt with all of them because I'll also clean them
-% up a bit when doing. Some will probably always be shared, like char-def.lua.
-%
-% % luat-bas.mkxl l-macro-imp-optimize % this is no longer used
-
-% buff-par.lua % parallel
-%
-% buff-imp-default.lua    % shared
-% buff-imp-escaped.lua    % shared
-% buff-imp-lua.lua        % shared
-% buff-imp-mp.lua         % shared
-% buff-imp-nested.lua     % shared
-% buff-imp-parsed-xml.lua % shared
-% buff-imp-tex.lua        % shared
-% buff-imp-xml.lua        % shared
-
-% char-cjk.lua
-% char-def.lua % shared data file, a real big one
-% char-enc.lua
-% char-ent.lua
-% char-fio.lua
-% char-ini.lua
-% char-map.lua
-% char-scr.lua
-% char-utf.lua
-
-% chem-ini.lua
-% chem-str.lua
-
-% cldf-com.lua
-% cldf-prs.lua % used in chemistry
-% cldf-scn.lua
-% cldf-stp.lua
-% cldf-ver.lua
-
-% colo-ini.lua
-
-% core-ctx.lua
-
-% data...
-
-% file-ini.lua
-% file-lib.lua
-% file-res.lua
-
-% font-afk.lua
-% font-agl.lua % shared data file
-% font-aux.lua
-% font-cid.lua
-% font-enc.lua
-% font-log.lua
-% font-lua.lua % not realy used, more a demo
-% font-nod.lua % some trace helpers
-% font-osd.lua
-% font-otc.lua
-% font-oth.lua
-% font-oti.lua
-% font-otr.lua
-% font-ott.lua % just some tables
-% font-pat.lua
-% font-prv.lua
-% font-sel.lua
-% font-sol.lua
-% font-syn.lua % identification code
-% font-trt.lua
-% font-web.lua % proof of concept, never used
-
-% font-imp-combining.lua  % shared
-% font-imp-notused.lua    % shared
-% font-imp-properties.lua % shared
-% font-imp-reorder.lua    % shared
-% font-imp-spacekerns.lua % shared
-% font-imp-tex.lua        % shared
-% font-imp-tweaks.lua     % shared
-% font-imp-unicode.lua    % shared
-
-% good-ctx.lua
-% good-ini.lua
-
-% grph-chk.lua
-% grph-con.lua
-% grph-fil.lua
-% grph-img.lua
-% grph-pat.lua
-% grph-u3d.lua
-
-% java-ini.lua
-
-% lang-cnt.lua % shared data file
-% lang-def.lua % shared data file
-% lang-txt.lua % shared data file
-% lang-wrd.lua
-
-% luat-exe.lua
-% luat-iop.lua
-% luat-mac.lua % will become lmt
-
-% lxml-aux.lua % the xml interface is rather stable
-% lxml-dir.lua % might as well share these because they
-% lxml-ent.lua % are unlikely to change
-% lxml-ini.lua %
-% lxml-lpt.lua %
-% lxml-mis.lua %
-% lxml-sor.lua %
-% lxml-tab.lua %
-% lxml-tex.lua %
-% lxml-xml.lua %
-
-% meta-blb.lua
-% meta-fun.lua
-% meta-lua.lua
-% meta-nod.lua
-% meta-pdf.lua
-% meta-tex.lua
-
-% mult-aux.lua % move some to s-system-*
-% mult-fmt.lua
-
-% page-flt.lua
-% page-inj.lua
-% page-mix.lua
-% page-pst.lua
-
-% publ-dat.lua % no sense to make lmtx variants (yet),
-% publ-fnd.lua %
-% publ-inc.lua %
-% publ-ini.lua %
-% publ-jrn.lua %
-% publ-reg.lua %
-% publ-sor.lua %
-% publ-tra.lua %
-% publ-usr.lua %
-
-% scrn-but.lua
-% scrn-fld.lua
-% scrn-hlp.lua
-
-% scrp-cjk.lua
-% scrp-eth.lua
-% scrp-tha.lua
-% scrp-tib.lua
-
-% sort-ini.lua
-% sort-lan.lua
-
-% strc-bkm.lua
-% strc-blk.lua
-% strc-con.lua
-% strc-ini.lua
-% strc-num.lua
-% strc-pag.lua
-% strc-usr.lua
-
-% syst-cmp.lua -- nothing
-
-% trac-ctx.lua
-% trac-lmx.lua
-% trac-par.lua
-
-% m-asymptote.lua
-% m-chart.lua
-% m-database.lua
-% m-escrito.lua
-% m-markdown-new.lua
-% m-nodechart.lua
-% m-pstricks.lua
-% m-spreadsheet.lua
-% m-steps.lua
-% m-virtual.lua

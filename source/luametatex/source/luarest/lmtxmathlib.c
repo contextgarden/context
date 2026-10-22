@@ -73,13 +73,14 @@ static int xmathlib_cbrt(lua_State *L)
 {
     lua_pushnumber(L, (lua_Number) cbrt(luaL_checknumber(L, 1)));
     return 1;
-}
-
-static int xmathlib_ceil(lua_State *L)
-{
-    lua_pushnumber(L, (lua_Number) ceil(luaL_checknumber(L, 1)));
     return 1;
 }
+
+// static int xmathlib_ceil(lua_State *L)
+// {
+//     lua_pushnumber(L, (lua_Number) ceil(luaL_checknumber(L, 1)));
+//     return 1;
+// }
 
 static int xmathlib_copysign (lua_State *L)
 {
@@ -147,15 +148,16 @@ static int xmathlib_fdim(lua_State *L)
     return 1;
 }
 
-static int xmathlib_floor(lua_State *L)
-{
-    lua_pushnumber(L, (lua_Number) floor(luaL_checknumber(L, 1)));
-    return 1;
-}
+// static int xmathlib_floor(lua_State *L)
+// {
+//     lua_pushnumber(L, (lua_Number) floor(luaL_checknumber(L, 1)));
+//     return 1;
+// }
 
 static int xmathlib_fma(lua_State *L)
 {
     lua_pushnumber(L, (lua_Number) fma(luaL_checknumber(L, 1), luaL_checknumber(L, 2), luaL_checknumber(L, 3)));
+    return 1;
     return 1;
 }
 
@@ -194,7 +196,7 @@ static int xmathlib_frexp(lua_State *L)
     lua_pushinteger(L, e);
     return 2;
 }
-static int xmathlib_fremquo(lua_State *L)
+static int xmathlib_remquo(lua_State *L)
 {
     int e;
     lua_pushnumber(L, (lua_Number) remquo(luaL_checknumber(L, 1),luaL_checknumber(L, 2), &e));
@@ -483,6 +485,179 @@ static int xmathlib_dotproduct(lua_State *L)
     return 1;
 }
 
+# define xmathlib_pipi (2 * xmathlib_pi / 360)
+
+static int xmathlib_sind(lua_State *L)
+{
+    lua_pushnumber(L, (lua_Number) sin(luaL_checknumber(L, 1) * xmathlib_pipi));
+    return 1;
+}
+
+static int xmathlib_cosd(lua_State *L)
+{
+    lua_pushnumber(L, (lua_Number) cos(luaL_checknumber(L, 1) * xmathlib_pipi));
+    return 1;
+}
+
+static int xmathlib_tand(lua_State *L)
+{
+    lua_pushnumber(L, (lua_Number) tan(luaL_checknumber(L, 1) * xmathlib_pipi));
+    return 1;
+}
+
+static int xmathlib_div(lua_State *L)
+{
+    /* Lua 5.3+ : if both arguments are integers, return an integer result */
+    if (lua_isinteger(L, 1) && lua_isinteger(L, 2)) {
+        lua_Integer n = lua_tointeger(L, 1);
+        lua_Integer m = lua_tointeger(L, 2);
+        if (m == 0) {
+            return luaL_error(L, "attempt to divide by zero");
+        } else {
+            /* C division truncates towards zero; Lua floor division rounds towards -inf */
+            lua_Integer q = n / m;
+            lua_Integer r = n % m;
+            if ((r != 0) && ((n ^ m) < 0)) {
+                q--;
+            }
+            lua_pushinteger(L, q);
+        }
+    } else {
+        /* floats / mixed types */
+        lua_Number n = luaL_checknumber(L, 1);
+        lua_Number m = luaL_checknumber(L, 2);
+        lua_pushnumber(L, (lua_Number) floor(n / m));
+    }
+    return 1;
+}
+
+static int xmathlib_mod(lua_State *L)
+{
+    /* Lua 5.3+ : if both arguments are integers, return an integer result */
+    if (lua_isinteger(L, 1) && lua_isinteger(L, 2)) {
+        lua_Integer n = lua_tointeger(L, 1);
+        lua_Integer m = lua_tointeger(L, 2);
+        if (m == 0) {
+            return luaL_error(L, "attempt to perform 'modulo' by zero");
+        } else {
+            /* Lua integer modulo behavior */
+            lua_Integer r = n % m;
+            if ((r != 0) && ((n ^ m) < 0)) {
+                r += m;
+            }
+            lua_pushinteger(L, r);
+        }
+    } else {
+        /* floats / mixed types */
+        lua_Number n = luaL_checknumber(L, 1);
+        lua_Number m = luaL_checknumber(L, 2);
+        lua_pushnumber(L, (lua_Number) (n - m * floor(n / m)));
+    }
+    return 1;
+}
+
+static int xmathlib_odd(lua_State *L)
+{
+    long long n = luaL_checkinteger(L, 1);
+    lua_pushboolean(L, (n % 2 != 0));
+    return 1;
+}
+
+static int xmathlib_even(lua_State *L)
+{
+    long long n = luaL_checkinteger(L, 1);
+    lua_pushboolean(L, (n % 2 == 0));
+    return 1;
+}
+
+/* -1, 0, or 1 */
+
+static int xmathlib_sign(lua_State *L)
+{
+    lua_Number n = luaL_checknumber(L, 1);
+    lua_pushinteger(L, n > 0 ? 1 : (n < 0 ? -1 : 0));
+    return 1;
+}
+
+static int xmathlib_clamp(lua_State *L)
+{
+    /* If all arguments are integers, return an integer result */
+    if (lua_isinteger(L, 1) && lua_isinteger(L, 2) && lua_isinteger(L, 3)) {
+        lua_Integer n   = lua_tointeger(L, 1);
+        lua_Integer min = lua_tointeger(L, 2);
+        lua_Integer max = lua_tointeger(L, 3);
+        lua_pushinteger(L, n < min ? min : (n > max ? max : n));
+    } else {
+        /* floats or mixed types */
+        lua_Number n   = luaL_checknumber(L, 1);
+        lua_Number min = luaL_checknumber(L, 2);
+        lua_Number max = luaL_checknumber(L, 3);
+        lua_pushnumber(L, n < min ? min : (n > max ? max : n));
+    }
+    return 1;
+}
+
+/* linear interpolation */
+
+static int xmathlib_lerp(lua_State *L)
+{
+    lua_Number a = luaL_checknumber(L, 1);
+    lua_Number b = luaL_checknumber(L, 2);
+    lua_Number c = luaL_checknumber(L, 3);
+    lua_pushnumber(L, a + (b - a) * c);
+    return 1;
+}
+
+/* round to specified decimal places */
+
+static int xmathlib_rounded(lua_State *L)
+{
+    lua_Number n          = luaL_checknumber(L, 1);
+    int        decimals   = lmt_optinteger(L, 2, 0);
+    lua_Number multiplier = pow(10.0, decimals);
+    lua_pushnumber(L, floor(n * multiplier + 0.5) / multiplier);
+    return 1;
+}
+
+static int xmathlib_floor(lua_State *L)
+{
+    /* if it's already a native integer, the floor is itself */
+    if (lua_isinteger(L, 1)) {
+        lua_settop(L, 1);
+        return 1;
+    } else {
+        lua_Number n = luaL_checknumber(L, 1);
+        lua_Number f = floor(n);
+        /* if the result fits in a Lua integer, return an integer type */
+        if (f >= (lua_Number) LUA_MININTEGER && f <= (lua_Number) LUA_MAXINTEGER) {
+            lua_pushinteger(L, (lua_Integer) f);
+        } else {
+            /* NaN, Inf, or out-of-range values */
+            lua_pushnumber(L, f);
+        }
+        return 1;
+    }
+}
+
+static int xmathlib_ceil(lua_State *L)
+{
+    if (lua_isinteger(L, 1)) {
+        lua_settop(L, 1);
+        return 1;
+    } else {
+        lua_Number n = luaL_checknumber(L, 1);
+        lua_Number c = ceil(n);
+        /* if the result fits in a Lua integer, return an integer type */
+        if (c >= (lua_Number) LUA_MININTEGER && c <= (lua_Number) LUA_MAXINTEGER) {
+            lua_pushinteger(L, (lua_Integer) c);
+        } else {
+            /* NaN, Inf, or out-of-range values */
+            lua_pushnumber(L, c);
+        }
+    }
+    return 1;
+}
+
 static const luaL_Reg xmathlib_function_list[] =
 {
     { "acos",         xmathlib_acos         },
@@ -494,15 +669,20 @@ static const luaL_Reg xmathlib_function_list[] =
     { "atanh",        xmathlib_atanh        },
     { "cbrt",         xmathlib_cbrt         },
     { "ceil",         xmathlib_ceil         },
+    { "ceiling",      xmathlib_ceil         },
+    { "clamp",        xmathlib_clamp        },
     { "copysign",     xmathlib_copysign     },
     { "cos",          xmathlib_cos          },
+    { "cosd",         xmathlib_cosd         },
     { "cosh",         xmathlib_cosh         },
     { "deg",          xmathlib_deg          },
+    { "div",          xmathlib_div          },
     { "erf",          xmathlib_erf          },
     { "erfc",         xmathlib_erfc         },
     { "exp",          xmathlib_exp          },
     { "exp2",         xmathlib_exp2         },
     { "expm1",        xmathlib_expm1        },
+    { "even",         xmathlib_even         },
     { "fabs",         xmathlib_fabs         },
     { "fdim",         xmathlib_fdim         },
     { "floor",        xmathlib_floor        },
@@ -521,25 +701,32 @@ static const luaL_Reg xmathlib_function_list[] =
     { "j1",           xmathlib_j1           },
     { "jn",           xmathlib_jn           },
     { "ldexp",        xmathlib_ldexp        },
+    { "lerp",         xmathlib_lerp         },
     { "lgamma",       xmathlib_lgamma       },
     { "log",          xmathlib_log          },
     { "log10",        xmathlib_log10        },
     { "log1p",        xmathlib_log1p        },
     { "log2",         xmathlib_log2         },
     { "logb",         xmathlib_logb         },
+    { "mod",          xmathlib_mod          },
     { "modf",         xmathlib_modf         },
     { "nearbyint",    xmathlib_nearbyint    },
     { "nextafter",    xmathlib_nextafter    },
+    { "odd",          xmathlib_odd          },
     { "pow",          xmathlib_pow          },
     { "rad",          xmathlib_rad          },
     { "remainder",    xmathlib_remainder    },
-    { "remquo",       xmathlib_fremquo      },
+    { "remquo",       xmathlib_remquo       },
     { "round",        xmathlib_round        },
+    { "rounded",      xmathlib_rounded      },
     { "scalbn",       xmathlib_scalbn       },
+    { "sign",         xmathlib_sign         },
     { "sin",          xmathlib_sin          },
+    { "sind",         xmathlib_sind         },
     { "sinh",         xmathlib_sinh         },
     { "sqrt",         xmathlib_sqrt         },
     { "tan",          xmathlib_tan          },
+    { "tand",         xmathlib_tand         },
     { "tanh",         xmathlib_tanh         },
     { "tgamma",       xmathlib_tgamma       },
     { "trunc",        xmathlib_trunc        },

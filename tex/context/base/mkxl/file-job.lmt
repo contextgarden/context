@@ -1365,6 +1365,7 @@ function document.setenvironments() -- was setup: *runtime:environments
 end
 
 function document.setfilenames()
+    -- probably already done
     local initialize = environment.initializefilenames
     if initialize then
         initialize()

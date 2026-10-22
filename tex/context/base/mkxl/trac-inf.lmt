@@ -60,7 +60,10 @@ function statistics.show()
         end)
         register("used engine", function()
             return formatted("%s version: %s, functionality level: %s, format id: %s, memory mode: %i, compiler: %s, cversion: %i",
-                LUATEXENGINE, LUATEXVERBOSE, LUATEXFUNCTIONALITY, LUATEXFORMATID,
+                environment.luametatexengine,
+                environment.luametatexverbose,
+                environment.luametatexfunctionality,
+                environment.luametatexformatid,
                 status.tex_memory_mode,
                 status.used_compiler,
                 status.used_cversion
@@ -79,7 +82,12 @@ function statistics.show()
          -- local hash = lua.gethashchars()
             local mask = load([[τεχ = 1]]) and "utf" or "ascii"
             return formatted("engine: lua %s, format %s, used memory: %s, symbol mask: %s (%s)",
-                LUAVERSION, LUAFORMAT, statistics.memused(), mask, mask == "utf" and "τεχ" or "tex")
+                environment.luaversion,
+                environment.luaformat,
+                statistics.memused(),
+                mask,
+                mask == "utf" and "τεχ" or "tex"
+            )
         end)
         register("runtime",statistics.runtime)
         logs.newline() -- initial newline

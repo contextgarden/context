@@ -46,7 +46,7 @@
       {\ht\nextbox\strutht
        \dp\nextbox\strutdp
       %\boxattribute\nextbox \adjusterattribute \plusone
-       \vadjust #1 index \plusone {\box\nextbox}%
+       \vadjust #1 \s!index \plusone {\box\nextbox}%
        \dostoptagged
        \endgroup}%
       \hbox}
@@ -55,7 +55,8 @@
   {\begingroup
    \dostarttagged\t!linetext{#1}%
    \setbox\scratchbox\vbox{\blank[#2]}%
-   \vadjust #1 index \plustwo {\vskip\htdp\scratchbox}%
+   % blocks baselineskip
+   \vadjust #1 \s!index \plustwo {\vskip\htdp\scratchbox}%
    \dostoptagged
    \endgroup}
 

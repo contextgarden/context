@@ -292,7 +292,7 @@ local inandout  do
         local s = { }
         local t = { }
         local r = { }
-        local f = formatters["%05U"]
+        local f = formatters["%05U"] --ok, keep
         for i=1,#text do
             local c = text[i]
          -- t[#t+1] = f(utfbyte(utf3208(c)))

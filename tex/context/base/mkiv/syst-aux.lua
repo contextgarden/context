@@ -317,15 +317,17 @@ implement {
 }
 
 local accuracy = table.setmetatableindex(function(t,k)
-    local v = formatters["%0." ..k .. "f"]
+    local v = "%0." ..k .. "f"
     t[k] = v
     return v
 end)
 
 implement {
     name      = "rounded",
-    arguments = "integer",
-    actions   = function(n,m) context(accuracy[n](m)) end
+    arguments = { "integer", "string" },
+    actions   = function(n,m)
+        context(accuracy[n],tonumber(m))
+    end
 }
 
 -- not faster but just less tracing:

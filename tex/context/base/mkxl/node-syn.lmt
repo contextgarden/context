@@ -230,11 +230,11 @@ local foundintree         = resolvers.foundintree
 local getpagedimensions   = layouts.getpagedimensions
 
 local eol        <const>  = "\010"
-local f_hvoid             = "h%i,%i:%i,%i:%i,%i,%i\010"
-local b_hlist             = "(%i,%i:%i,%i:%i,%i,%i\010"
+local f_hvoid    <const>  = "h%i,%i:%i,%i:%i,%i,%i\010"
+local b_hlist    <const>  = "(%i,%i:%i,%i:%i,%i,%i\010"
 local e_hlist    <const>  = ")\010"
-local f_rule              = "r%i,%i:%i,%s:%i,%i,%i\010"
-local b_vlist             = "[%i,%i:%i,%i:%i,%i,%i\010"
+local f_rule     <const>  = "r%i,%i:%i,%s:%i,%i,%i\010"
+local b_vlist    <const>  = "[%i,%i:%i,%i:%i,%i,%i\010"
 local e_vlist    <const>  = "]\010"
 
 local synctex             = luatex.synctex or { }

@@ -60,7 +60,11 @@ function statistics.show()
         end)
         register("used engine", function()
             return format("%s version: %s, functionality level: %s, banner: %s",
-                LUATEXENGINE, LUATEXVERSION, LUATEXFUNCTIONALITY, lower(status.banner))
+                environment.luatexengine,
+                environment.luatexversion,
+                environment.luatexfunctionality,
+                lower(status.banner)
+            )
         end)
         register("used hash slots", function()
             return format("%s of %s + %s", status.cs_count, status.hash_size,status.hash_extra)

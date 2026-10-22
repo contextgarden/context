@@ -334,7 +334,7 @@ do
     local getnormalizedline = nuts.getnormalizedline
     local insertafter       = nuts.insertafter
     local insertbefore      = nuts.insertbefore
- -- local setoffsets         = nuts.setoffsets
+ -- local setoffsets        = nuts.setoffsets
 
     local takebox           = nuts.takebox
 

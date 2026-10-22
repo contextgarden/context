@@ -64,19 +64,19 @@ local c_transparency          = pdfconstant("Transparency")
 
 -- colors are already cached so no need for speed
 
-local f_gray   = formatting("%.3N g %.3N G")
-local f_rgb    = formatting("%.3N %.3N %.3N rg %.3N %.3N %.3N RG")
-local f_cmyk   = formatting("%.3N %.3N %.3N %.3N k %.3N %.3N %.3N %.3N K")
+local f_gray   <const> = formatting("%.3N g %.3N G")
+local f_rgb    <const> = formatting("%.3N %.3N %.3N rg %.3N %.3N %.3N RG")
+local f_cmyk   <const> = formatting("%.3N %.3N %.3N %.3N k %.3N %.3N %.3N %.3N K")
 
-local f_spot   = formatting("/%s cs /%s CS %s SCN %s scn")
-local f_tr     = formatting("Tr%s")
-local f_cm     = formatting("q %.6N %.6N %.6N %.6N %.6N %.6N cm")
-local f_effect = formatting("%s Tc %s w %s Tr") -- %.6N ?
-local f_tr_gs  = formatting("/Tr%s gs")
-local f_num_1  = formatting("%.3N %.3N")
-local f_num_2  = formatting("%.3N %.3N")
-local f_num_3  = formatting("%.3N %.3N %.3N")
-local f_num_4  = formatting("%.3N %.3N %.3N %.3N")
+local f_spot   <const> = formatting("/%s cs /%s CS %s SCN %s scn")
+local f_tr     <const> = formatting("Tr%s")
+local f_cm     <const> = formatting("q %.6N %.6N %.6N %.6N %.6N %.6N cm")
+local f_effect <const> = formatting("%s Tc %s w %s Tr") -- %.6N ?
+local f_tr_gs  <const> = formatting("/Tr%s gs")
+local f_num_1  <const> = formatting("%.3N %.3N")
+local f_num_2  <const> = formatting("%.3N %.3N")
+local f_num_3  <const> = formatting("%.3N %.3N %.3N")
+local f_num_4  <const> = formatting("%.3N %.3N %.3N %.3N")
 
 local report_color = logs.reporter("colors","backend")
 
@@ -185,9 +185,9 @@ local pdf_rgb_range   = pdfarray { 0, 1, 0, 1, 0, 1 }
 local pdf_cmyk_range  = pdfarray { 0, 1, 0, 1, 0, 1, 0, 1 }
 local pdf_gray_range  = pdfarray { 0, 1 }
 
-local f_rgb_function  = formatting("dup %s mul exch dup %s mul exch %s mul")
-local f_cmyk_function = formatting("dup %s mul exch dup %s mul exch dup %s mul exch %s mul")
-local f_gray_function = formatting("%s mul")
+local f_rgb_function  <const> = formatting("dup %s mul exch dup %s mul exch %s mul")
+local f_cmyk_function <const> = formatting("dup %s mul exch dup %s mul exch dup %s mul exch %s mul")
+local f_gray_function <const> = formatting("%s mul")
 
 local documentcolorspaces = pdfdictionary()
 
@@ -810,9 +810,9 @@ do
     local colors    = attributes.colors
     local rgbtocmyk = colors.rgbtocmyk
 
-    local f_cmyk = formatting("%.3N %.3N %.3N %.3N k")
-    local f_rgb  = formatting("%.3N %.3N %.3N rg")
-    local f_gray = formatting("%.3N g")
+    local f_cmyk <const> = formatting("%.3N %.3N %.3N %.3N k")
+    local f_rgb  <const> = formatting("%.3N %.3N %.3N rg")
+    local f_gray <const> = formatting("%.3N g")
 
     fonts.color_direct = function(r,g,b)
         local m = colors.model

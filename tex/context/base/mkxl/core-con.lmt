@@ -30,9 +30,11 @@ local implement          = interfaces.implement
 local settings_to_array  = utilities.parsers.settings_to_array
 local allocate           = utilities.storage.allocate
 local setmetatableindex  = table.setmetatableindex
-local formatters         = string.formatters
 local variables          = interfaces.variables
 local constants          = interfaces.constants
+
+local formatters         = string.formatters
+local formatted          = string.formatted
 
 local texset             = tex.set
 
@@ -307,7 +309,7 @@ local function maxchrs(n,m,cmd,t)
         maxchrs(floor((n-1)/m),m,cmd)
         n = (n-1)%m + 1
     end
-    t[#t+1] = formatters["%s{%s}"](cmd,n)
+    t[#t+1] = formatted("%s{%s}",cmd,n)
     if n <= m then
         return concat(t)
     end
@@ -1763,24 +1765,25 @@ do
         arguments = "integer",
     }
 
-    -- todo : short week days
-    -- todo : more efficient formatters
+    local f_monthlong    <const> = "\\monthlong{%s}"
+    local f_monthshort   <const> = "\\monthshort{%s}"
+    local f_daylong      <const> = "\\daylong{%s}"
+    local f_dayshort     <const> = "\\dayshort{%s}"
+    local f_weekday      <const> = "\\weekday{%s}"
+    local f_dayoftheweek <const> = "\\dayoftheweek{%s}{%s}{%s}"
 
-    local f_monthlong    = formatters["\\monthlong{%s}"]
-    local f_monthshort   = formatters["\\monthshort{%s}"]
-    local f_daylong      = formatters["\\daylong{%s}"]
-    local f_dayshort     = formatters["\\dayshort{%s}"]
-    local f_weekday      = formatters["\\weekday{%s}"]
-    local f_dayoftheweek = formatters["\\dayoftheweek{%s}{%s}{%s}"]
-
-    local function tomonthlong (m) return f_monthlong (tonumber(m) or 1) end
-    local function tomonthshort(m) return f_monthshort(tonumber(m) or 1) end
-    local function todaylong   (d) return f_daylong   (tonumber(d) or 1) end
-    local function todayshort  (d) return f_dayshort  (tonumber(d) or 1) end
-    local function toweekday   (d) return f_weekday   (tonumber(d) or 1) end
+    local function tomonthlong (m) return formatted(f_monthlong ,tonumber(m) or 1) end
+    local function tomonthshort(m) return formatted(f_monthshort,tonumber(m) or 1) end
+    local function todaylong   (d) return formatted(f_daylong   ,tonumber(d) or 1) end
+    local function todayshort  (d) return formatted(f_dayshort  ,tonumber(d) or 1) end
+    local function toweekday   (d) return formatted(f_weekday   ,tonumber(d) or 1) end
 
     local function todayoftheweek(d,m,y)
-        return f_dayoftheweek(tonumber(d) or 1,tonumber(m) or 1,tonumber(y) or 2000)
+        return formatted(f_dayoftheweek,
+            tonumber(d) or 1,
+            tonumber(m) or 1,
+            tonumber(y) or 2000
+        )
     end
 
     local extensions = sequencer.extensions
@@ -1800,13 +1803,13 @@ do
     local function toeminute(e) return osdate("%M",tonumber(e))  end
     local function toesecond(e) return osdate("%S",tonumber(e))  end
 
-    local function toemonthlong (e)        return f_monthlong (tonumber(osdate("%m",tonumber(e)))) end
-    local function toemonthshort(e)        return f_monthshort(tonumber(osdate("%m",tonumber(e)))) end
-    local function toedaylong   (e)        return f_datlong   (tonumber(osdate("%w",tonumber(e)))) end
-    local function toedayshort  (e)        return f_dayshort  (tonumber(osdate("%w",tonumber(e)))) end
-    local function toeweek      (e)        return tostring    (tonumber(osdate("%w",tonumber(e)))+1) end
-    local function toeweekday   (e)        return f_weekday   (tonumber(osdate("%w",tonumber(e)))+1) end
-    local function toedate      (format,e) return osdate(format,tonumber(e)) end
+    local function toemonthlong (e)   return f_monthlong (tonumber(osdate("%m",tonumber(e)))) end
+    local function toemonthshort(e)   return f_monthshort(tonumber(osdate("%m",tonumber(e)))) end
+    local function toedaylong   (e)   return f_datlong   (tonumber(osdate("%w",tonumber(e)))) end
+    local function toedayshort  (e)   return f_dayshort  (tonumber(osdate("%w",tonumber(e)))) end
+    local function toeweek      (e)   return tostring    (tonumber(osdate("%w",tonumber(e)))+1) end
+    local function toeweekday   (e)   return f_weekday   (tonumber(osdate("%w",tonumber(e)))+1) end
+    local function toedate      (f,e) return                       osdate(f,   tonumber(e)) end
 
     extensions.eyear       = toeyear
     extensions.emonth      = toemonth
@@ -2022,9 +2025,12 @@ do
 
     local function todate(s,y,m,d)
         if y or m or d then
-            return formatters["\\date[y=%s,m=%s,d=%s][%s]\\relax"](y or "",m or "",d or "",s or "")
+            return formatted(
+                "\\date[y=%s,m=%s,d=%s][%s]\\relax",
+                y or "", m or "", d or "", s or ""
+            )
         else
-            return formatters["\\currentdate[%s]\\relax"](s)
+            return formatted("\\currentdate[%s]\\relax",s)
         end
     end
 

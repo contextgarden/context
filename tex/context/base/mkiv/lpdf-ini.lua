@@ -1380,14 +1380,14 @@ do
     function lpdf.getmetadata()
         if not metadata then
             local contextversion      = environment.version
-            local luatexversion       = format("%1.2f",LUATEXVERSION)
-            local luatexfunctionality = tostring(LUATEXFUNCTIONALITY)
+            local luatexversion       = environment.luatexversion
+            local luatexfunctionality = environment.luatexfunctionality
             metadata = {
                 producer            = format("LuaTeX-%s",luatexversion),
                 creator             = format("LuaTeX %s %s + ConTeXt MkIV %s",luatexversion,luatexfunctionality,contextversion),
-                luatexversion       = luatexversion,
-                contextversion      = contextversion,
-                luatexfunctionality = luatexfunctionality,
+                luatexversion       = tostring(luatexversion),
+                contextversion      = tostring(contextversion),
+                luatexfunctionality = tostring(luatexfunctionality),
                 luaversion          = tostring(LUAVERSION),
                 platform            = os.platform,
                 time                = timestamp,

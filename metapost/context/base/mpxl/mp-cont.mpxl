@@ -158,7 +158,9 @@ immutable % permanent
     OverlayWidth, OverlayHeight, OverlayDepth, OverlayLineWidth, OverlayOffset, OverlayRegion,
     OverlayMathAxis, OverlayMathExHeight, OverlayMathEmWidth ;
 
-newscriptindex mfid_defaultcolormodel   ; mfid_defaultcolormodel   := scriptindex "defaultcolormodel"   ; vardef defaultcolormodel = runscript mfid_defaultcolormodel  enddef ;
+defaultcolormodel := graycolormodel ; let normaldefaultcolormodel = defaultcolormodel ;
+
+newscriptindex mfid_defaultcolormodel ; mfid_defaultcolormodel := scriptindex "defaultcolormodel" ; vardef defaultcolormodel = runscript mfid_defaultcolormodel enddef ;
 
 immutable % permanent
     defaultcolormodel ;

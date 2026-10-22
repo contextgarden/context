@@ -127,7 +127,7 @@ end
 
 nodes.astable = astable
 
-setinspector("node",function(v) if isnode(v) then printtable(astable(v),tostring(v)) return true end end)
+setinspector("node",function(v) if type(v) == "userdata" and isnode(v) then printtable(astable(v),tostring(v)) return true end end)
 
 -- under construction:
 

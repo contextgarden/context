@@ -252,7 +252,6 @@ if onwindows then -- we could sanitize here
 
     local slash = S("/\\") / "/"
 
---     pattern = Ct {
     pattern = {
         (Cs(P(".") + slash^1) + Cs(R("az","AZ") * P(":") * slash^0) + Cc("./")) * V(2) * V(3),
         Cs(((1-S("*?/\\"))^0 * slash)^0),
@@ -261,7 +260,6 @@ if onwindows then -- we could sanitize here
 
 else -- assume unix
 
---     pattern = Ct {
     pattern = {
         (C(P(".") + P("/")^1) + Cc("./")) * V(2) * V(3),
         C(((1-S("*?/"))^0 * P("/"))^0),

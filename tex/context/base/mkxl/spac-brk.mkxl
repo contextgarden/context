@@ -19,9 +19,9 @@
 
 \newcount\twinslimit \twinslimit\maxcount
 
-\registerctxluafile{spac-brk}{}
-\registerctxluafile{spac-ovl}{}
-\registerctxluafile{spac-twi}{}
+\registerctxluafile{spac-brk}{autossuffix}
+\registerctxluafile{spac-ovl}{autossuffix}
+\registerctxluafile{spac-twi}{autossuffix}
 
 \unprotect
 

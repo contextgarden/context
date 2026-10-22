@@ -20,22 +20,26 @@ local commands   = commands
 local implement  = interfaces.implement
 
 local formatters = string.formatters
+local formatting = string.formatting
+local formatted  = string.formatted
 
 function converters.hexstringtonumber(n) tonumber(n,16) end
 function converters.octstringtonumber(n) tonumber(n, 8) end
 
-local f_lchexnumber  = formatters["%x"]
-local f_uchexnumber  = formatters["%X"]
-local f_lchexnumbers = formatters["%02x"]
-local f_uchexnumbers = formatters["%02X"]
-local f_octnumber    = formatters["%03o"]
-local   nicenumber   = formatters["%0.6F"] -- or N
+local f_lchexnumber  = formatting("%x")
+local f_uchexnumber  = formatting("%X")
+local f_lchexnumbers = formatting("%02x")
+local f_uchexnumbers = formatting("%02X")
+local f_octnumber    = formatting("%03o")
+local   nicenumber   = formatters("%N")
 
-local lchexnumber  = function(n) if n < 0 then n = 0x100000000 + n end return f_lchexnumber (n) end
-local uchexnumber  = function(n) if n < 0 then n = 0x100000000 + n end return f_uchexnumber (n) end
-local lchexnumbers = function(n) if n < 0 then n = 0x100000000 + n end return f_lchexnumbers(n) end
-local uchexnumbers = function(n) if n < 0 then n = 0x100000000 + n end return f_uchexnumbers(n) end
-local octnumber    = function(n) if n < 0 then n = 0x100000000 + n end return f_octnumber   (n) end
+-- we cap to tex's 32 bit integers
+
+local lchexnumber  = function(n) if n < 0 then n = 0x100000000 + n end return formatted(f_lchexnumber ,n) end
+local uchexnumber  = function(n) if n < 0 then n = 0x100000000 + n end return formatted(f_uchexnumber ,n) end
+local lchexnumbers = function(n) if n < 0 then n = 0x100000000 + n end return formatted(f_lchexnumbers,n) end
+local uchexnumbers = function(n) if n < 0 then n = 0x100000000 + n end return formatted(f_uchexnumbers,n) end
+local octnumber    = function(n) if n < 0 then n = 0x100000000 + n end return formatted(f_octnumber   ,n) end
 
 converters.lchexnumber  = lchexnumber
 converters.uchexnumber  = uchexnumber

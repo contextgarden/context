@@ -51,8 +51,8 @@ local digit       = patterns.digit
 local sign        = patterns.sign
 local period      = patterns.period
 
-local ptf = 1 / 65536
-local bpf = (7200/7227) / 65536
+local ptf <const> = 1 / 65536
+local bpf <const> = (7200/7227) / 65536
 
 local function points(n)
     if n == 0 then

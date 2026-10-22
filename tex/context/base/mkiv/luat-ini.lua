@@ -25,8 +25,8 @@ if not global then
     globaldata = _G -- .. we now have these
 end
 
-LUATEXVERSION       = status.luatex_version/100 + tonumber(status.luatex_revision)/10000
 LUATEXENGINE        = status.luatex_engine and string.lower(status.luatex_engine) or "luametatex"
+LUATEXVERSION       = string.format("%1.2f.%i",tonumber(status.luatex_version)/100,tonumber(status.luatex_revision) or 0)
 LUATEXFUNCTIONALITY = status.development_id or 6346
 LUATEXFORMATID      = status.format_id or 0
 JITSUPPORTED        = false

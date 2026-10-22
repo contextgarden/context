@@ -15,7 +15,9 @@ local interfaces  = interfaces
 local sections    = structures.sections
 local implement   = interfaces.implement
 
-local v_default   = interfaces.variables.default
+local formatted   = string.formatted
+
+local v_default   <const> = interfaces.variables.default
 
 sections.levels   = sections.levels or { }
 
@@ -23,7 +25,7 @@ local level       = 0
 local levels      = sections.levels
 local categories  = { }
 
-local f_two_colon = string.formatters["%s:%s"]
+local f_two_colon <const> = "%s:%s"
 
 storage.register("structures/sections/levels", levels, "structures.sections.levels")
 
@@ -53,7 +55,7 @@ local function startsectionlevel(n,category,current)
     level = level + 1
     if not lc or level > #lc then
     level = level - 1
-        local what = f_two_colon(category,level)
+        local what = formatted(f_two_colon,category,level)
         insert(categories,{ category, n, level, what })
         ctx_nostarthead { what }
     else

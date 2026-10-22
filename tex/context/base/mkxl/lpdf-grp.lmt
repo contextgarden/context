@@ -467,7 +467,7 @@ end
 
 local saveboxresource = tex.boxresources.save
 local nofpatterns     = 0
-local f_pattern       = formatting("q /Pattern cs /%s scn 0 0 %.6N %.6N re f Q")
+local f_pattern       <const> = formatting("q /Pattern cs /%s scn 0 0 %.6N %.6N re f Q")
 
 function lpdf.registerpattern(specification)
     nofpatterns = nofpatterns + 1

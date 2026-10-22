@@ -290,18 +290,3 @@ tokens.cache = table.setmetatableindex(function(t,k)
     t[k] = v
     return v
 end)
-
--- if LUATEXVERSION < 114 then
---
---     local d = tokens.defined
---     local c = tokens.create
---
---     function tokens.defined(s,b)
---         if b then
---             return d(s)
---         else
---             return c(s).cmd_name == "undefined_cmd"
---         end
---     end
---
--- end

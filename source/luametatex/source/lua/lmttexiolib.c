@@ -332,7 +332,7 @@ static int texiolib_setlogfile(lua_State *L)
 {
     FILE *f = lmt_valid_file(L);
     if (f) {
-        /* If not writeable then all goes into the void. */
+        /* If not writable then all goes into the void. */
         if (! lmt_print_state.logfile) {
             lmt_print_state.saved_logfile = lmt_print_state.logfile;
             lmt_print_state.saved_logfile_offset = lmt_print_state.logfile_offset;

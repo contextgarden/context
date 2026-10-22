@@ -256,9 +256,9 @@ function executers.togglelayer(arguments) return setlayer(pdf_toggle,arguments) 
 
 -- injection
 
------ f_bdc = "/OC /%s BDC"
-local f_bdc = "/OC %s BDC"
-local s_emc = "EMC"
+----- f_bdc <const> = "/OC /%s BDC"
+local f_bdc <const> = "/OC %s BDC"
+local s_emc <const> = "EMC"
 
 function codeinjections.startlayer(name) -- used in mp
     if not name then

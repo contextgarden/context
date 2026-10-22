@@ -9481,8 +9481,7 @@ changes. The whole repertoire of numbers is:
 \NC \type {\the\luametatexmajorversion} \NC \the\luametatexmajorversion \NC \NR
 \NC \type {\the\luametatexminorversion} \NC \the\luametatexminorversion \NC \NR
 \NC \type {\the\luametatexrelease}      \NC \the\luametatexrelease      \NC \NR
-\NC \type {\the\luatexversion}          \NC \the\luatexversion          \NC \NR
-\NC \type {\the\luatexrevision}         \NC \the\luatexrevision         \NC \NR
+\NC \type {\the\luametatexversion}      \NC \the\luametatexversion      \NC \NR
 \stoptabulate
 
 The last two are there because they might be tested but the first three are the
@@ -9511,15 +9510,9 @@ This gives: {\tttf \luatexbanner}.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\prm {luatexrevision}}]
+\startnewprimitive[title={\prm {luametatexversion}}]
 
-This is an integer. The current value is: {\tttf \number\luatexrevision}.
-
-\stopnewprimitive
-
-\startnewprimitive[title={\prm {luatexversion}}]
-
-This is an integer. The current value is: {\tttf \number\luatexversion}.
+This is an integer. The current value is: {\tttf \number\luametatexversion}.
 
 \stopnewprimitive
 

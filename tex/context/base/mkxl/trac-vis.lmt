@@ -120,7 +120,7 @@ local enableaction        = nodes.tasks.enableaction
 
 local report_visualize = logs.reporter("visualize")
 
-local f_amount = formatting("%s:%.3N")
+local f_amount <const> = formatting("%s:%.3N")
 
 local modes = {
     hbox          = 0x0000001,
@@ -595,7 +595,7 @@ local fontkern, italiccorrection, marginkern, mathkern, mathshapekern do
     local m_cache = caches["marginkern"]
     local l_cache = caches["mathkern"]
 
-    local f_kern  = formatting(" %.3N")
+    local f_kern  <const> = formatting(" %.3N")
 
     local function somekern(head,current,cache,color,layer)
         local width = getkern(current)
@@ -741,8 +741,8 @@ local ruledmark do
     local sm_cache = caches["setmark"]
     local rm_cache = caches["resetmark"]
 
-    local f_mark   = formatting("SM:%i")
-    local f_rule   = formatting("RM:%i")
+    local f_mark <const> = formatting("SM:%i")
+    local f_rule <const> = formatting("RM:%i")
 
     ruledmark = function(head,current,subtype)
         local index = getindex(current)
@@ -782,7 +782,7 @@ local ruledinsert do
 
     local si_cache = caches["insert"]
 
-    local f_insert = formatting("SI:%i")
+    local f_insert <const> = formatting("SI:%i")
 
     ruledinsert = function(head,current)
         local index = getindex(current)
@@ -807,7 +807,7 @@ local ruledwhatsit do
 
     local whatsitcodes = nodes.whatsitcodes
     local w_cache      = caches["whatsit"]
-    local f_whatsit    = formatting("W:%s")
+    local f_whatsit    <const> = formatting("W:%s")
 
     local tags         = {
         [whatsitcodes.open]           =  "OPN",
@@ -857,8 +857,7 @@ local ruledboundary do
 
     local boundarycodes = nodes.boundarycodes
     local b_cache       = caches["boundary"]
-
-    local f_boundary    = formatting("B:%s")
+    local f_boundary    <const> = formatting("B:%s")
 
     local tags          = {
         [boundarycodes.cancel]     = "CAN",
@@ -982,8 +981,7 @@ end
 -- local ruleduser do
 --
 --     local u_cache = caches["user"]
---
---     local f_used  = formatting("U:%s")
+--     local f_used  <const> = formatting("U:%s")
 --
 --     ruleduser = function(head,current,subtype)
 --         local info = u_cache[subtype]
@@ -1519,7 +1517,7 @@ local ruledglue, ruledmathglue, ruledspace do
 
     local gsub, sub = string.gsub, string.sub
 
-    local f_hack = formatting("0x%02X")
+    local f_hack <const> = formatting("0x%02X")
 
     local morehack = setmetatableindex(function(t,k)
         local v = mathematics.classnames[k] -- yet unknown
@@ -2399,7 +2397,10 @@ do
             if id == hlist_code then
                 local content = getlist(current)
                 if content then
-                    setlist(current,visualize(content,false,nil,current))
+                    local c = visualize(content,false,nil,current)
+                    if c ~= content then
+                        setlist(current,c)
+                    end
                 end
                 if trace_depth then
                     ruleddepth(current)
@@ -2416,10 +2417,13 @@ do
                 local state   = getstate(current)
                 local isvtop  = state == 3 -- vtop_package_state
                 local isdbox  = state == 4 -- dbox_package_state
-                local tag     = nil
-                local layer   = nil
+                local tag  -- = nil
+                local layer-- = nil
                 if content then
-                    setlist(current,visualize(content,true,nil,current))
+                    local c = visualize(content,true,nil,current)
+                    if c ~= content then
+                        setlist(current,c)
+                    end
                 end
                 if trace_vtop then
                     if isdbox then

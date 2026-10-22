@@ -31,19 +31,19 @@ local injectcolor   = mp.inject.color
 local formatting    = string.formatting
 local formatted     = string.formatted
 
-local f_moveto      = formatting("(%N,%N)")
-local f_lineto      = formatting("--(%N,%N)")
-local f_curveto     = formatting("..controls(%N,%N)and(%N,%N)..(%N,%N)")
+local f_moveto      <const> = formatting("(%N,%N)")
+local f_lineto      <const> = formatting("--(%N,%N)")
+local f_curveto     <const> = formatting("..controls(%N,%N)and(%N,%N)..(%N,%N)")
 local s_cycle       <const> = "--cycle"
 
-local f_nofill      = formatting("nofill %s;")
-local f_dofill      = formatting("fill %s;")
+local f_nofill      <const> = formatting("nofill %s;")
+local f_dofill      <const> = formatting("fill %s;")
 
-local f_draw_trace  = formatting("drawpathonly %s;")
-local f_draw        = formatting("draw %s;")
+local f_draw_trace  <const> = formatting("drawpathonly %s;")
+local f_draw        <const> = formatting("draw %s;")
 
-local f_rectangle   = formatting("((%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--cycle)")
-local f_line        = formatting("((%N,%N)--(%N,%N))")
+local f_rectangle   <const> = formatting("((%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--cycle)")
+local f_line        <const> = formatting("((%N,%N)--(%N,%N))")
 
 local bpfactor      <const> = number.dimenfactors.bp
 
@@ -304,10 +304,10 @@ local fontdescriptions   = fonthashes.descriptions
 
 local topaths            = metapostfonts.paths
 
-local f_text             = formatting("mfun_do_outline_text_flush(%q,%i,%N,%N,%q)(%,t);")
-local f_rule             = formatting("mfun_do_outline_rule_flush(%q,%N,%N,%N,%N);")
-local f_bounds           = formatting("checkbounds(%N,%N,%N,%N);")
-local s_nothing          = "(origin scaled 10)"
+local f_text             <const> = formatting("mfun_do_outline_text_flush(%q,%i,%N,%N,%q)(%,t);")
+local f_rule             <const> = formatting("mfun_do_outline_rule_flush(%q,%N,%N,%N,%N);")
+local f_bounds           <const> = formatting("checkbounds(%N,%N,%N,%N);")
+local s_nothing          <const> = "(origin scaled 10)"
 
 local scalefactor        <const> = 10
 ----- bpfactor           <const> = number.dimenfactors.bp

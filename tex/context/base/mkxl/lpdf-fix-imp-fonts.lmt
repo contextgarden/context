@@ -34,6 +34,8 @@ local trace_merge      = false  trackers.register("graphics.fonts",        funct
 local trace_details    = false  trackers.register("graphics.fonts.details",function(v) trace_details = v end)
 local report_merge     = logs.reporter("graphics","fonts")
 
+local formatted        = string.formatted
+
 local expanded         = pdfe.expanded
 local contenttostring  = pdfe.contenttostring
 local getpagecontent   = pdfe.getpagecontent
@@ -179,7 +181,7 @@ local status = {
 
 statistics.register("compact font inclusion", function()
     if status.pages > 0 or status.xobjects > 0 or status.charprocs > 0 then
-        return string.format(
+        return formatted(
             "%i files, %i pages, %i indices, %i xobjects, %i chrprocs, %i times merged, %i times not merged",
             table.count(status.files),
             status.pages,
@@ -448,7 +450,6 @@ local function makemap(fontname,id,state,unicode)
         for k, v in next, state.unicodes do
             local d = chr[v]
             if d then
--- print(string.formatters["index in pdf %i unicode %C index in font %i"](k,v,d.index))
                 map[k] = d.index
             else
                 -- issue

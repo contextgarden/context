@@ -59,7 +59,7 @@
            \bTD{##4}##1##3{\tfd  ##2}\eTD
          \eTR}%
       \bTABLE[\c!align=\v!middle,\c!loffset=.5ex,\c!roffset=.5ex]
-         \bTR\bTD[\c!nx=14,\c!offset=1ex]\tttf{\m_module_fonts_show_title}\eTD\eTR
+         \bTR\bTD[\c!nx=13,\c!offset=1ex]\tttf{\m_module_fonts_show_title}\eTD\eTR
          \next{}{}\type{}%
          \next\rm{\languageparameter\c!text}\relax{\tfd\setstrut\strut}%
          \next\ss{\languageparameter\c!text}\relax{\tfd\setstrut\strut}%

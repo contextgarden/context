@@ -18,12 +18,14 @@ if not modules then modules = { } end modules ['l-unicode'] = {
 -- utf8.codepoint(s [, i [, j]])
 -- utf8.len(s [, i])
 -- utf8.offset(s, n [, i])
+--
+-- In LuaMetaTeX we have some more helpers so we can clean this up.
 
 utf     = utf or { }
 unicode = nil
 
 local type = type
-local char, byte, format, sub, gmatch, rep = string.char, string.byte, string.format, string.sub, string.gmatch, string.rep
+local char, byte, sub, gmatch, rep = string.char, string.byte, string.sub, string.gmatch, string.rep
 local concat = table.concat
 local P, C, R, Cs, Ct, Cmt, Cc, Carg, Cp = lpeg.P, lpeg.C, lpeg.R, lpeg.Cs, lpeg.Ct, lpeg.Cmt, lpeg.Cc, lpeg.Carg, lpeg.Cp
 
@@ -33,6 +35,8 @@ local tabletopattern  = lpeg.utfchartabletopattern
 
 local finder          = lpeg.finder
 local replacer        = lpeg.replacer
+
+local formatted       = sequencer.format
 
 local p_utftype       = patterns.utftype
 local p_utfstricttype = patterns.utfstricttype
@@ -77,7 +81,7 @@ do
                     patterns.utf8two
                   + patterns.utf8three
                   + patterns.utf8four
-                ) / function(s) local b = utfbyte(s) if b < 127 then return s else return format("&#%X;",b) end end
+                ) / function(s) local b = utfbyte(s) if b < 127 then return s else return formatted("&#%X;",b) end end
         )^0
     )
 
@@ -635,8 +639,8 @@ do
 end
 
 local pattern = Cs (
-    (p_utf8byte           / function(unicode          ) return format(  "0x%04X",          unicode) end) *
-    (p_utf8byte * Carg(1) / function(unicode,separator) return format("%s0x%04X",separator,unicode) end)^0
+    (p_utf8byte           / function(unicode          ) return formatted(  "0x%04X",          unicode) end) *
+    (p_utf8byte * Carg(1) / function(unicode,separator) return formatted("%s0x%04X",separator,unicode) end)^0
 )
 
 function utf.tocodes(str,separator)
@@ -644,11 +648,11 @@ function utf.tocodes(str,separator)
 end
 
 function utf.ustring(s)
-    return format("U+%05X",type(s) == "number" and s or utfbyte(s))
+    return formatted("U+%05X",type(s) == "number" and s or utfbyte(s))
 end
 
 function utf.xstring(s)
-    return format("0x%05X",type(s) == "number" and s or utfbyte(s))
+    return formatted("0x%05X",type(s) == "number" and s or utfbyte(s))
 end
 
 function utf.toeight(str)

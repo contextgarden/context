@@ -12,7 +12,7 @@
 
 \writestatus{loading}{ConTeXt Structure Macros / Definitions}
 
-%registerctxluafile{strc-def}{}
+%registerctxluafile{strc-def}{autosuffix}
 
 \unprotect
 

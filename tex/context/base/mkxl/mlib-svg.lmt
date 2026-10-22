@@ -520,16 +520,16 @@ local colorcomponents, withcolor, thecolor, usedcolors  do
         whitesmoke      = 0xF5F5F5, yellow            = 0xFFFF00, yellowgreen           = 0x9ACD32,
     }
 
-    local f_rgb      = formatting('    withcolor svgcolor(%.3N,%.3N,%.3N)')
-    local f_cmyk     = formatting('    withcolor svgcmyk(%.3N,%.3N,%.3N,%.3N)')
-    local f_gray     = formatting('    withcolor svggray(%.3N)')
-    local f_rgba     = formatting('    withcolor svgcolor(%.3N,%.3N,%.3N) withopacity %.3N')
-    local f_graya    = formatting('    withcolor svggray(%.3N) withopacity %.3N')
-    local f_name     = formatting('    withcolor "%s"')
-    local f_svgrgb   = formatting('svgcolor(%.3N,%.3N,%.3N)')
-    local f_svgcmyk  = formatting('svgcmyk(%.3N,%.3N,%.3N,%.3N)')
-    local f_svggray  = formatting('svggray(%.3N)')
-    local f_svgname  = formatting('"%s"')
+    local f_rgb      <const> = formatting('    withcolor svgcolor(%.3N,%.3N,%.3N)')
+    local f_cmyk     <const> = formatting('    withcolor svgcmyk(%.3N,%.3N,%.3N,%.3N)')
+    local f_gray     <const> = formatting('    withcolor svggray(%.3N)')
+    local f_rgba     <const> = formatting('    withcolor svgcolor(%.3N,%.3N,%.3N) withopacity %.3N')
+    local f_graya    <const> = formatting('    withcolor svggray(%.3N) withopacity %.3N')
+    local f_name     <const> = formatting('    withcolor "%s"')
+    local f_svgrgb   <const> = formatting('svgcolor(%.3N,%.3N,%.3N)')
+    local f_svgcmyk  <const> = formatting('svgcmyk(%.3N,%.3N,%.3N,%.3N)')
+    local f_svggray  <const> = formatting('svggray(%.3N)')
+    local f_svgname  <const> = formatting('"%s"')
 
     local triplets = setmetatableindex(function(t,k)
         -- we delay building all these strings
@@ -774,11 +774,11 @@ end
 
 local grabpath, grablist  do
 
-    local f_moveto    = formatting('(%N,%N)')
-    local f_curveto_z = formatting('controls(%N,%N)and(%N,%N)..(%N,%N)')
-    local f_curveto_n = formatting('..controls(%N,%N)and(%N,%N)..(%N,%N)')
-    local f_lineto_z  = formatting('(%N,%N)')
-    local f_lineto_n  = formatting('--(%N,%N)')
+    local f_moveto    <const> = formatting('(%N,%N)')
+    local f_curveto_z <const> = formatting('controls(%N,%N)and(%N,%N)..(%N,%N)')
+    local f_curveto_n <const> = formatting('..controls(%N,%N)and(%N,%N)..(%N,%N)')
+    local f_lineto_z  <const> = formatting('(%N,%N)')
+    local f_lineto_n  <const> = formatting('--(%N,%N)')
 
     local m = { __index = function() return 0 end }
 
@@ -1230,22 +1230,22 @@ end
 -- todo: viewbox helper
 
 local s_wrapped_start <const> = "draw image ("
-local f_wrapped_stop          = formatting(") shifted (0,%N) scaled %N ;")
+local f_wrapped_stop  <const> = formatting(") shifted (0,%N) scaled %N ;")
 
 local handletransform, handletransformstring, handleviewbox  do
 
     local sind = math.sind
 
-    local f_rotatedaround           = formatting("rotatedaround((%N,%N),%N) ")
-    local f_rotated                 = formatting("rotated(%N) ")
-    local f_shifted                 = formatting("shifted(%N,%N) ")
-    local f_slanted_x               = formatting("xslanted(%N) ")
-    local f_slanted_y               = formatting("yslanted(%N) ")
-    local f_scaled                  = formatting("scaled(%N) ")
-    local f_xyscaled                = formatting("xyscaled(%N,%N) ")
-    local f_matrix                  = formatting("transformed bymatrix(%N,%N,%N,%N,%N,%N) ")
+    local f_rotatedaround   <const> = formatting("rotatedaround((%N,%N),%N) ")
+    local f_rotated         <const> = formatting("rotated(%N) ")
+    local f_shifted         <const> = formatting("shifted(%N,%N) ")
+    local f_slanted_x       <const> = formatting("xslanted(%N) ")
+    local f_slanted_y       <const> = formatting("yslanted(%N) ")
+    local f_scaled          <const> = formatting("scaled(%N) ")
+    local f_xyscaled        <const> = formatting("xyscaled(%N,%N) ")
+    local f_matrix          <const> = formatting("transformed bymatrix(%N,%N,%N,%N,%N,%N) ")
     local s_transform_start <const> = "draw image ( "
-    local f_transform_stop          = formatting(") %s ; ")
+    local f_transform_stop  <const> = formatting(") %s ; ")
 
     local transforms    = { }
     local noftransforms = 0
@@ -1394,8 +1394,8 @@ local dashed  do
 
     -- actually commas are mandate but we're tolerant
 
-    local f_dashed_n = formatting(" dashed dashpattern (%s ) ")
-    local f_dashed_y = formatting(" dashed dashpattern (%s ) shifted (%N,0) ")
+    local f_dashed_n <const> = formatting(" dashed dashpattern (%s ) ")
+    local f_dashed_y <const> = formatting(" dashed dashpattern (%s ) shifted (%N,0) ")
 
     local p_number   = p_optseparator/"" * p_number_r
     local p_on       = Cc(" on ")  * p_number
@@ -1748,13 +1748,13 @@ local handledefinitions do
     -- todo: clip = [ auto | rect(llx,lly,urx,ury) ]
 
     local s_rotation_start <const> = "draw image ( "
-    local f_rotation_stop          = formatting(") rotatedaround((0,0),-angle((%N,%N))) ;")
-    local f_rotation_angle         = formatting(") rotatedaround((0,0),-%N) ;")
+    local f_rotation_stop  <const> = formatting(") rotatedaround((0,0),-angle((%N,%N))) ;")
+    local f_rotation_angle <const> = formatting(") rotatedaround((0,0),-%N) ;")
 
     local s_offset_start   <const> = "draw image ( "
-    local f_offset_stop            = formatting(") shifted (%N,%N) ;")
+    local f_offset_stop    <const> = formatting(") shifted (%N,%N) ;")
     local s_size_start     <const> = "draw image ( "
-    local f_size_stop              = formatting(") xysized (%N,%N) ;")
+    local f_size_stop      <const> = formatting(") xysized (%N,%N) ;")
 
     local handleoffset, handlesize do
 
@@ -1821,13 +1821,13 @@ local handledefinitions do
 
     -- do
 
-    local s_shade_linear   =            '    withshademethod "linear" '
-    local s_shade_circular =            '    withshademethod "circular" '
-    local f_color          = formatting('    withcolor "%s"')
-    local f_opacity        = formatting('    withopacity %N')
-    local f_pen            = formatting('    withpen pencircle scaled %N')
-    local f_pattern_1      = formatting("    withpattern image ( % t )\n    withpatternscale(%N,%N)")
-    local f_pattern_2      = formatting("    withpattern image ( % t )")
+    local s_shade_linear   <const> =            '    withshademethod "linear" '
+    local s_shade_circular <const> =            '    withshademethod "circular" '
+    local f_color          <const> = formatting('    withcolor "%s"')
+    local f_opacity        <const> = formatting('    withopacity %N')
+    local f_pen            <const> = formatting('    withpen pencircle scaled %N')
+    local f_pattern_1      <const> = formatting("    withpattern image ( % t )\n    withpatternscale(%N,%N)")
+    local f_pattern_2      <const> = formatting("    withpattern image ( % t )")
 
     -- this is rather hard to deal with because browsers differ (at the time of writing)
     -- and what they show on screen comes out different (or not at all) in print
@@ -1921,20 +1921,20 @@ local handledefinitions do
 
     local gradient do
 
-        local f_shade_step         = formatting('    withshadestep ( withshadefraction %N withshadecolors (%s,%s) )')
-        local f_shade_colors       = formatting('    withshadecolors (%s,%s)')
-        local f_shade_center       = formatting('    withshadecenter (%N,%N)')
-        local f_shade_center_f     = formatting('    withshadecenterfraction (%N,%N)')
-        local f_shade_radius       = formatting('    withshaderadius (%N,%N) ')
-        local f_shade_radius_f     = formatting('    withshaderadiusfraction %N')
-        local f_shade_center_one   = formatting('    withshadecenterone (%N,%N)')
-        local f_shade_center_two   = formatting('    withshadecentertwo (%N,%N)')
-        local f_shade_center_one_f = formatting('    withshadecenteronefraction (%N,%N)')
-        local f_shade_center_two_f = formatting('    withshadecentertwofraction (%N,%N)')
-        local f_shade_transform    = formatting('    withshadetransformation identity %s')
+        local f_shade_step         <const> = formatting('    withshadestep ( withshadefraction %N withshadecolors (%s,%s) )')
+        local f_shade_colors       <const> = formatting('    withshadecolors (%s,%s)')
+        local f_shade_center       <const> = formatting('    withshadecenter (%N,%N)')
+        local f_shade_center_f     <const> = formatting('    withshadecenterfraction (%N,%N)')
+        local f_shade_radius       <const> = formatting('    withshaderadius (%N,%N) ')
+        local f_shade_radius_f     <const> = formatting('    withshaderadiusfraction %N')
+        local f_shade_center_one   <const> = formatting('    withshadecenterone (%N,%N)')
+        local f_shade_center_two   <const> = formatting('    withshadecentertwo (%N,%N)')
+        local f_shade_center_one_f <const> = formatting('    withshadecenteronefraction (%N,%N)')
+        local f_shade_center_two_f <const> = formatting('    withshadecentertwofraction (%N,%N)')
+        local f_shade_transform    <const> = formatting('    withshadetransformation identity %s')
 
-        local f_shade_inverse      = formatting(' transformed inverse (identity %s)')
-     -- local f_shade_inverse      = formatting(' transformed inverse identity %s') -- or this?
+        local f_shade_inverse      <const> = formatting(' transformed inverse (identity %s)')
+     -- local f_shade_inverse      <const> = formatting(' transformed inverse identity %s') -- or this?
 
         gradient = function(id)
             local spec = definitions[id] -- no locate !
@@ -2125,7 +2125,7 @@ local handledefinitions do
     end
 
     local s_opacity_start   <const> = "draw image ("
-    local f_opacity_content         = formatting("setgroup currentpicture to boundingbox currentpicture withopacity %N;")
+    local f_opacity_content <const> = formatting("setgroup currentpicture to boundingbox currentpicture withopacity %N;")
     local s_opacity_stop    <const> = ") ;"
 
     local function sharedopacity(at)
@@ -2194,9 +2194,9 @@ local handledefinitions do
 
         local s_viewport_start  <const> = "draw image ("
         local s_viewport_stop   <const> = ") ;"
-        local f_viewport_shift          = formatting("currentpicture := currentpicture shifted (%N,%N);")
-        local f_viewport_scale          = formatting("currentpicture := currentpicture xysized (%N,%N);")
-        local f_viewport_clip           = formatting("clip currentpicture to (unitsquare xyscaled (%N,%N));")
+        local f_viewport_shift  <const> = formatting("currentpicture := currentpicture shifted (%N,%N);")
+        local f_viewport_scale  <const> = formatting("currentpicture := currentpicture xysized (%N,%N);")
+        local f_viewport_clip   <const> = formatting("clip currentpicture to (unitsquare xyscaled (%N,%N));")
 
         viewport = function(x,y,w,h,noclip,scale)
             r = r + 1 ; result[r] = s_viewport_start
@@ -2308,18 +2308,17 @@ local handledefinitions do
         end
     end
 
-    local f_do_draw               = formatting('  draw (%s)')
-    local f_do_fill               = formatting('  fill (%s)')
-    local f_eo_fill               = formatting('  eofill (%s)')
-    local s_clip_start    <const> = 'save p ; picture p ; p := image ('
-    local f_clip_stop_c           = formatting(') ; clip p to (%s &&& cycle) %s ; draw p ;')
-    local f_clip_stop_l           = formatting(') ; clip p to (%s &&& cycle) %s ; draw p ;')
-    local f_clip_stop             = f_clip_stop_c
-    local f_eoclip_stop_c         = formatting(') ; eoclip p to (%s &&& cycle) %s ; draw p ;')
-    local f_eoclip_stop_l         = formatting(') ; eoclip p to (%s &&& cycle) %s ; draw p ;')
-    local f_eoclip_stop           = f_eoclip_stop_c
-
-    local f_shade_luminosity      = formatting('draw luminosityshade (\n  (%s &&& cycle) %s\n  ) (\n%s\n  ) (\n%s\n) ;')
+    local f_do_draw          <const> = formatting('  draw (%s)')
+    local f_do_fill          <const> = formatting('  fill (%s)')
+    local f_eo_fill          <const> = formatting('  eofill (%s)')
+    local s_clip_start       <const> = 'save p ; picture p ; p := image ('
+    local f_clip_stop_c      <const> = formatting(') ; clip p to (%s &&& cycle) %s ; draw p ;')
+    local f_clip_stop_l      <const> = formatting(') ; clip p to (%s &&& cycle) %s ; draw p ;')
+    local f_clip_stop        <const> = f_clip_stop_c
+    local f_eoclip_stop_c    <const> = formatting(') ; eoclip p to (%s &&& cycle) %s ; draw p ;')
+    local f_eoclip_stop_l    <const> = formatting(') ; eoclip p to (%s &&& cycle) %s ; draw p ;')
+    local f_eoclip_stop      <const> = f_eoclip_stop_c
+    local f_shade_luminosity <const> = formatting('draw luminosityshade (\n  (%s &&& cycle) %s\n  ) (\n%s\n  ) (\n%s\n) ;')
 
     -- could be shared and then beginobject | endobject
 
@@ -2370,9 +2369,9 @@ local handledefinitions do
 
         local flush
 
-        local f_withlinecap    = formatting("    withlinecap %s")
-        local f_withlinejoin   = formatting("    withlinejoin %s")
-        local f_withmiterlimit = formatting("    withmiterlimit %s;")
+        local f_withlinecap    <const> = formatting("    withlinecap %s")
+        local f_withlinejoin   <const> = formatting("    withlinejoin %s")
+        local f_withmiterlimit <const> = formatting("    withmiterlimit %s;")
 
         local linecaps  = { butt  = "butt",    square = "squared", round = "rounded" }
         local linejoins = { miter = "mitered", bevel  = "beveled", round = "rounded" }
@@ -2659,11 +2658,11 @@ local handledefinitions do
             end
         end
 
-        local f_rectangle = formatting('unitsquare xyscaled (%N,%N) shifted (%N,%N)')
-        local f_rounded   = formatting('roundedsquarexy(%N,%N,%N,%N) shifted (%N,%N)')
-        local f_line      = formatting('((%N,%N)--(%N,%N))')
-        local f_ellipse   = formatting('(fullcircle xyscaled (%N,%N) shifted (%N,%N))')
-        local f_circle    = formatting('(fullcircle scaled %N shifted (%N,%N))')
+        local f_rectangle <const> = formatting('unitsquare xyscaled (%N,%N) shifted (%N,%N)')
+        local f_rounded   <const> = formatting('roundedsquarexy(%N,%N,%N,%N) shifted (%N,%N)')
+        local f_line      <const> = formatting('((%N,%N)--(%N,%N))')
+        local f_ellipse   <const> = formatting('(fullcircle xyscaled (%N,%N) shifted (%N,%N))')
+        local f_circle    <const> = formatting('(fullcircle scaled %N shifted (%N,%N))')
 
         function handlers.line(c)
             local at = c.at
@@ -2736,8 +2735,8 @@ local handledefinitions do
             flush(formatted(f_circle,2*r,cx,cy),true,true,at)
         end
 
-        local f_lineto_z  = formatters['(%N,%N)']   -- use in lpeg as function
-        local f_lineto_n  = formatters['--(%N,%N)'] -- use in lpeg as function
+        local f_lineto_z = formatters['(%N,%N)']   -- keep formatters, used in lpeg as function
+        local f_lineto_n = formatters['--(%N,%N)'] -- idem
 
         local p_pair     = p_optseparator * p_number_vx * p_optseparator * p_number_vy
         local p_open     = Cc("(")
@@ -2878,8 +2877,8 @@ end
         -- inclusion takes from data
         -- specification.data = false
 
-     -- local f_image = formatting( [[figure("%s") xysized (%N,%N) shifted (%N,%N)]] )
-        local f_image = formatting( [[svgembeddedfigure(%i) xysized (%N,%N) shifted (%N,%N)]] )
+     -- local f_image <const> = formatting( [[figure("%s") xysized (%N,%N) shifted (%N,%N)]] )
+        local f_image <const> = formatting( [[svgembeddedfigure(%i) xysized (%N,%N) shifted (%N,%N)]] )
 
      -- local nofimages = 0
 
@@ -3015,19 +3014,19 @@ end
 
             local s_start     <const> = "\\svgstart "
             local s_stop      <const> = "\\svgstop "
-            local f_set               = formatting("\\svgset{%N}{%N}") -- we need a period
-            local f_color_c           = formatting("\\svgcolorc{%.3N}{%.3N}{%.3N}{")
-            local f_color_o           = formatting("\\svgcoloro{%.3N}{")
-            local f_color_b           = formatting("\\svgcolorb{%.3N}{%.3N}{%.3N}{%.3N}{")
-            local f_poscode           = formatting("\\svgpcode{%N}{%N}{%s}")
-            local f_poschar           = formatting("\\svgpchar{%N}{%N}{%s}")
-            local f_posspace          = formatting("\\svgpspace{%N}{%N}")
-            local f_code              = formatting("\\svgcode{%s}")
-            local f_char              = formatting("\\svgchar{%s}")
+            local f_set       <const> = formatting("\\svgset{%N}{%N}") -- we need a period
+            local f_color_c   <const> = formatting("\\svgcolorc{%.3N}{%.3N}{%.3N}{")
+            local f_color_o   <const> = formatting("\\svgcoloro{%.3N}{")
+            local f_color_b   <const> = formatting("\\svgcolorb{%.3N}{%.3N}{%.3N}{%.3N}{")
+            local f_poscode   <const> = formatting("\\svgpcode{%N}{%N}{%s}")
+            local f_poschar   <const> = formatting("\\svgpchar{%N}{%N}{%s}")
+            local f_posspace  <const> = formatting("\\svgpspace{%N}{%N}")
+            local f_code      <const> = formatting("\\svgcode{%s}")
+            local f_char      <const> = formatting("\\svgchar{%s}")
             local s_space     <const> = "\\svgspace "
-            local f_size              = formatting("\\svgsize{%0.6f}")             -- we need a period
-            local f_font              = formatting("\\svgfont{%s}{%s}{%s}")
-            local f_hashed            = formatting("\\svghashed{%s}")
+            local f_size      <const> = formatting("\\svgsize{%0.6f}")             -- we need a period
+            local f_font      <const> = formatting("\\svgfont{%s}{%s}{%s}")
+            local f_hashed    <const> = formatting("\\svghashed{%s}")
 
             ----- p_texescape = lpegpatterns.texescape
 
@@ -3039,10 +3038,10 @@ end
 
             -- we can now just use the lmt maptext feature
 
-            local f_text_normal_svg   = formatting('(onetimetextext.%s("%s") shifted (%N,%N))')
-            local f_text_simple_svg   = formatting('onetimetextext.%s("%s")')
-            local f_mapped_normal_svg = formatting('(svgtext("%s") shifted (%N,%N))')
-            local f_mapped_simple_svg = formatting('svgtext("%s")')
+            local f_text_normal_svg   <const> = formatting('(onetimetextext.%s("%s") shifted (%N,%N))')
+            local f_text_simple_svg   <const> = formatting('onetimetextext.%s("%s")')
+            local f_mapped_normal_svg <const> = formatting('(svgtext("%s") shifted (%N,%N))')
+            local f_mapped_simple_svg <const> = formatting('svgtext("%s")')
 
             local cssfamily  = css.family
             local cssstyle   = css.style

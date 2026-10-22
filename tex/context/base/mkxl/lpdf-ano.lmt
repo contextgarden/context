@@ -530,14 +530,14 @@ local c_realpageno  <const> = tex.iscount("realpageno")
 
 local destinationactions, defaultaction  do
 
-    local f_xyz   = formatting("<< /D [ %i 0 R /XYZ %.6N %.6N null ] >>")
-    local f_fit   = formatting("<< /D [ %i 0 R /Fit ] >>")
-    local f_fitb  = formatting("<< /D [ %i 0 R /FitB ] >>")
-    local f_fith  = formatting("<< /D [ %i 0 R /FitH %.6N ] >>")
-    local f_fitv  = formatting("<< /D [ %i 0 R /FitV %.6N ] >>")
-    local f_fitbh = formatting("<< /D [ %i 0 R /FitBH %.6N ] >>")
-    local f_fitbv = formatting("<< /D [ %i 0 R /FitBV %.6N ] >>")
-    local f_fitr  = formatting("<< /D [ %i 0 R /FitR %.6N %.6N %.6N %.6N ] >>")
+    local f_xyz   <const> = formatting("<< /D [ %i 0 R /XYZ %.6N %.6N null ] >>")
+    local f_fit   <const> = formatting("<< /D [ %i 0 R /Fit ] >>")
+    local f_fitb  <const> = formatting("<< /D [ %i 0 R /FitB ] >>")
+    local f_fith  <const> = formatting("<< /D [ %i 0 R /FitH %.6N ] >>")
+    local f_fitv  <const> = formatting("<< /D [ %i 0 R /FitV %.6N ] >>")
+    local f_fitbh <const> = formatting("<< /D [ %i 0 R /FitBH %.6N ] >>")
+    local f_fitbv <const> = formatting("<< /D [ %i 0 R /FitBV %.6N ] >>")
+    local f_fitr  <const> = formatting("<< /D [ %i 0 R /FitR %.6N %.6N %.6N %.6N ] >>")
 
     destinationactions = {
         -- local left,top with no zoom
@@ -581,14 +581,14 @@ end
 
 local xdestinationactions, xdefaultaction  do
 
-    local f_xyz   = formatting("<< /D [ %i 0 R /XYZ %.6N %.6N null ] /SD [ %i 0 R /XYZ %.6N %.6N null ] >>")
-    local f_fit   = formatting("<< /D [ %i 0 R /Fit ] /SD [ %i 0 R /Fit ] >>")
-    local f_fitb  = formatting("<< /D [ %i 0 R /FitB ] /SD [ %i 0 R /FitB ] >>")
-    local f_fith  = formatting("<< /D [ %i 0 R /FitH %.6N ] /SD [ %i 0 R /FitH %.6N ] >>")
-    local f_fitv  = formatting("<< /D [ %i 0 R /FitV %.6N ] /SD[ %i 0 R /FitV %.6N ] >>")
-    local f_fitbh = formatting("<< /D [ %i 0 R /FitBH %.6N ] /SD [ %i 0 R /FitBH %.6N ] >>")
-    local f_fitbv = formatting("<< /D [ %i 0 R /FitBV %.6N ] /SD [ %i 0 R /FitBV %.6N ] >>")
-    local f_fitr  = formatting("<< /D [ %i 0 R /FitR %.6N %.6N %.6N %.6N ] /SD [ %i 0 R /FitR %.6N %.6N %.6N %.6N ] >>")
+    local f_xyz   <const> = formatting("<< /D [ %i 0 R /XYZ %.6N %.6N null ] /SD [ %i 0 R /XYZ %.6N %.6N null ] >>")
+    local f_fit   <const> = formatting("<< /D [ %i 0 R /Fit ] /SD [ %i 0 R /Fit ] >>")
+    local f_fitb  <const> = formatting("<< /D [ %i 0 R /FitB ] /SD [ %i 0 R /FitB ] >>")
+    local f_fith  <const> = formatting("<< /D [ %i 0 R /FitH %.6N ] /SD [ %i 0 R /FitH %.6N ] >>")
+    local f_fitv  <const> = formatting("<< /D [ %i 0 R /FitV %.6N ] /SD[ %i 0 R /FitV %.6N ] >>")
+    local f_fitbh <const> = formatting("<< /D [ %i 0 R /FitBH %.6N ] /SD [ %i 0 R /FitBH %.6N ] >>")
+    local f_fitbv <const> = formatting("<< /D [ %i 0 R /FitBV %.6N ] /SD [ %i 0 R /FitBV %.6N ] >>")
+    local f_fitr  <const> = formatting("<< /D [ %i 0 R /FitR %.6N %.6N %.6N %.6N ] /SD [ %i 0 R /FitR %.6N %.6N %.6N %.6N ] >>")
 
     xdestinationactions = {
         [v_standard] = function(r,w,h,d,o,s)
@@ -636,7 +636,7 @@ end)
 -- end up with a mix. A previous versions just output multiple destinations but now
 -- that we moved all to here we can be more sparse.
 
-local f_fit = formatting("<< /D [ %i 0 R /Fit ] >>")
+local f_fit <const> = formatting("<< /D [ %i 0 R /Fit ] >>")
 
 local pagedestinations = setmetatableindex(function(t,k) -- not the same as the one above!
     local v = pdfdelayedobject(formatted(f_fit,k))
@@ -1139,8 +1139,8 @@ local share      = true
 
 local refobjects = { }
 
-local f_annot    = formatting("<< /Type /Annot %s /Rect [ %.6N %.6N %.6N %.6N ] >>")
-local f_quadp    = formatting("<< /Type /Annot %s /QuadPoints [ %s ] /Rect [ %.6N %.6N %.6N %.6N ] >>")
+local f_annot    <const> = formatting("<< /Type /Annot %s /Rect [ %.6N %.6N %.6N %.6N ] >>")
+local f_quadp    <const> = formatting("<< /Type /Annot %s /QuadPoints [ %s ] /Rect [ %.6N %.6N %.6N %.6N ] >>")
 
 directives.register("references.sharelinks", function(v)
     share = v

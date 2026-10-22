@@ -134,9 +134,9 @@ do
 
     sequencer.extensions.texexp = metapost.texexp
 
-    local f_textext = [[textext("%s")]]
-    local f_mthtext = [[textext("\mathematics{%s}")]]
-    local f_exptext = [[textext("\mathematics{%s\times10^{%s}}")]]
+    local f_textext <const> = [[textext("%s")]]
+    local f_mthtext <const> = [[textext("\mathematics{%s}")]]
+    local f_exptext <const> = [[textext("\mathematics{%s\times10^{%s}}")]]
 
     local mpprint   = mp.print
 

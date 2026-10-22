@@ -18,7 +18,7 @@
 
 \writestatus{loading}{ConTeXt Page Macros / Page Grids}
 
-\registerctxluafile{page-cst}{}
+\registerctxluafile{page-cst}{autosuffix}
 
 \unprotect
 

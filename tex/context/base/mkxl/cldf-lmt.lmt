@@ -1117,11 +1117,11 @@ do
 
     local runstring   = tex.runstring
     local ctxcatcodes = tex.ctxcatcodes
-    local formatters  = string.formatters
+    local formatted   = string.formatted
 
     function context.runstring(fmt,str,...)
         if str then
-            runstring(ctxcatcodes,formatters[fmt](str,...))
+            runstring(ctxcatcodes,formatted(fmt,str,...))
         elseif fmt then
             runstring(ctxcatcodes,fmt)
         end

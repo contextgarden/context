@@ -48,11 +48,11 @@ local function points_convert(current,kind)
 
      -- local k = { draw = "S", fill = "f", both = "B" }
 
-     -- local f_shape_3 = "%N %N m %N %N l %N %N l %N %N l"
-        local f_shape_0 = "%N %N m"
-        local f_shape_1 = "%N %N l"
-        local f_shape_3 = "%N %N m %N %N l %N %N l h"
-        local f_cm      = "%N %N %N %N %N %N cm"
+     -- local f_shape_3 <const> = "%N %N m %N %N l %N %N l %N %N l"
+        local f_shape_0 <const> = "%N %N m"
+        local f_shape_1 <const> = "%N %N l"
+        local f_shape_3 <const> = "%N %N m %N %N l %N %N l h"
+        local f_cm      <const> = "%N %N %N %N %N %N cm"
 
         if current.method == "triangles" then
 

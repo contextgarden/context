@@ -1,0 +1,242 @@
+if not modules then modules = { } end modules ['l-io'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local io = io
+local open, flush, write, read = io.open, io.flush, io.write, io.read
+local byte, find, gsub, format = string.byte, string.find, string.gsub, string.format
+local concat = table.concat
+local type = type
+
+io.fileseparator, io.pathseparator = os.getseparators()
+
+function io.readall(f)
+    local size = f:seek("end")
+    if size > 0 then
+     -- return f:read('*all')
+        f:seek("set",0)
+        return f:read(size)
+    else
+        return ""
+    end
+end
+
+function io.loaddata(filename,textmode) -- return nil if empty
+    local f = open(filename,(textmode and 'r') or 'rb')
+    if f then
+        local size = f:seek("end")
+        local data = nil
+        if size > 0 then
+         -- data = f:read("*all")
+            f:seek("set",0)
+            data = f:read(size)
+        end
+        f:close()
+        return data
+    end
+end
+
+function io.copydata(source,target,action)
+    local f = open(source,"rb")
+    if f then
+        local g = open(target,"wb")
+        if g then
+            local size = f:seek("end")
+            if size > 0 then
+             -- local data = f:read('*all')
+                f:seek("set",0)
+                local data = f:read(size)
+                if action then
+                    data = action(data)
+                end
+                if data then
+                    g:write(data)
+                end
+            end
+            g:close()
+        end
+        f:close()
+        flush()
+    end
+end
+
+function io.savedata(filename,data,joiner,append)
+    local f = open(filename,append and "ab" or "wb")
+    if f then
+        if append and joiner and f:seek("end") > 0 then
+            f:write(joiner)
+        end
+        if type(data) == "table" then
+            f:write(concat(data,joiner or ""))
+        elseif type(data) == "function" then
+            data(f)
+        else
+            f:write(data or "")
+        end
+        f:close()
+        flush()
+        return true
+    else
+        return false
+    end
+end
+
+do
+
+    local readcline = fio.readcline
+
+    function io.loadlines(filename,n) -- return nil if empty
+        local f = open(filename,'r')
+        if not f then
+            -- no file
+        elseif n then
+            local lines = { }
+            for i=1,n do
+                local line = readcline(f)
+                if line then
+                    lines[i] = line
+                else
+                    break
+                end
+            end
+            f:close()
+            lines = concat(lines,"\n")
+            if #lines > 0 then
+                return lines
+            end
+        else
+            local line = readcline(f)
+            f:close()
+            if line and #line > 0 then
+                return line
+            end
+        end
+    end
+
+end
+
+function io.loadchunk(filename,n)
+    local f = open(filename,'rb')
+    if f then
+        local data = f:read(n or 1024)
+        f:close()
+        if #data > 0 then
+            return data
+        end
+    end
+end
+
+function io.exists(filename)
+    local f = open(filename)
+    if f == nil then
+        return false
+    else
+        f:close()
+        return true
+    end
+end
+
+function io.size(filename)
+    local f = open(filename)
+    if f == nil then
+        return 0
+    else
+        local s = f:seek("end")
+        f:close()
+        return s
+    end
+end
+
+-- io.noflines   counter : see l-io.lua for if we ever need it
+-- io.characters iterator: see l-io.lua for if we ever need it
+-- io.bytes      iterator: see l-io.lua for if we ever need it
+
+function io.ask(question,default,options)
+    while true do
+        write(question)
+        if options then
+            write(format(" [%s]",concat(options,"|")))
+        end
+        if default then
+            write(format(" [%s]",default))
+        end
+        write(" ")
+        flush()
+        local answer = read()
+        answer = gsub(answer,"^%s*(.*)%s*$","%1")
+        if answer == "" and default then
+            return default
+        elseif not options then
+            return answer
+        else
+            for k=1,#options do
+                if options[k] == answer then
+                    return answer
+                end
+            end
+            local pattern = "^" .. answer
+            for k=1,#options do
+                local v = options[k]
+                if find(v,pattern) then
+                    return v
+                end
+            end
+        end
+    end
+end
+
+
+do  -- todo: mtx-flac.lua colo-icc.lua grph-swf.lua
+
+    local readinteger1   = fio.readinteger1
+    local readinteger2   = fio.readinteger2
+    local readinteger3   = fio.readinteger3
+    local readinteger4   = fio.readinteger4
+    local readinteger1le = fio.readinteger1le
+    local readinteger2le = fio.readinteger2le
+    local readinteger3le = fio.readinteger3le
+    local readinteger4le = fio.readinteger4le
+
+    function io.readnumber(f,n,m) -- to be replaced
+        if m then
+            f:seek("set",n)
+            n = m
+        end
+        if n == 1 then
+            return readinteger1(f)
+        elseif n == 2 then
+            return readinteger2(f)
+        elseif n == 3 then
+            return readinteger3(f)
+        elseif n == 4 then
+            return readinteger4(f)
+        elseif n == -1 then
+            return readinteger1le(f)
+        elseif n == -2 then
+            return readinteger2le(f)
+        elseif n == -3 then
+            return readinteger3le(f)
+        elseif n == -4 then
+            return readinteger4le(f)
+        else
+            return 0
+        end
+    end
+
+    local readnstring = fio.readnstring
+
+    function io.readstring(f,n,m) -- fixed length
+        if m then
+            f:seek("set",n)
+            n = m
+        end
+     -- local str = f:read(n)
+     -- return str and match(str,"^[^%z]*") or ""
+        return (readnstring(f,n)) -- ignore second return value
+    end
+
+end

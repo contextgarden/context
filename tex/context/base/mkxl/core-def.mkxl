@@ -99,7 +99,7 @@
     \calculatecurrenttime
     \syst_files_load
     % for the moment here (before doc env)
-    \setupoutput[pdf]%
+%     \setupoutput[pdf]%
 %     \setupoutput[lua]%
     %
     \clf_setdocumentcommandline
@@ -114,6 +114,7 @@
     \clf_setdocumentmodes
     \clf_setdocumentmodules
     \clf_setdocumentenvironments
+    \setupoutput[pdf]%
 \to \everyjob
 
 \appendtoks

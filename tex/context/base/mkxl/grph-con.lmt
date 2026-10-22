@@ -16,7 +16,7 @@ local P, R, S, Cc, C, Cs, Ct, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.Cc, lpeg.
 local tonumber          = tonumber
 local find              = string.find
 local longtostring      = string.longtostring
-local formatters        = string.formatters
+local formatted         = string.formatted
 local expandfilename    = dir.expandname
 local isfile            = lfs.isfile
 
@@ -31,10 +31,10 @@ local nodeinjections    = backends.nodeinjections
 local report_figures    = logs.reporter("system","graphics")
 
 local variables         = interfaces.variables
-local v_high            = variables.high
-local v_low             = variables.low
-local v_medium          = variables.medium
-local v_yes             = variables.yes
+local v_high    <const> = variables.high
+local v_low     <const> = variables.low
+local v_medium  <const> = variables.medium
+local v_yes     <const> = variables.yes
 
 local figures           = figures
 
@@ -108,7 +108,8 @@ do -- eps | ps
                       * P("%AI3_Cropmarks:")     * quadruple
                       * P("%%CropBox:")          * quadruple
                       / function(b,h,m,c)
-                             return formatters["%%%%BoundingBox: %r %r %r %r\n%%%%HiResBoundingBox: %F %F %F %F\n%%%%CropBox: %F %F %F %F\n"](
+                             return formatted(
+                                 "%%%%BoundingBox: %r %r %r %r\n%%%%HiResBoundingBox: %F %F %F %F\n%%%%CropBox: %F %F %F %F\n",
                                  m[1],m[2],m[3],m[4], -- rounded integer
                                  m[1],m[2],m[3],m[4], -- real number
                                  m[1],m[2],m[3],m[4]
@@ -471,8 +472,8 @@ local function remap(specification)
     if fullname then
         local only  = file.nameonly(fullname)
         local cache = specification.cache or ""
-        local name  = formatters["svg-%s-inclusion"](only)
-        local code  = formatters["\\includesvgfile[%s][cache=%s]\\resetbuffer[%s]"](fullname,cache,name)
+        local name  = formatted("svg-%s-inclusion",only)
+        local code  = formatted("\\includesvgfile[%s][cache=%s]\\resetbuffer[%s]",fullname,cache,name)
         buffers.assign(name,code)
         specification.format   = "buffer"
         specification.fullname = name

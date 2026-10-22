@@ -7,9 +7,10 @@ if not modules then modules = { } end modules ['luat-cnf'] = {
 }
 
 local type = type
-local format, concat = string.format, table.concat
+local concat = table.concat
 
-local report = logs.reporter("system")
+local report    = logs.reporter("system")
+local formatted = string.formatted
 
 luatex       = luatex or { }
 local luatex = luatex
@@ -37,7 +38,7 @@ luatex.starttime = os.gettimeofday()
 
 function texconfig.init()
 
-    -- development
+    -- development: this has to be adapted or it will go (elsewhere)
 
     local builtin, globals = { }, { }
 
@@ -200,18 +201,18 @@ local function makestub()
         end
         if type(val) == "table" then
             local s = { }
-            local v = val.size if v then s[#s+1] = format("size = %10i",v) end
-            local v = val.plus if v then s[#s+1] = format("plus = %10i",v) end
-            local v = val.step if v then s[#s+1] = format("step = %10i",v) end
+            local v = val.size if v then s[#s+1] = formatted("size = %10i",v) end
+            local v = val.plus if v then s[#s+1] = formatted("plus = %10i",v) end
+            local v = val.step if v then s[#s+1] = formatted("step = %10i",v) end
             if #s > 0 then
-                s = format("%-17s = { %s }",target,concat(s,", "))
+                s = formatted("%-17s = { %s }",target,concat(s,", "))
                 report("  %s",s)
                 t[#t+1] = "texconfig." .. s
             end
         end
     end
     t[#t+1] = ""
-    t[#t+1] = format(stub,firsttable)
+    t[#t+1] = formatted(stub,firsttable)
     io.savedata(name,concat(t,"\n"))
     report()
 end

@@ -17,24 +17,23 @@
 \registerctxluafile{l-lua}     {autosuffix} % before sandbox (still ?)
 %registerctxluafile{l-macro}   {}
 %registerctxluafile{l-sandbox} {autosuffix} % done differently
-\registerctxluafile{l-package} {}
+\registerctxluafile{l-package} {autosuffix}
 \registerctxluafile{l-lpeg}    {}
 \registerctxluafile{l-function}{}
 \registerctxluafile{l-string}  {}
 \registerctxluafile{l-table}   {autosuffix}
 \registerctxluafile{l-boolean} {}
 \registerctxluafile{l-number}  {autosuffix}
-\registerctxluafile{l-math}    {}
-\registerctxluafile{l-io}      {}
-\registerctxluafile{l-os}      {}
-\registerctxluafile{l-file}    {}
-\registerctxluafile{l-gzip}    {}
-\registerctxluafile{l-md5}     {}
+\registerctxluafile{l-math}    {autosuffix}
+\registerctxluafile{l-io}      {autosuffix}
+\registerctxluafile{l-os}      {autosuffix}
+\registerctxluafile{l-file}    {autosuffix}
+\registerctxluafile{l-md5}     {autosuffix}
 \registerctxluafile{l-sha}     {}
-\registerctxluafile{l-dir}     {}
+\registerctxluafile{l-dir}     {autosuffix}
 \registerctxluafile{l-unicode} {autosuffix}
 \registerctxluafile{l-url}     {}
-\registerctxluafile{l-set}     {}
+%registerctxluafile{l-set}     {} % never used
 
 %registerctxluafile{l-macro-imp-optimize}{}
 

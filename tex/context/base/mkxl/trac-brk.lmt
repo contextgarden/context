@@ -9,10 +9,12 @@ if not modules then modules = { } end modules ['trac-brk'] = {
 
 local next, tonumber, tostring, type = next, tonumber, tostring, type
 local round, abs = math.round, math.abs
-local formatters = string.formatters
 
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_hash  = utilities.parsers.settings_to_hash
+
+local formatting        = string.formatting
+local formatted         = string.formatted
 
 local nuts              = nodes.nuts
 
@@ -105,9 +107,9 @@ local fitnesscodes = {
 local report      = logs.reporter("linebreaks")
 local breakcodes  = tex.breakcodes
 
-local f_detail  = formatters["[%02i] b=%i d=%p p=%0.3f r=%0.3f (dt=%i) (%p) from s=%i b=%i"]
-local f_simple  = formatters["[%02i] b=%i from s=%i b=%i"]
-local f_badness = formatters["[%02i] b=%i"]
+local f_detail   <const> = formatting("[%02i] b=%i d=%p p=%0.3f r=%0.3f (dt=%i) (%p) from s=%i b=%i")
+local f_simple   <const> = formatting("[%02i] b=%i from s=%i b=%i")
+local f_badness  <const> = formatting("[%02i] b=%i")
 
 local maxbadness <const> = tex.magicconstants.maxcalculatedbadness
 local marginoffset       = 0
@@ -539,18 +541,19 @@ function mp.show_breakpoints(dx,dy,sx,sy,lw)
         lines   = "darkgray",
     }
     local everything = {
-        formatters["numeric dx ; dx := %N ;"](dx),
-        formatters["numeric dy ; dy := %N ;"](dy),
-        formatters["numeric sx ; sx := %N ;"](sx),
-        formatters["numeric sy ; sy := %N ;"](sy),
-        formatters["numeric lw ; lw := %N ;"](lw),
-        formatters["pickup pencircle scaled lw ;"](),
+        formatted("numeric dx ; dx := %N ;",dx),
+        formatted("numeric dy ; dy := %N ;",dy),
+        formatted("numeric sx ; sx := %N ;",sx),
+        formatted("numeric sy ; sy := %N ;",sy),
+        formatted("numeric lw ; lw := %N ;",lw),
+        "pickup pencircle scaled lw ;",
     }
     results[0] = {
         final   = true,
         serial  = 0,
         trigger = "none"
     }
+    local f_bar <const> = formatting("((%N,%N)--(%N,%N))")
     do
         local line = 0
         local slot = 0
@@ -575,10 +578,10 @@ function mp.show_breakpoints(dx,dy,sx,sy,lw)
             local p1       = breaks[i]
             local p2       = breaks[previous]
             if p1 and p2 then
-                result[#result+1] = formatters["((%N,%N)--(%N,%N))"](p1[1],p1[2],p2[1],p2[2])
+                result[#result+1] = formatted(f_bar,p1[1],p1[2],p2[1],p2[2])
             end
         end
-        everything[#everything+1] = formatters[ [[draw (% && t) xyscaled (dx,dy) withcolor "%s" ;]] ](result,colors.lines)
+        everything[#everything+1] = formatted([[draw (% && t) xyscaled (dx,dy) withcolor "%s" ;]],result,colors.lines)
     end
     do
         local result = { }
@@ -590,20 +593,20 @@ function mp.show_breakpoints(dx,dy,sx,sy,lw)
                     local p1 = breaks[i]
                     local p2 = breaks[previous]
                     if p1 and p2 then
-                        result[#result+1] = formatters["((%N,%N)--(%N,%N))"](p1[1],p1[2],p2[1],p2[2])
+                        result[#result+1] = formatted("((%N,%N)--(%N,%N))",p1[1],p1[2],p2[1],p2[2])
                     end
                 end
             end
         end
-        everything[#everything+1] = formatters[ [[draw (% && t) xyscaled (dx,dy) withcolor "white" ;]] ](result)
-        everything[#everything+1] = formatters[ [[draw (% && t) xyscaled (dx,dy) dashed (evenly scaled .5lw) withcolor "black" ;]] ](result)
+        everything[#everything+1] = formatted([[draw (% && t) xyscaled (dx,dy) withcolor "white" ;]],result)
+        everything[#everything+1] = formatted([[draw (% && t) xyscaled (dx,dy) dashed (evenly scaled .5lw) withcolor "black" ;]] ,result)
     end
     for i=0,#results do
         local p = breaks[i]
         if p then
             local r = results[i]
-            everything[#everything+1] = formatters[ [[draw (%N*dx,%N*dy) withpen pencircle xyscaled(sx,sy) withcolor "%s" ;]] ](p[1],p[2],colors[r.trigger])
-            everything[#everything+1] = formatters[ [[draw textext("\ttxx%i") shifted (%N*dx,%N*dy) withcolor "white" ;]] ](r.serial,p[1],p[2])
+            everything[#everything+1] = formatted([[draw (%N*dx,%N*dy) withpen pencircle xyscaled(sx,sy) withcolor "%s" ;]],p[1],p[2],colors[r.trigger])
+            everything[#everything+1] = formatted([[draw textext("\ttxx%i") shifted (%N*dx,%N*dy) withcolor "white" ;]],r.serial,p[1],p[2])
         end
     end
     --

@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['trac-tim'] = {
     license   = "see context related readme files"
 }
 
-local format, gsub = string.format, string.gsub
+local gsub = string.gsub
 local concat, sort = table.concat, table.sort
 local next, tonumber = next, tonumber
 
@@ -15,6 +15,8 @@ local progress      = moduledata.progress or { }
 moduledata.progress = progress
 
 local report_timing = logs.reporter("timing")
+
+local formatted     = string.formatted
 
 if not nodes then nodes = { } end -- when loaded in mtxrun
 
@@ -87,8 +89,8 @@ local function convert(name)
                         b = 0
                         t = 0
                     end
-                    top[tagname] = gsub(format("%.3f",t),"%.000$","")
-                    bot[tagname] = gsub(format("%.3f",b),"%.000$","")
+                    top[tagname] = gsub(formatted("%.3f",t),"%.000$","")
+                    bot[tagname] = gsub(formatted("%.3f",b),"%.000$","")
                     local delta = t - b
                     if delta == 0 then
                         delta = 1
@@ -96,7 +98,7 @@ local function convert(name)
                         delta = factor/delta
                     end
                     for k=1,#s do
-                        s[k] = format("(%.3f,%.3f)",k,(s[k]-b)*delta)
+                        s[k] = formatted("(%.3f,%.3f)",k,(s[k]-b)*delta)
                     end
                     paths[tagname] = concat(s,"--")
                     return tagname

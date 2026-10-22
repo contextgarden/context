@@ -7,13 +7,15 @@ if not modules then modules = { } end modules ['node-res'] = {
 }
 
 local type, next, rawset = type, next, rawset
-local gmatch, format = string.gmatch, string.format
+local gmatch = string.gmatch
 local round = math.round
 local concat, sortedhash, setmetatableindex = table.concat, table.sortedhash, table.setmetatableindex
 
 local nodes, node = nodes, node
 
 local report_nodes   = logs.reporter("nodes","housekeeping")
+
+local formatted      = string.formatted
 
 nodes.pool           = nodes.pool or { }
 local nodepool       = nodes.pool
@@ -615,7 +617,7 @@ statistics.register("attribute tracking", function()
             if name then
                 local count = track(i)
                 if count and count > 0 then
-                    n = n + 1 ; t[n] = format("%s %s",name,count)
+                    n = n + 1 ; t[n] = formatted("%s %s",name,count)
                 end
             end
         end
@@ -666,7 +668,7 @@ nodepool.stock   = stock
 -- end
 
 statistics.register("cleaned up reserved nodes", function()
-    return format("%s nodes, %s lists of %s", cleanup(texgetcount("c_syst_last_allocated_box")))
+    return formatted("%s nodes, %s lists of %s", cleanup(texgetcount("c_syst_last_allocated_box")))
 end) -- \topofboxstack
 
 -- local function pusage()
@@ -691,12 +693,12 @@ statistics.register("node memory usage", function() -- comes after cleanup !
     local t, n, s = { }, 0, nil
     if next(used) then
         for k, v in sortedhash(used) do
-            n = n + 1 ; t[n] = format("%s %s",v,k)
+            n = n + 1 ; t[n] = formatted("%s %s",v,k)
         end
     end
     local c = table.count(nodeproperties)
     if c > 0 then
-        n = n + 1 ; t[n] = format("stale properties: %i",c)
+        n = n + 1 ; t[n] = formatted("stale properties: %i",c)
     end
     if n > 0 then
         s = concat(t,", ")
@@ -710,7 +712,7 @@ statistics.register("node memory usage", function() -- comes after cleanup !
  --     end
  --     n, t, s = { }, 0, s .. "properties: "
  --     for k, v in sortedhash(prop) do
- --         n = n + 1 ; t[n] = format("%s %i:%i",k,v.good,v.bad)
+ --         n = n + 1 ; t[n] = formatted("%s %i:%i",k,v.good,v.bad)
  --     end
  --     s = s .. concat(t,", ")
  -- end

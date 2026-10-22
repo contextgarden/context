@@ -241,6 +241,9 @@ process multiple files at the same time (you can specify a number of processes, 
 .B --parallellist
 process commands in this file (lines that start with 'context')
 .TP
+.B --terminal
+show parallel log output (=color)
+.TP
 .B --sandbox
 process file in a limited environment
 .TP

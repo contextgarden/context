@@ -2113,7 +2113,7 @@ static void tex_vbalanced_process_insert(halfword insert, double factor)
             amount = scaledround(factor * shrink);
         }
         if (callback) {
-            /*tex Beware: is we have a split insert we callback each. */
+            /*tex Beware: if we have a split insert we callback each. */
             halfword result = lmt_uinsert_callback(callback, insert_index(insert), insert_belongs_to(insert), packed, height, amount);
             if (result) {
                 packed = result; 

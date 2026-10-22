@@ -518,7 +518,7 @@ transparencies.supported  = true
 local registered          = transparencies.registered -- we could use a 2 dimensional table instead
 local data                = transparencies.data
 local values              = transparencies.values
-local f_transparency      = "%s:%s"
+local f_transparency      <const> = "%s:%s"
 
 registerstorage("attributes/transparencies/registered", registered, "attributes.transparencies.registered")
 registerstorage("attributes/transparencies/values",     values,     "attributes.transparencies.values")

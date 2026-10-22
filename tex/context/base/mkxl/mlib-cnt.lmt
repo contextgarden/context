@@ -80,7 +80,7 @@ local version           = 0.007
 
 -- we iterate using integers so that we get a better behaviour at zero
 
-local f_function_n = [[
+local f_function_n <const> = [[
     local math  = math
     local round = math.round
     %s
@@ -101,7 +101,7 @@ local f_function_n = [[
     end
 ]]
 
-local f_function_y = [[
+local f_function_y <const> = [[
     local math  = math
     local round = math.round
     local nan   = NaN
@@ -139,7 +139,7 @@ local f_function_y = [[
     end
 ]]
 
-local f_color = [[
+local f_color <const> = [[
     local math = math
     local min  = math.min
     local max  = math.max
@@ -189,7 +189,7 @@ mp.lmt_color_functions = {
     end,
 }
 
-local f_box = [[draw rawtexbox("contour",%s) xysized (%s,%s) ;]]
+local f_box <const> = [[draw rawtexbox("contour",%s) xysized (%s,%s) ;]]
 
 local n_box = 0
 
@@ -1376,8 +1376,8 @@ function mp.lmt_contours_maxz     (i) return getparameterset().result.maxz end
 function mp.lmt_contours_minmean  (i) return getparameterset().result.minmean end
 function mp.lmt_contours_maxmean  (i) return getparameterset().result.maxmean end
 
-local f_x_range = formatting("x = [%.3N,%.3N] ;")
-local f_y_range = formatting("y = [%.3N,%.3N] ;")
+local f_x_range <const> = formatting("x = [%.3N,%.3N] ;")
+local f_y_range <const> = formatting("y = [%.3N,%.3N] ;")
 
 function mp.lmt_contours_xrange   ()  local p = getparameterset() mpstring(formatted(f_x_range,p.xmin,p.xmax)) end
 function mp.lmt_contours_yrange   ()  local p = getparameterset() mpstring(formatted(f_y_range,p.ymin,p.ymax)) end
@@ -1797,14 +1797,14 @@ end
 
 local sqrt, sin, cos = math.sqrt, math.sin, math.cos
 
-local f_fill_rgb = formatting("F (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N) ;")
-local f_draw_rgb = formatting("D (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor %.3F ;")
-local f_mesh_rgb = formatting("U (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N) ;")
-local f_fill_cmy = formatting("F (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N,0) ;")
-local f_draw_cmy = formatting("D (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor %.3F ;")
-local f_mesh_cmy = formatting("U (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N,0) ;")
+local f_fill_rgb <const> = formatting("F (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N) ;")
+local f_draw_rgb <const> = formatting("D (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor %.3F ;")
+local f_mesh_rgb <const> = formatting("U (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N) ;")
+local f_fill_cmy <const> = formatting("F (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N,0) ;")
+local f_draw_cmy <const> = formatting("D (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor %.3F ;")
+local f_mesh_cmy <const> = formatting("U (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N,0) ;")
 
-local f_function_n = [[
+local f_function_n <const> = [[
     local math  = math
     local round = math.round
     %s
@@ -1813,7 +1813,7 @@ local f_function_n = [[
     end
 ]]
 
-local f_function_y = [[
+local f_function_y <const> = [[
     local math  = math
     local round = math.round
     local nan   = NaN
@@ -1842,7 +1842,7 @@ local f_function_y = [[
 end
 ]]
 
-local f_color = [[
+local f_color <const> = [[
      local math = math
      local min  = math.min
      local max  = math.max

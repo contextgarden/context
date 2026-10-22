@@ -81,7 +81,7 @@ typedef enum security_actions {
 typedef enum security_targets {
     security_generic    = 0x00,
     security_readable   = 0x01,
-    security_writeable  = 0x02,
+    security_writable   = 0x02,
     security_executable = 0x03,
     security_library    = 0x04,
     security_loadable   = 0x05,

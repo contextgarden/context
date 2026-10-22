@@ -35,7 +35,7 @@
 \registerctxluafile{font-fmp}{autosuffix}
 \registerctxluafile{font-agl}{}           % if needed we can comment this and delay loading
 \registerctxluafile{font-cid}{}           % cid maps
-\registerctxluafile{font-map}{}
+\registerctxluafile{font-map}{autosuffix}
 
 % helpers
 
@@ -47,7 +47,7 @@
 \registerctxluafile{font-hsh}{autosuffix} % hashes used by context
 \registerctxluafile{font-vfc}{autosuffix}
 \registerctxluafile{font-prv}{}           % needs hashes
-\registerctxluafile{font-vir}{}
+\registerctxluafile{font-vir}{autosuffix}
 \registerctxluafile{font-nod}{}
 \registerctxluafile{font-oti}{}           % otf initialization
 \registerctxluafile{font-ott}{}           % otf tables (first)
@@ -126,7 +126,7 @@
 \registerctxluafile{font-imp-effects}{autosuffix}
 \registerctxluafile{font-imp-quality}{autosuffix}
 \registerctxluafile{font-imp-italics}{autosuffix}
-\registerctxluafile{font-imp-dimensions}{}
+\registerctxluafile{font-imp-dimensions}{autosuffix}
 \registerctxluafile{font-imp-spacekerns}{}
 \registerctxluafile{font-imp-tweaks}{}
 \registerctxluafile{font-imp-combining}{}

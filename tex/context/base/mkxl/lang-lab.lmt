@@ -40,13 +40,13 @@ labels.split = split
 
 local contextsprint      = context.sprint
 
-local f_setlabeltextpair = "\\setlabeltextpair{%s}{%s}{%s}{%s}{%s}"
-local f_key_key          = "\\v!%s:\\v!%s"
-local f_key_raw          = "\\v!%s:%s"
-local f_raw_key          = "%s:\\v!%s"
-local f_raw_raw          = "%s:%s"
-local f_key              = "\\v!%s"
------ f_raw              = "%s"
+local f_setlabeltextpair <const> = "\\setlabeltextpair{%s}{%s}{%s}{%s}{%s}"
+local f_key_key          <const> = "\\v!%s:\\v!%s"
+local f_key_raw          <const> = "\\v!%s:%s"
+local f_raw_key          <const> = "%s:\\v!%s"
+local f_raw_raw          <const> = "%s:%s"
+local f_key              <const> = "\\v!%s"
+----- f_raw              <const> = "%s"
 
 -- setmacro("\??label#1:\reallanguagetag{#2}:#3","{{#4}{#5}}}") -- class tag key left right
 

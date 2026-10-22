@@ -16,9 +16,10 @@ local nspaces = string.hashes.spaces
 local concat = table.concat
 local xmltext = xml.text
 local undent = buffers.undent
+local formatted = string.formatted
 
-local f_entity = string.formatters["&x%X;"]
-local f_blob   = string.formatters['<?xml version="2.0"?>\n\n<!-- formula %i -->\n\n%s']
+local f_entity <const> = "&x%X;"
+local f_blob   <const> = '<?xml version="2.0"?>\n\n<!-- formula %i -->\n\n%s'
 
 local report_tags = logs.reporter("structure","tags")
 
@@ -32,7 +33,7 @@ local function unmath(s)
         local bi = utfbyte(ti)
         if bi > 0xFFFF then
             local ch = back[bi]
-            t[i] = ch and utfchar(ch) or f_entity(bi)
+            t[i] = ch and utfchar(ch) or formatted(f_entity,bi)
         end
     end
     s = concat(t)
@@ -66,7 +67,7 @@ local function getblob(n)
                 local index = tonumber(c.at.n)
                 local data  = beautify(xmltext(c,"math") or "")
                 if index and data then
-                    all[index] = f_blob(index,data)
+                    all[index] = formatted(f_blob,index,data)
                 else
                     report_tags("no formula content id")
                 end

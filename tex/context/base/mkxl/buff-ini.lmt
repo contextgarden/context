@@ -51,7 +51,6 @@ local getnextchar       = tokens.scanners.nextchar
 
 local settings_to_array = utilities.parsers.settings_to_array
 
------ formatters        = string.formatters
 local formatted         = string.formatted
 
 local addsuffix         = file.addsuffix
@@ -755,7 +754,7 @@ local function getbuffer(name)
 end
 
 local function getbuffermkvi(name) -- rather direct !
-    ctx_viafile(resolvers.macros.preprocessed(getcontent(name)),formatters["buffer.%s.mkiv"](validstring(name,"noname")))
+    ctx_viafile(resolvers.macros.preprocessed(getcontent(name)),formatted("buffer.%s.mkiv",validstring(name,"noname")))
 end
 
 local function getbuffertex(name)

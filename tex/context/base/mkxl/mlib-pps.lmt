@@ -72,6 +72,8 @@ local cmyktorgb            = colors.cmyktorgb  -- or function() return 0,0,0   e
 local rgbtogray            = colors.rgbtogray  -- or function() return 0       end
 local cmyktogray           = colors.cmyktogray -- or function() return 0       end
 
+-- maybe 0 0 0 0 k 0 0 0 0 K when only cmyk
+
 local nooutercolor         = "0 g 0 G"
 local nooutertransparency  = "/Tr0 gs" -- only when set
 local outercolormode       = 0
@@ -105,21 +107,21 @@ function metapost.setoutercolor(mode,colormodel,colorattribute,transparencyattri
     innertransparency = outertransparency -- not yet used
 end
 
-local f_f     = formatting("%.6N")
-local f_ff    = formatting("%.3N")
-local f_cm    = formatting("%.6N %.6N %.6N %.6N %.6N %.6N cm")
-local f_cm_b  = formatting("q %.6N %.6N %.6N %.6N %.6N %.6N cm")
-local f_scn   = formatting("%.3N")
-local f_shade = formatting("MpSh%s")
+local f_f     <const> = formatting("%.6N")
+local f_ff    <const> = formatting("%.3N")
+local f_cm    <const> = formatting("%.6N %.6N %.6N %.6N %.6N %.6N cm")
+local f_cm_b  <const> = formatting("q %.6N %.6N %.6N %.6N %.6N %.6N cm")
+local f_scn   <const> = formatting("%.3N")
+local f_shade <const> = formatting("MpSh%s")
 
-local s_cm_e <const> = "Q"
+local s_cm_e  <const> = "Q"
 
-local f_gray  = formatting("%.3N g %.3N G")
-local f_rgb   = formatting("%.3N %.3N %.3N rg %.3N %.3N %.3N RG")
-local f_cmyk  = formatting("%.3N %.3N %.3N %.3N k %.3N %.3N %.3N %.3N K")
-local f_spot  = formatting("/%s cs /%s CS %s SCN %s scn")
+local f_gray  <const> = formatting("%.3N g %.3N G")
+local f_rgb   <const> = formatting("%.3N %.3N %.3N rg %.3N %.3N %.3N RG")
+local f_cmyk  <const> = formatting("%.3N %.3N %.3N %.3N k %.3N %.3N %.3N %.3N K")
+local f_spot  <const> = formatting("/%s cs /%s CS %s SCN %s scn")
 
-local function checked_color_none(r,g,b)
+local function checked_color_none()
     return innercolor, outercolor
 end
 
@@ -391,6 +393,9 @@ function models.all(cr)
             if c == m and m == y and y == 0 then
                 k = 1 - k
                 return checked_color_gray(k)
+-- elseif c == m and m == y and k == 0 then
+--     k = 1 - c
+--     return checked_color_gray(k)
             else
                 return checked_color_cmyk(c,m,y,k)
             end
@@ -437,6 +442,9 @@ function models.rgb(cr)
             if c == m and m == y and y == 0 then
                 k = 1 - k
                 return checked_color_gray(k)
+-- elseif c == m and m == y and k == 0 then
+--     k = 1 - c
+--     return checked_color_gray(k)
             else
                 local r, g, b = cmyktorgb(c,m,y,k)
                 return checked_color_rgb(r,g,b)
@@ -483,6 +491,9 @@ function models.cmyk(cr)
             if c == m and m == y and y == 0 then
                 k = 1 - k
                 return checked_color_gray(k)
+-- elseif c == m and m == y and k == 0 then
+--     k = 1 - c
+--     return checked_color_gray(k)
             else
                 return checked_color_cmyk(c,m,y,k)
             end
@@ -834,15 +845,15 @@ local tx_reset, tx_process  do
         end
     end
 
-    local fmt = "%s %s %s % t"
-    local pat = lpeg.tsplitter(":",tonumber) -- so that %F can do its work
+    local fmt <const> = "%s %s %s % t"
+    local pat         = lpeg.tsplitter(":",tonumber) -- so that %F can do its work
 
-    local f_gray_yes = formatting("s=%.3N,a=%i,t=%.3N")
-    local f_gray_nop = formatting("s=%.3N")
-    local f_rgb_yes  = formatting("r=%.3N,g=%.3N,b=%.3N,a=%.3N,t=%.3N")
-    local f_rgb_nop  = formatting("r=%.3N,g=%.3N,b=%.3N")
-    local f_cmyk_yes = formatting("c=%.3N,m=%.3N,y=%.3N,k=%.3N,a=%.3N,t=%.3N")
-    local f_cmyk_nop = formatting("c=%.3N,m=%.3N,y=%.3N,k=%.3N")
+    local f_gray_yes <const> = formatting("s=%.3N,a=%i,t=%.3N")
+    local f_gray_nop <const> = formatting("s=%.3N")
+    local f_rgb_yes  <const> = formatting("r=%.3N,g=%.3N,b=%.3N,a=%.3N,t=%.3N")
+    local f_rgb_nop  <const> = formatting("r=%.3N,g=%.3N,b=%.3N")
+    local f_cmyk_yes <const> = formatting("c=%.3N,m=%.3N,y=%.3N,k=%.3N,a=%.3N,t=%.3N")
+    local f_cmyk_nop <const> = formatting("c=%.3N,m=%.3N,y=%.3N,k=%.3N")
 
     local ctx_MPLIBsetNtext = context.MPLIBsetNtextX
     local ctx_MPLIBsetCtext = context.MPLIBsetCtextX

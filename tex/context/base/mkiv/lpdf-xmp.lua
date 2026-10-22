@@ -302,9 +302,9 @@ local function flushxmpinfo()
         pdfaddxmpinfo("CreateDate",time)
         pdfaddxmpinfo("ModifyDate",time)
         pdfaddxmpinfo("MetadataDate",time)
-        pdfaddxmpinfo("LuaTeX.Version",metadata.luatexversion)
-        pdfaddxmpinfo("LuaTeX.Functionality",metadata.luatexfunctionality)
-        pdfaddxmpinfo("LuaTeX.LuaVersion",metadata.luaversion)
+        pdfaddxmpinfo("LuaTeX.Version",tostring(metadata.luatexversion))
+        pdfaddxmpinfo("LuaTeX.Functionality",tostring(metadata.luatexfunctionality))
+        pdfaddxmpinfo("LuaTeX.LuaVersion",tostring(metadata.luaversion))
         pdfaddxmpinfo("LuaTeX.Platform",metadata.platform)
 
         -- checks for empty:

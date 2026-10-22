@@ -13,9 +13,12 @@ if not modules then modules = { } end modules ['mlib-eff'] = {
 
 local type, tonumber, load = type, tonumber, load
 
-local report = logs.reporter("metapost","effect")
+local report           = logs.reporter("metapost","effect")
 
-local registerdirect = metapost.registerdirect
+local formatted        = string.formatted
+
+local registerdirect   = metapost.registerdirect
+local getparameterset  = metapost.getparameterset
 
 local scannumber       = mp.scan.number
 local injectnumber     = mp.inject.number
@@ -26,25 +29,25 @@ local getbytemapdata   = mp.getbytemapdata
 local loadbytemapfile  = mp.loadbytemapfile
 local setbytemapoctave = mp.setbytemapoctave
 
-local perlinnoise     = effects.perlinnoise
-local simplexnoise    = effects.simplexnoise
-local worleynoise     = effects.worleynoise
-local browniannoise   = effects.browniannoise
+local perlinnoise      = effects.perlinnoise
+local simplexnoise     = effects.simplexnoise
+local worleynoise      = effects.worleynoise
+local browniannoise    = effects.browniannoise
 
--- local perlinoctave    = effects.perlinoctave
--- local simplexoctave   = effects.simplexoctave
--- local angleoctave     = effects.angleoctave
--- local detailoctave    = effects.detailoctave
+----- perlinoctave     = effects.perlinoctave
+----- simplexoctave    = effects.simplexoctave
+----- angleoctave      = effects.angleoctave
+----- detailoctave     = effects.detailoctave
 
-local directoctave    = effects.octave
-local octavebytemap   = effects.octavebytemap
+local directoctave     = effects.octave
+local octavebytemap    = effects.octavebytemap
 
-local newoctave       = effects.newoctave
-local stepoctave      = effects.stepoctave
+local newoctave        = effects.newoctave
+local stepoctave       = effects.stepoctave
 
-local octavemethods   = effects.getoctavemethods()
-local octaveloops     = effects.getoctaveloops()
-local octavevariants  = effects.getoctavevariants()
+local octavemethods    = effects.getoctavemethods()
+local octaveloops      = effects.getoctaveloops()
+local octavevariants   = effects.getoctavevariants()
 
 local function noise(method)
     injectnumber(method(
@@ -77,9 +80,7 @@ registerdirect("browniannoise", function() noise(browniannoise) end)
 -- registerdirect("perlinoctave",  function() noise(perlinoctave)  end)
 -- registerdirect("simplexoctave", function() noise(simplexoctave) end)
 
-local getparameterset = metapost.getparameterset
-
-local f_function = [[
+local f_function <const> = [[
     local math  = math
     local round = math.round
     %s
@@ -124,7 +125,7 @@ function mp.lmt_noise_do()
         action = MP[colorfunction]
     end
     if type(action) ~= "function" and colorcode ~= "" then
-        colorcode = string.formatters[f_function](preamble,colorcode)
+        colorcode = formatted(f_function,preamble,colorcode)
         action = load(colorcode)
         if type(action) == "function" then
             action = action()

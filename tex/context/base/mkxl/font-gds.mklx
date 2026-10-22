@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Font Support / Colorschemes}
 
-%registerctxluafile{font-gds}{}
+%registerctxluafile{font-gds}{autosuffix}
 
 \unprotect
 

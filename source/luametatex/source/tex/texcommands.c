@@ -69,8 +69,7 @@ const unsigned char some_item_classification[] = {
     [luametatex_major_version_code]      = classification_no_arguments,
     [luametatex_minor_version_code]      = classification_no_arguments,
     [luametatex_release_code]            = classification_no_arguments,
-    [luatex_version_code]                = classification_no_arguments,
-    [luatex_revision_code]               = classification_no_arguments,
+    [luametatex_version_code]            = classification_no_arguments,
     [current_group_level_code]           = classification_no_arguments,
     [current_group_type_code]            = classification_no_arguments,
     [current_stack_size_code]            = classification_no_arguments,
@@ -228,7 +227,7 @@ const unsigned char some_convert_classification[] = {
     [font_specification_code]  = classification_integer,
     [job_name_code]            = classification_no_arguments,
     [format_name_code]         = classification_no_arguments,
-    [luatex_banner_code]       = classification_no_arguments,
+    [luametatex_banner_code]   = classification_no_arguments,
     [font_identifier_code]     = classification_integer,
 };
 
@@ -1011,8 +1010,7 @@ void tex_initialize_commands(void)
         tex_primitive(luametatex_command, no_legacy,       "luametatexmajorversion",         some_item_cmd,          luametatex_major_version_code,            0);
         tex_primitive(luametatex_command, no_legacy,       "luametatexminorversion",         some_item_cmd,          luametatex_minor_version_code,            0);
         tex_primitive(luametatex_command, no_legacy,       "luametatexrelease",              some_item_cmd,          luametatex_release_code,                  0);
-        tex_primitive(luatex_command,     no_legacy,       "luatexrevision",                 some_item_cmd,          luatex_revision_code,                     0);
-        tex_primitive(luatex_command,     no_legacy,       "luatexversion",                  some_item_cmd,          luatex_version_code,                      0);
+        tex_primitive(luametatex_command, no_legacy,       "luametatexversion",              some_item_cmd,          luametatex_version_code,                  0);
      /* tex_primitive(luametatex_command, no_legacy,       "luavaluefunction",               some_item_cmd,          lua_value_function_code,                  0); */
         tex_primitive(luametatex_command, no_legacy,       "mathatomglue",                   some_item_cmd,          math_atom_glue_code,                      0);
         tex_primitive(luametatex_command, no_legacy,       "mathmainstyle",                  some_item_cmd,          math_main_style_code,                     0);
@@ -1079,7 +1077,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command,     no_legacy,       "luabytecode",                    convert_cmd,            lua_bytecode_code,                        0);
         tex_primitive(luatex_command,     no_legacy,       "luaescapestring",                convert_cmd,            lua_escape_string_code,                   0);
         tex_primitive(luatex_command,     no_legacy,       "luafunction",                    convert_cmd,            lua_function_code,                        0);
-        tex_primitive(luatex_command,     no_legacy,       "luatexbanner",                   convert_cmd,            luatex_banner_code,                       0);
+        tex_primitive(luametatex_command, no_legacy,       "luametatexbanner",               convert_cmd,            luametatex_banner_code,                   0);
      /* tex_primitive(luametatex_command, no_legacy,       "luatokenstring",                 convert_cmd,            lua_token_string_code,                    0); */
         tex_primitive(tex_command,        no_legacy,       "meaning",                        convert_cmd,            meaning_code,                             0);
         tex_primitive(luametatex_command, no_legacy,       "meaningasis",                    convert_cmd,            meaning_asis_code,                        0); /* for manuals and articles */

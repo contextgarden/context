@@ -14,7 +14,9 @@ local starttiming       = statistics.starttiming
 local stoptiming        = statistics.stoptiming
 
 local texgetbox         = tex.getbox
-local formatters        = string.formatters
+
+local formatting        = string.formatting
+local formatted         = string.formatted
 
 local rulecodes         = nodes.rulecodes
 
@@ -44,11 +46,11 @@ end
 
 -- todo: high efficient helpers:
 
-local f_font    = formatters[ "\\definefont[%s][file:%s*none @ %sbp]\n" ]
+local f_font    <const> = "\\definefont[%s][file:%s*none @ %sbp]\n"
 
-local f_glyph   = formatters[ [[draw textext.drt("\%s\char%i\relax") shifted (%N,%N);]] ]
-local f_rule    = formatters[ [[fill unitsquare xscaled %N yscaled %N shifted (%N,%N);]] ]
-local f_outline = formatters[ [[draw unitsquare xscaled %N yscaled %N shifted (%N,%N);]] ]
+local f_glyph   <const> = formatting([[draw textext.drt("\%s\char%i\relax") shifted (%N,%N);]])
+local f_rule    <const> = formatting([[fill unitsquare xscaled %N yscaled %N shifted (%N,%N);]])
+local f_outline <const> = formatting([[draw unitsquare xscaled %N yscaled %N shifted (%N,%N);]])
 
 -- actions
 
@@ -66,7 +68,7 @@ local function save() -- might become a driver function that already is plugged 
         buffer[b] = "\\starttext\n"
         for k, v in table.sortedhash(fonts) do
             b = b + 1
-            buffer[b] = f_font(v.name,v.filename,v.size)
+            buffer[b] = formatted(f_font,v.name,v.filename,v.size)
         end
         for i=1,#pages do
             b = b + 1
@@ -131,16 +133,16 @@ end
 
 local function flushcharacter(current, pos_h, pos_v, pos_r, font, char)
     b = b + 1
-    buffer[b] = f_glyph(last,char,pos_h*bpfactor,pos_v*bpfactor)
+    buffer[b] = formatted(f_glyph,last,char,pos_h*bpfactor,pos_v*bpfactor)
 end
 
 local function flushrule(current, pos_h, pos_v, pos_r, size_h, size_v, subtype)
     if subtype == normalrule_code then
         b = b + 1
-        buffer[b] = f_rule(size_h*bpfactor,size_v*bpfactor,pos_h*bpfactor,pos_v*bpfactor)
+        buffer[b] = formatted(f_rule,size_h*bpfactor,size_v*bpfactor,pos_h*bpfactor,pos_v*bpfactor)
     elseif subtype == outlinerule_code then
         b = b + 1
-        buffer[b] = f_outline(size_h*bpfactor,size_v*bpfactor,pos_h*bpfactor,pos_v*bpfactor)
+        buffer[b] = formatted(f_outline,size_h*bpfactor,size_v*bpfactor,pos_h*bpfactor,pos_v*bpfactor)
     end
 end
 
@@ -180,11 +182,10 @@ drivers.install {
 --     return
 -- end
 --
--- local mpprint    = mp.print
--- local formatters = string.formatters
+-- local mpprint = mp.print
 --
--- local f_glyph = formatters[ [[draw textext.drt("\setfontid%i\relax\char%i\relax") shifted (%N,%N);]] ]
--- local f_rule  = formatters[ [[fill unitsquare xscaled %N yscaled %N shifted (%N,%N);]] ]
+-- local f_glyph <const> = formatting([[draw textext.drt("\setfontid%i\relax\char%i\relax") shifted (%N,%N);]])
+-- local f_rule  <const> = formatting([[fill unitsquare xscaled %N yscaled %N shifted (%N,%N);]])
 --
 -- local current = nil
 -- local size    = 0
@@ -204,9 +205,9 @@ drivers.install {
 --         local b = buffer[i]
 --         local t = b[1]
 --         if t == "glyph" then
---             mpprint(f_glyph(b[2],b[3],b[4]*bpfactor,b[5]*bpfactor))
+--             mpprint(formatted(f_glyph,b[2],b[3],b[4]*bpfactor,b[5]*bpfactor))
 --         elseif t == "rule" then
---             mpprint(f_rule(b[2]*bpfactor,b[3]*bpfactor,b[4]*bpfactor,b[5]*bpfactor))
+--             mpprint(formatted(f_rule,b[2]*bpfactor,b[3]*bpfactor,b[4]*bpfactor,b[5]*bpfactor))
 --         end
 --     end
 -- end

@@ -270,11 +270,35 @@ function fio.readdoublele ( <t:file> handle ) return <t:number>  end
 \stoptyping
 
 Of these two the first reads a line and the second a string the \CCODE\ way, so
-ending with a newline and null character:
+ending with a newline and null character. The third one reads \type {n} bytes but
+will clip the string to its natural length:
 
 \starttyping[option=LUA]
-function fio.readcline   ( <t:file> handle ) return <t:string> end
-function fio.readcstring ( <t:file> handle ) return <t:string> end
+function fio.readcline   (
+    <t:file> handle
+)
+    return
+        <t:string>,  -- data
+        <t:integer>  -- position
+end
+
+function fio.readcstring (
+    <t:file> handle
+)
+    return
+        <t:string>,  -- data
+        <t:integer>  -- position
+end
+
+function fio.readnstring (
+    <t:file>    handle,
+    <t:integer> n
+)
+    return
+        <t:string>,  -- data
+        <t:integer>  -- position
+
+end
 \stoptyping
 
 The next set of readers reads multiple integers in one call:
@@ -285,9 +309,7 @@ function fio.readbytes (
 )
     return <t:integer> -- one or more
 end
-\stoptyping
 
-\starttyping[option=LUA]
 function fio.readintegertable (
     <t:file>    handle,
     <t:integer> size,
@@ -393,6 +415,43 @@ function sio.readcline   ( <t:string> s, <t:integer> p ) return <t:string> end
 function sio.readcstring ( <t:string> s, <t:integer> p ) return <t:string> end
 \stoptyping
 
+As with their \typ {fio} counterparts, the two the first reads a line and the
+second a string the \CCODE\ way, so ending with a newline and null character. The
+third one reads \type {n} bytes but will clip the string to its natural length:
+
+\starttyping[option=LUA]
+function sio.readcline   (
+    <t:string>  data,
+    <t:integer> position
+)
+    return
+        <t:string>,  -- data
+        <t:integer>  -- position
+end
+
+function sio.readcstring (
+    <t:string>  data,
+    <t:integer> position
+)
+    return
+        <t:string>,  -- data
+        <t:integer>  -- position
+end
+
+function sio.readnstring (
+    <t:string>  data,
+    <t:integer> position
+    <t:integer> n
+)
+    return
+        <t:string>,  -- data
+        <t:integer>  -- position
+
+end
+\stoptyping
+
+These are similar ot the \type {fio} variants:
+
 \starttyping[option=LUA]
 function sio.readbytes (
     <t:string>  str,
@@ -400,9 +459,7 @@ function sio.readbytes (
 )
     return <t:integer> -- one or more
 end
-\stoptyping
 
-\starttyping[option=LUA]
 function sio.readintegertable (
     <t:string>  str,
     <t:integer> pos,
@@ -557,6 +614,12 @@ local currentname = os.name
 On \MSWINDOWS\ the original \type {os.rename}, \type {os.remove} and \type
 {os.getenv} functions are replaced by variants that interface to and convert from
 \UNICODE16\ to \UTF8.
+
+And talking of \MSWINDOWS\ versus the rest, we also have this:
+
+\starttyping[option=LUA]
+local fileseparator, pathseparator = os.getseparators()
+\stoptyping
 
 \stopsubsection
 
@@ -1734,12 +1797,16 @@ function xmath.atan2      ( <t:number> a, <t:number> b ) return <t:number> end
 function xmath.atanh      ( <t:number> a )               return <t:number> end
 function xmath.cbrt       ( <t:number> a )               return <t:number> end
 function xmath.ceil       ( <t:number> a )               return <t:number> end
+function xmath.clamp      ( <t:number> a ... c         ) return <t:number> end
 function xmath.copysign   ( <t:number> a, <t:number> b ) return <t:number> end
 function xmath.cos        ( <t:number> a )               return <t:number> end
+function xmath.cosd       ( <t:number> a )               return <t:number> end
 function xmath.cosh       ( <t:number> a )               return <t:number> end
+function xmath.div        ( <t:number> a, <t:number> b ) return <t:number> end
 function xmath.deg        ( <t:number> a )               return <t:number> end
 function xmath.erf        ( <t:number> a )               return <t:number> end
 function xmath.erfc       ( <t:number> a )               return <t:number> end
+function xmath.even       ( <t:number> a )               return <t:number> end
 function xmath.exp        ( <t:number> a )               return <t:number> end
 function xmath.exp2       ( <t:number> a )               return <t:number> end
 function xmath.expm1      ( <t:number> a )               return <t:number> end
@@ -1748,6 +1815,7 @@ function xmath.fdim       ( <t:number> a, <t:number> b ) return <t:number> end
 function xmath.floor      ( <t:number> a )               return <t:number> end
 function xmath.fmax       ( ... )                        return <t:number> end
 function xmath.fmin       ( ... )                        return <t:number> end
+function xmath.mod        ( <t:number> a, <t:number> b ) return <t:number> end
 function xmath.fmod       ( <t:number> a, <t:number> b ) return <t:number> end
 function xmath.frexp      ( <t:number> a, <t:number> b ) return <t:number> end
 function xmath.gamma      ( <t:number> a )               return <t:number> end
@@ -1760,6 +1828,7 @@ function xmath.j0         ( <t:number> a )               return <t:number> end
 function xmath.j1         ( <t:number> a )               return <t:number> end
 function xmath.jn         ( <t:number> a, <t:number> b ) return <t:number> end
 function xmath.ldexp      ( <t:number> a, <t:number> b ) return <t:number> end
+function xmath.lerp       ( <t:number> a ... c         ) return <t:number> end
 function xmath.lgamma     ( <t:number> a )               return <t:number> end
 function xmath.log        ( <t:number> a [,b])           return <t:number> end
 function xmath.log10      ( <t:number> a )               return <t:number> end
@@ -1769,17 +1838,22 @@ function xmath.logb       ( <t:number> a )               return <t:number> end
 function xmath.modf       ( <t:number> a, <t:number> b ) return <t:number> end
 function xmath.nearbyint  ( <t:number> a )               return <t:number> end
 function xmath.nextafter  ( <t:number> a, <t:number> b ) return <t:number> end
+function xmath.odd        ( <t:number> a, <t:number> b ) return <t:number> end
 function xmath.pow        ( <t:number> a, <t:number> b ) return <t:number> end
 function xmath.rad        ( <t:number> a )               return <t:number> end
 function xmath.remainder  ( <t:number> a, <t:number> b ) return <t:number> end
 function xmath.remquo     ( <t:number> a, <t:number> b ) return <t:number> end
 function xmath.round      ( <t:number> a )               return <t:number> end
+function xmath.rounded    ( <t:number> a, <t:number> b ) return <t:number> end
 function xmath.scalbn     ( <t:number> a, <t:number> b ) return <t:number> end
+function xmath.sign       ( <t:number> a )               return <t:number> end
 function xmath.sin        ( <t:number> a )               return <t:number> end
 function xmath.sinh       ( <t:number> a )               return <t:number> end
+function xmath.sind       ( <t:number> a )               return <t:number> end
 function xmath.sqrt       ( <t:number> a )               return <t:number> end
 function xmath.tan        ( <t:number> a )               return <t:number> end
 function xmath.tanh       ( <t:number> a )               return <t:number> end
+function xmath.tand       ( <t:number> a )               return <t:number> end
 function xmath.tgamma     ( <t:number> a )               return <t:number> end
 function xmath.trunc      ( <t:number> a )               return <t:number> end
 function xmath.y0         ( <t:number> a )               return <t:number> end

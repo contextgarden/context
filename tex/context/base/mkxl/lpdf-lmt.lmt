@@ -787,10 +787,10 @@ tmry             = 1
 
     end
 
-    local f_width = formatting("%.6N w")
-    local f_mode  = formatting("%i Tr")
-    local f_font  = formatting("/F%i 10 Tf")
-    local f_skip  = formatting("%.2N")
+    local f_width <const> = formatting("%.6N w")
+    local f_mode  <const> = formatting("%i Tr")
+    local f_font  <const> = formatting("/F%i 10 Tf")
+    local f_skip  <const> = formatting("%.2N")
 
     local h_font = setmetatableindex(function(t,k) local v = formatted(f_font,k) t[k] = v return v end)
     local h_skip = setmetatableindex(function(t,k) local v = formatted(f_skip,k) t[k] = v return v end)
@@ -1117,8 +1117,8 @@ do
     local nodeproperties = nodes.properties.data
 
     local s_matrix_0 <const> = "1 0 0 1 0 0 cm"
-    local f_matrix_2         = formatting("%.6N 0 0 %.6N 0 0 cm")
-    local f_matrix_4         = formatting("%.6N %.6N %.6N %.6N 0 0 cm")
+    local f_matrix_2 <const> = formatting("%.6N 0 0 %.6N 0 0 cm")
+    local f_matrix_4 <const> = formatting("%.6N %.6N %.6N %.6N 0 0 cm")
 
     local flushsetmatrix = function(current,pos_h,pos_v)
         local p = nodeproperties[current]
@@ -1342,30 +1342,30 @@ do
 
     local processrule       = nodes.rules.process
 
-    local f_fm = "/Fm%d Do"
-    local f_im = "/Im%d Do"
-    local f_gr = "/Gp%d Do"
-    local f_st = "/Gs%d gs"
+    local f_fm  <const> = "/Fm%d Do"
+    local f_im  <const> = "/Im%d Do"
+    local f_gr  <const> = "/Gp%d Do"
+    local f_st  <const> = "/Gs%d gs"
 
-    local s_b <const> = "q"
-    local s_e <const> = "Q"
+    local s_b   <const> = "q"
+    local s_e   <const> = "Q"
 
-    local f_v   = formatting("[] 0 d 0 J %.6N w 0 0 m %.6N 0 l S")
-    local f_h   = formatting("[] 0 d 0 J %.6N w 0 0 m 0 %.6N l S")
+    local f_v   <const> = formatting("[] 0 d 0 J %.6N w 0 0 m %.6N 0 l S")
+    local f_h   <const> = formatting("[] 0 d 0 J %.6N w 0 0 m 0 %.6N l S")
 
-    local f_f   = formatting("0 0 %.6N %.6N re f")
-    local f_o   = formatting("[] 0 d 0 J 0 0 %.6N %.6N re S")
-    local f_w   = formatting("[] 0 d 0 J %.6N w 0 0 %.6N %.6N re S")
+    local f_f   <const> = formatting("0 0 %.6N %.6N re f")
+    local f_o   <const> = formatting("[] 0 d 0 J 0 0 %.6N %.6N re S")
+    local f_w   <const> = formatting("[] 0 d 0 J %.6N w 0 0 %.6N %.6N re S")
 
-    local f_b   = formatting("%.6N w 0 %.6N %.6N %.6N re f")
-    local f_x   = formatting("[] 0 d 0 J %.6N w %.6N %.6N %.6N %.6N re S")
-    local f_y   = formatting("[] 0 d 0 J %.6N w %.6N %.6N %.6N %.6N re S %.6N 0 m %.6N 0 l S")
+    local f_b   <const> = formatting("%.6N w 0 %.6N %.6N %.6N re f")
+    local f_x   <const> = formatting("[] 0 d 0 J %.6N w %.6N %.6N %.6N %.6N re S")
+    local f_y   <const> = formatting("[] 0 d 0 J %.6N w %.6N %.6N %.6N %.6N re S %.6N 0 m %.6N 0 l S")
 
- -- local f_v_d = formatting("[%.6N %.6N] 0 d 0 J %.6N w 0 0 m %.6N 0 l S")
- -- local f_h_d = formatting("[%.6N %.6N] 0 d 0 J %.6N w 0 0 m 0 %.6N l S")
+ -- local f_v_d <const> = formatting("[%.6N %.6N] 0 d 0 J %.6N w 0 0 m %.6N 0 l S")
+ -- local f_h_d <const> = formatting("[%.6N %.6N] 0 d 0 J %.6N w 0 0 m 0 %.6N l S")
 
-    local f_d_h = formatting("[%.6N %.6N] 0 d 0 J %.6N w 0 %.6N m %.6N %.6N l S")
-    local f_d_v = formatting("[%.6N %.6N] 0 d 0 J %.6N w %.6N 0 m %.6N %.6N l S")
+    local f_d_h <const> = formatting("[%.6N %.6N] 0 d 0 J %.6N w 0 %.6N m %.6N %.6N l S")
+    local f_d_v <const> = formatting("[%.6N %.6N] 0 d 0 J %.6N w %.6N 0 m %.6N %.6N l S")
 
     -- Historically the index is an object which is kind of bad.
 
@@ -2410,11 +2410,11 @@ local finalize  do
     local ceil  = math.ceil
     local floor = math.floor
 
-    local f_font  = "F%d"
-    local f_form  = "Fm%d"
-    local f_group = "Gp%d"
-    local f_image = "Im%d"
-    local f_state = "Gs%d"
+    local f_font  <const> = "F%d"
+    local f_form  <const> = "Fm%d"
+    local f_group <const> = "Gp%d"
+    local f_image <const> = "Im%d"
+    local f_state <const> = "Gs%d"
 
     local function checkedbox(mediabox,otherbox,what)
         if otherbox and #mediabox == 4 and #otherbox == 4 then
@@ -2681,22 +2681,22 @@ local info          = ""
 local catalog       = ""
 local lastdeferred  = false
 
-local f_object       = formatting("%i 0 obj\010%s\010endobj\010")
-local f_stream_n_u   = formatting("%i 0 obj\010<< /Length %i >>\010stream\010%s\010endstream\010endobj\010")
-local f_stream_n_c   = formatting("%i 0 obj\010<< /Filter /FlateDecode /Length %i >>\010stream\010%s\010endstream\010endobj\010")
-local f_stream_d_u   = formatting("%i 0 obj\010<< %s /Length %i >>\010stream\010%s\010endstream\010endobj\010")
-local f_stream_d_c   = formatting("%i 0 obj\010<< %s /Filter /FlateDecode /Length %i >>\010stream\010%s\010endstream\010endobj\010")
-local f_stream_d_r   = formatting("%i 0 obj\010<< %s >>\010stream\010%s\010endstream\010endobj\010")
+local f_object       <const> = formatting("%i 0 obj\010%s\010endobj\010")
+local f_stream_n_u   <const> = formatting("%i 0 obj\010<< /Length %i >>\010stream\010%s\010endstream\010endobj\010")
+local f_stream_n_c   <const> = formatting("%i 0 obj\010<< /Filter /FlateDecode /Length %i >>\010stream\010%s\010endstream\010endobj\010")
+local f_stream_d_u   <const> = formatting("%i 0 obj\010<< %s /Length %i >>\010stream\010%s\010endstream\010endobj\010")
+local f_stream_d_c   <const> = formatting("%i 0 obj\010<< %s /Filter /FlateDecode /Length %i >>\010stream\010%s\010endstream\010endobj\010")
+local f_stream_d_r   <const> = formatting("%i 0 obj\010<< %s >>\010stream\010%s\010endstream\010endobj\010")
 
------ f_object_b     = formatting("%i 0 obj\010")
-local f_stream_b_n_u = formatting("%i 0 obj\010<< /Length %i >>\010stream\010")
-local f_stream_b_n_c = formatting("%i 0 obj\010<< /Filter /FlateDecode /Length %i >>\010stream\010")
-local f_stream_b_d_u = formatting("%i 0 obj\010<< %s /Length %i >>\010stream\010")
-local f_stream_b_d_c = formatting("%i 0 obj\010<< %s /Filter /FlateDecode /Length %i >>\010stream\010")
-local f_stream_b_d_r = formatting("%i 0 obj\010<< %s >>\010stream\010")
+----- f_object_b     <const> = formatting("%i 0 obj\010")
+local f_stream_b_n_u <const> = formatting("%i 0 obj\010<< /Length %i >>\010stream\010")
+local f_stream_b_n_c <const> = formatting("%i 0 obj\010<< /Filter /FlateDecode /Length %i >>\010stream\010")
+local f_stream_b_d_u <const> = formatting("%i 0 obj\010<< %s /Length %i >>\010stream\010")
+local f_stream_b_d_c <const> = formatting("%i 0 obj\010<< %s /Filter /FlateDecode /Length %i >>\010stream\010")
+local f_stream_b_d_r <const> = formatting("%i 0 obj\010<< %s >>\010stream\010")
 
------ s_object_e <const> = "\010endobj\010"
-local s_stream_e <const> = "\010endstream\010endobj\010"
+----- s_object_e     <const> = "\010endobj\010"
+local s_stream_e     <const> = "\010endstream\010endobj\010"
 
 do
 
@@ -3335,15 +3335,15 @@ local openfile, closefile  do
     -- (say xml) would be even larger let alone memory consumption for the internal data structures
     -- and processing power needed for dealing with rendering and editing and such.
 
-    local f_used       = formatting("%010i 00000 n\013\010")
-    local f_link       = formatting("%010i 00000 f\013\010")
-    local f_first      = formatting("%010i 65535 f\013\010")
+    local f_used       <const> = formatting("%010i 00000 n\013\010")
+    local f_link       <const> = formatting("%010i 00000 f\013\010")
+    local f_first      <const> = formatting("%010i 65535 f\013\010")
 
-    local f_pdf_tag    = formatting("%%PDF-%i.%i\010")
-    local f_xref       = formatting("xref\0100 %i\010")
-    local f_trailer_id = formatting("trailer\010<< %s /ID [ <%s> <%s> ] >>\010startxref\010%i\010%%%%EOF")
-    local f_trailer_no = formatting("trailer\010<< %s >>\010startxref\010%i\010%%%%EOF")
-    local f_startxref  = formatting("startxref\010%i\010%%%%EOF")
+    local f_pdf_tag    <const> = formatting("%%PDF-%i.%i\010")
+    local f_xref       <const> = formatting("xref\0100 %i\010")
+    local f_trailer_id <const> = formatting("trailer\010<< %s /ID [ <%s> <%s> ] >>\010startxref\010%i\010%%%%EOF")
+    local f_trailer_no <const> = formatting("trailer\010<< %s >>\010startxref\010%i\010%%%%EOF")
+    local f_startxref  <const> = formatting("startxref\010%i\010%%%%EOF")
 
     local inmemory = false
     local close    = false
@@ -3910,7 +3910,6 @@ end
 
 do
 
- -- local addsuffix  = file.addsuffix
     local texgetbox  = tex.getbox
 
     local pdfname    = nil
@@ -3921,19 +3920,6 @@ do
         return pdfname
     end
 
--- local outputfilename ; do -- old todo usedname in ^^
---     local filename = nil
---     outputfilename = function(driver,usedname)
---         if usedname and usedname ~= "" then
---             filename = addsuffix(usedname,"pdf")
---         elseif not filename or filename == "" then
---             filename = addsuffix(tex.jobname,"pdf")
---         end
---         return filename
---     end
--- end
-
-    -- todo: prevent twice
     local function prepare(driver)
         if not environment.initex then
             --
@@ -3941,6 +3927,8 @@ do
             --
             pdfname = tex.jobname .. ".pdf"
             openfile(pdfname)
+            --
+local usedpdfname = pdfname
             --
             luatex.registerstopactions(1,function()
                 if pdfname then
@@ -3963,8 +3951,9 @@ do
                 local outputfilename = environment.outputfilename or environment.jobname or tex.jobname or "<unset>"
                 outputfilename = gsub(outputfilename,"^%./+","") -- todo: make/use a helper
                 return formatted(
-                    "%s.pdf, compresslevel %s, objectcompresslevel %s, %i streams, %i uncompressed, %i compressed, %i not compressed, threshold %i",
-                    outputfilename,
+                    "%s, compresslevel %s, objectcompresslevel %s, %i streams, %i uncompressed, %i compressed, %i not compressed, threshold %i",
+--                     outputfilename,
+usedpdfname,
                     status.compresslevel,
                     status.objectcompresslevel,
                     status.nofstreams or 0,

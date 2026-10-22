@@ -382,7 +382,7 @@ function io.ask(question,default,options)
         if default then
             write(format(" [%s]",default))
         end
-        write(format(" "))
+        write(" ")
         flush()
         local answer = read()
         answer = gsub(answer,"^%s*(.*)%s*$","%1")

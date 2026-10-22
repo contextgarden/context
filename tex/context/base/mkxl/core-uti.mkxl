@@ -15,7 +15,7 @@
 
 \unprotect
 
-\registerctxluafile{core-uti}{}
+\registerctxluafile{core-uti}{autosuffix}
 
 % savecurrentvalue#1#2% immediate, expanded, defined at lua end
 

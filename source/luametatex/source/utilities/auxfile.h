@@ -69,8 +69,8 @@
     - lfs setexecutable         : done (needs testing)
     - lfs isdir                 : done
     - lfs isfile                : done
-    - lfs iswriteabledir        : done
-    - lfs iswriteablefile       : done
+    - lfs iswritabledir         : done
+    - lfs iswritablefile        : done
     - lfs isreadabledir         : done
     - lfs isreadablefile        : done
     \stoptyping

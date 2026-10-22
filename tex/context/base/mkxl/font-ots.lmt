@@ -356,9 +356,9 @@ end
 
 local gref  do
 
-    local f_unicode = "U+%X"      -- was ["%U"]
-    local f_uniname = "U+%X (%s)" -- was ["%U (%s)"]
-    local f_unilist = "% t"
+    local f_unicode <const> = "U+%X"      -- was ["%U"]
+    local f_uniname <const> = "U+%X (%s)" -- was ["%U (%s)"]
+    local f_unilist <const> = "% t"
 
     gref = function(n) -- currently the same as in font-otb
         if type(n) == "number" then

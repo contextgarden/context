@@ -15,7 +15,7 @@
 
 \writestatus{loading}{ConTeXt Tracing Macros / Buildpoints}
 
-\registerctxluafile{trac-bld}{}
+\registerctxluafile{trac-bld}{autosuffix}
 
 \unprotect
 

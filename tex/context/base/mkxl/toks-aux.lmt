@@ -62,7 +62,6 @@ do
         public    = true,
         protected = true,
         actions   = function()
-            local f0 = formatters["%s: %s"]
             local nl = logs.newline
             local wr = logs.writer
             local t  = token.peeknext() -- local t = token.scannext() token.putback(t)
@@ -109,7 +108,7 @@ do
                 end
                 w = concat(r, " ")
             end
-            wr(f0(w,n))
+            wr(formatted("%s: %s",w,n))
             nl()
             if type(t) == "table" then
                 local w1 = 4

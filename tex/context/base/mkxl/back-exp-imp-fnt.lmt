@@ -18,18 +18,19 @@ if not modules then modules = { } end modules ['back-exp-imp-fnt'] = {
 -- distributions ship.
 
 local sortedhash, concat = table.sortedhash, table.concat
-local formatters = string.formatters
 local addsuffix, replacesuffix = file.addsuffix, file.replacesuffix
 
 local structurestags = structures.tags
 local backend        = structurestags.backend
 
+local formatted      = string.formatted
+
 do
 
     local s_fontface_b <const> = "@font-face {"
-    local f_fontface_f         = formatters["  font-family: %q ;"]
-    local f_fontface_s         = formatters["  src: %, t ;"]
-    local f_fontface_u         = formatters['url("%s")']
+    local f_fontface_f <const> = "  font-family: %q ;"
+    local f_fontface_s <const> = "  src: %, t ;"
+    local f_fontface_u <const> = 'url("%s")'
     local s_fontface_e <const> = "}"
 
     local mapping = {
@@ -139,17 +140,17 @@ do
                 local wofffound = resolvers.findfile(woffname) or ""
                 if woff2 and wofffound ~= "" then
                     local fullname = path .. woffname
-                    list[#list+1] = f_fontface_u(fullname)
+                    list[#list+1] = formatted(f_fontface_u,fullname)
                     used[fullname] = { path, woffname, wofffound }
                 else
                     local fullname = path .. filename
-                    list[#list+1] = f_fontface_u(fullname)
+                    list[#list+1] = formatted(f_fontface_u,fullname)
                     used[fullname] = { path, filename, filefound }
                 end
                 --
                 r = r + 1 ; result[r] = s_fontface_b
-                r = r + 1 ; result[r] = f_fontface_f(alternative)
-                r = r + 1 ; result[r] = f_fontface_s(list)
+                r = r + 1 ; result[r] = formatted(f_fontface_f,alternative)
+                r = r + 1 ; result[r] = formatted(f_fontface_s,list)
                 r = r + 1 ; result[r] = s_fontface_e
             end
 

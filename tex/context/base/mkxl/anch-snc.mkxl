@@ -33,8 +33,8 @@
 
 \writestatus{loading}{ConTeXt Anchoring Macros / Synchronization}
 
-\registerctxluafile{anch-snc}{}
-\registerctxluafile{mlib-snc}{}
+\registerctxluafile{anch-snc}{autosuffix}
+\registerctxluafile{mlib-snc}{autosuffix}
 
 %D \stoptyping
 %D \starttext

@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['lxml-css'] = {
 }
 
 local tonumber, rawset, type, select = tonumber, rawset, type, select
-local lower, format, find, gmatch = string.lower, string.format, string.find, string.gmatch
+local lower, find, gmatch = string.lower, string.find, string.gmatch
 local topattern, is_empty =  string.topattern, string.is_empty
 local P, S, C, R, Cb, Cg, Carg, Ct, Cc, Cs = lpeg.P, lpeg.S, lpeg.C, lpeg.R, lpeg.Cb, lpeg.Cg, lpeg.Carg, lpeg.Ct, lpeg.Cc, lpeg.Cs
 ----- Cf = lpeg.Cf
@@ -18,7 +18,9 @@ local setmetatableindex = table.setmetatableindex
 xml.css            = xml.css or { }
 local css          = xml.css
 
-local report_css   = logs and logs.reporter("xml","css") or function(...) print(string.format(...)) end
+local formatted    = string.formatted
+
+local report_css   = logs and logs.reporter("xml","css") or function(...) print(formatted(...)) end
 
 local getid        = lxml and lxml.getid
 
@@ -279,7 +281,7 @@ do
         if str and str ~= "" then
             local c = attributes.colors.values[tonumber(str)]
             if c then
-                return format("rgb(%s%%,%s%%,%s%%)",c[3]*100,c[4]*100,c[5]*100)
+                return formatted("rgb(%s%%,%s%%,%s%%)",c[3]*100,c[4]*100,c[5]*100)
             end
         end
     end

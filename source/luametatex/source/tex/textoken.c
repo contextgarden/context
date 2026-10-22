@@ -3500,11 +3500,11 @@ void tex_run_convert_tokens(halfword code)
                 pop_selector;
                 break;
             }
-        case luatex_banner_code:
+        case luametatex_banner_code:
             {
                 int saved_selector;
                 push_selector;
-                tex_print_str(lmt_engine_state.luatex_banner);
+                tex_print_str(lmt_engine_state.luametatex_banner);
                 pop_selector;
                 break;
             }
@@ -3579,8 +3579,8 @@ strnumber tex_the_convert_string(halfword c, int i)
         case format_name_code:
             tex_print_str(lmt_engine_state.dump_name);
             break;
-        case luatex_banner_code:
-            tex_print_str(lmt_engine_state.luatex_banner);
+        case luametatex_banner_code:
+            tex_print_str(lmt_engine_state.luametatex_banner);
             break;
         case font_identifier_code:
             tex_print_font_identifier(i);

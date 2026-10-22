@@ -95,11 +95,11 @@ local function numbertodimen(n,unit,fmt) -- will be redefined later !
         return n
     else
         unit = unit or 'pt'
-        n = n * dimenfactors[unit]
+        n    = n * dimenfactors[unit]
         if not fmt then
-            fmt = f_none(n,unit)
+            return f_none(n,unit)
         elseif fmt == true then
-            fmt = f_true(n,unit)
+            return f_true(n,unit)
         else
             return formatters[fmt](n,unit)
         end

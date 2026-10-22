@@ -103,9 +103,9 @@ local potraceflush, potracechecked, potraceconvert do
     local formatting      = string.formatting
     local formatted       = string.formatted
 
-    local f_moveto  = formatting("(%N,%N)")
-    local f_lineto  = formatting("--(%N,%N)")
-    local f_curveto = formatting("..controls(%N,%N)and(%N,%N)..(%N,%N)")
+    local f_moveto  <const> = formatting("(%N,%N)")
+    local f_lineto  <const> = formatting("--(%N,%N)")
+    local f_curveto <const> = formatting("..controls(%N,%N)and(%N,%N)..(%N,%N)")
 
     potraceflush = function(t,alternative,polygon)
         local result, r, add

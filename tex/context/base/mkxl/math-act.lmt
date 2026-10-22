@@ -2312,7 +2312,7 @@ do
 
     local force = false  experiments.register("math.arrows", function(v) force = v end)
 
-    local f_tighten = formatting("math tightened %U %.3N %.3N %.3N %.3N")
+    local f_tighten <const> = formatting("math tightened %U %.3N %.3N %.3N %.3N")
 
     local function tighten(target,unicode,left,right,squeeze,yoffset)
         local name = formatted(f_tighten,unicode,left,right,squeeze,yoffset)
@@ -3065,7 +3065,7 @@ local cdata = characters.data
     -- offset    factor   0.9|calculated
     -- squeeze   factor   0.1|calculated
 
-    local f_flat = formatting("flat accent %05X")
+    local f_flat <const> = formatting("flat accent %05X")
 
     function mathtweaks.flattenaccents(target,original,parameters)
         local characters = target.characters

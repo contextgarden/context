@@ -22,7 +22,7 @@
 \registerctxluafile{util-pck}{autosuffix}
 \registerctxluafile{util-prs}{autosuffix}
 \registerctxluafile{util-fmt}{}
-\registerctxluafile{util-dim}{}
+\registerctxluafile{util-dim}{autosuffix}
 \registerctxluafile{util-vec}{autosuffix}
 \registerctxluafile{util-bmp}{autosuffix}
 
@@ -57,7 +57,7 @@
 \registerctxluafile{data-ini}{}
 \registerctxluafile{data-exp}{}
 \registerctxluafile{data-env}{}
-\registerctxluafile{data-tmp}{}
+\registerctxluafile{data-tmp}{autosuffix}
 \registerctxluafile{data-met}{}
 \registerctxluafile{data-res}{}
 \registerctxluafile{data-inp}{}
@@ -77,16 +77,16 @@
 \registerctxluafile{data-lua}{}
 %registerctxluafile{data-ctx}{}
 \registerctxluafile{data-con}{}
-\registerctxluafile{data-use}{}
+\registerctxluafile{data-use}{autosuffix}
 %registerctxluafile{data-aux}{}
 
 \registerctxluafile{luat-cbk}{autosuffix}
 \registerctxluafile{luat-run}{autosuffix}
 \registerctxluafile{luat-fio}{autosuffix}
 \registerctxluafile{luat-cnf}{autosuffix,initexonly}
-\registerctxluafile{luat-sto}{}
+\registerctxluafile{luat-sto}{autosuffix}
 \registerctxluafile{luat-ini}{autosuffix}
-\registerctxluafile{util-env}{}
+\registerctxluafile{util-env}{autosuffix}
 \registerctxluafile{luat-env}{}
 \registerctxluafile{luat-sbx}{autosuffix}
 %registerctxluafile{luat-bwc}{}

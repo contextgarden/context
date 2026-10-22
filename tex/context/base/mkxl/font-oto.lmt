@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['font-oto'] = { -- original tex
 
 local concat, unpack = table.concat, table.unpack
 local insert, remove = table.insert, table.remove
-local format, gmatch, gsub, find, match, lower, strip = string.format, string.gmatch, string.gsub, string.find, string.match, string.lower, string.strip
+local gmatch, gsub, find, match, lower, strip = string.gmatch, string.gsub, string.find, string.match, string.lower, string.strip
 local type, next, tonumber, tostring = type, next, tonumber, tostring
 local clock = os.gettimeofday
 
@@ -35,18 +35,19 @@ local getprivate             = fonts.constructors.getprivate
 local wildcard               <const> = "*"
 local default                <const> = "dflt"
 
-local formatters             = string.formatters
-local f_unicode              = formatters["%U"]
-local f_uniname              = formatters["%U (%s)"]
-local f_unilist              = formatters["% t (% t)"]
+local formatted              = string.formatted
+
+local f_unicode              <const> = "%U"
+local f_uniname              <const> = "%U (%s)"
+local f_unilist              <const> = "% t (% t)"
 
 local function gref(descriptions,n)
     if type(n) == "number" then
         local name = descriptions[n].name
         if name then
-            return f_uniname(n,name)
+            return formatted(f_uniname,n,name)
         else
-            return f_unicode(n)
+            return formatted(f_unicode,n)
         end
     elseif n then
         local num = { }
@@ -57,18 +58,18 @@ local function gref(descriptions,n)
             if tonumber(ni) then -- first is likely a key
                 j = j + 1
                 local di = descriptions[ni]
-                num[j] = f_unicode(ni)
+                num[j] = formatted(f_unicode,ni)
                 nam[j] = di and di.name or "-"
             end
         end
-        return f_unilist(num,nam)
+        return formatted(f_unilist,num,nam)
     else
         return "<error in base mode tracing>"
     end
 end
 
 local function cref(feature,sequence)
-    return formatters["feature %a, type %a, (chain) lookup %a"](feature,sequence.type,sequence.name)
+    return formatted("feature %a, type %a, (chain) lookup %a",feature,sequence.type,sequence.name)
 end
 
 local function report_substitution(feature,sequence,descriptions,unicode,substitution)

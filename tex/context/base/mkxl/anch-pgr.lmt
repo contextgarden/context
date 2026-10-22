@@ -52,16 +52,16 @@ local trace_shapes      = false  trackers.register("backgrounds.shapes",       f
 local trace_ranges      = false  trackers.register("backgrounds.shapes.ranges",function(v) trace_ranges = v end)
 local trace_free        = false  trackers.register("backgrounds.shapes.free",  function(v) trace_free   = v end)
 
-local f_b_tag           = "b:%s"
-local f_e_tag           = "e:%s"
-local f_p_tag           = "p:%s"
+local f_b_tag           <const> = "b:%s"
+local f_e_tag           <const> = "e:%s"
+local f_p_tag           <const> = "p:%s"
 
-local f_tag_two         = "%s:%s"
+local f_tag_two         <const> = "%s:%s"
 
-local f_point           = "%p"
-local f_pair            = "(%p,%p)"
-local f_path            = "%--t--cycle"
-local f_pair_i          = "(%r,%r)" -- rounded
+local f_point           <const> = "%p"
+local f_pair            <const> = "(%p,%p)"
+local f_path            <const> = "%--t--cycle"
+local f_pair_i          <const> = "(%r,%r)" -- rounded
 
 local c_realpageno      <const> = tex.iscount("realpageno")
 
@@ -271,9 +271,9 @@ local function topairs(t,n)
     return concat(r," ")
 end
 
-local eps = 65536 / 4
-local pps =   eps
-local nps = - pps
+local eps <const> = 65536 / 4
+local pps <const> =   eps
+local nps <const> = - pps
 
 local function unitvector(x,y)
     if x < pps and x > nps then
@@ -434,7 +434,7 @@ local function finish(t)
     return t
 end
 
-local eps = 65536
+local eps <const> = 65536
 
 -- The next function can introduce redundant points but these are removed later on
 -- in the unspiker. It makes checking easier.
@@ -860,7 +860,7 @@ local multilocs = {
 
 -- if unknown context_abck : input mp-abck.mpiv ; fi ;
 
-local f_template_a = [[
+local f_template_a <const> = [[
 path multiregs[], multipars[], multibox ;
 string multikind[] ;
 numeric multilocs[], nofmultipars ;
@@ -872,7 +872,7 @@ par_strut_depth := %p ;
 par_line_height := %p ;
 ]]
 
-local f_template_b = [[
+local f_template_b <const> = [[
 multilocs[%s] := %s ;
 multikind[%s] := "%s" ;
 multipars[%s] := (%--t--cycle) shifted - (%p,%p) ;
@@ -1256,7 +1256,7 @@ implement {
 
 do
 
-    local f_template_a = [[
+    local f_template_a <const> = [[
     path posboxes[], posregions[] ;
     numeric pospages[] ;
     numeric nofposboxes ;
@@ -1264,7 +1264,7 @@ do
     %t
     ]]
 
-    local f_template_b = [[
+    local f_template_b <const> = [[
     pospages[%s] := %s ;
     posboxes[%s] := (%p,%p)--(%p,%p)--(%p,%p)--(%p,%p)--cycle ;
     posregions[%s] := (%p,%p)--(%p,%p)--(%p,%p)--(%p,%p)--cycle ;

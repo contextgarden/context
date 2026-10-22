@@ -1,0 +1,64 @@
+if not modules then modules = { } end modules ['l-math'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- math.floor   = xmath.floor
+-- math.ceiling = xmath.ceiling
+-- math.ceil    = xmath.ceiling
+
+math.ceiling  = math.ceil
+
+math.round   = xmath.round
+math.log10   = xmath.log10
+math.atan2   = xmath.atan2
+math.tanh    = xmath.tanh
+math.sinh    = xmath.sinh
+math.cosh    = xmath.cosh
+math.sind    = xmath.sind
+math.cosd    = xmath.cosd
+math.tand    = xmath.tand
+math.pow     = xmath.pow
+math.div     = xmath.div
+math.mod     = xmath.mod
+math.odd     = xmath.odd
+math.even    = xmath.even
+
+-- if not math.type then
+--     function math.type()
+--         return "float"
+--     end
+-- end
+
+if setinspector and vector and mesh then
+
+    local isvector = vector.isvector
+    local ismesh   = mesh  .ismesh
+    local ispoints = vector.ispoints
+
+    local totable  = mesh  .totable
+    local inspect  = inspect
+
+    setinspector("vector",function(v)
+        if isvector(v) then
+            inspect(totable(v))
+            return true
+        end
+    end)
+    setinspector("mesh",function(v)
+        if ismesh(v) then
+            inspect(totable(v))
+            return true
+        end
+    end)
+    setinspector("points",function(v)
+        if ispoints(v) then
+            inspect(totable(v))
+            return true
+        end
+    end)
+
+end

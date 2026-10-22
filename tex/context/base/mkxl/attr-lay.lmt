@@ -80,7 +80,7 @@ local listwise          = viewerlayers.listwise
 local registered        = viewerlayers.registered
 local scopes            = viewerlayers.scopes
 
-local f_stamp           = "%s"
+local f_stamp <const>   = "%s"
 
 storage.register("attributes/viewerlayers/registered", registered, "attributes.viewerlayers.registered")
 storage.register("attributes/viewerlayers/values",     values,     "attributes.viewerlayers.values")

@@ -28,7 +28,7 @@ if not modules then modules = { } end modules ['math-noa'] = {
 -- nota bene: uunderdelimiter uoverdelimiter etc are radicals (we have 5 types)
 
 local next, tonumber = next, tonumber
-local formatters, gmatch, match = string.formatters, string.gmatch, string.match
+local gmatch, match = string.gmatch, string.match
 local insert, remove, concat, sortedhash, copy, sort = table.insert, table.remove, table.concat, table.sortedhash, table.copy, table.sort
 local div, round = math.div, math.round
 
@@ -41,6 +41,7 @@ local registertracker    = trackers.register
 local registerdirective  = directives.register
 local logreporter        = logs.reporter
 local setmetatableindex  = table.setmetatableindex
+local formatted          = string.formatted
 
 local texgetmode         = tex.getmode
 local mathmode_code      = tex.modelevels.math
@@ -1388,10 +1389,10 @@ do
                     local n, t = 0, { }
                     for k, v in sortedhash(list) do
                         n = n + 1
-                        t[n] = formatters["%C"](k)
+                        t[n] = formatted("%C",k)
                     end
                     local p = properties[font]
-                    result[#result+1] = formatters["%s : %i : [ % t ]"](p and p.fontname or "unknown",n,t)
+                    result[#result+1] = formatted("%s : %i : [ % t ]",p and p.fontname or "unknown",n,t)
                 end
             end
             if #result > 0 then
