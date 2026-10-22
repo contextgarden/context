@@ -375,7 +375,7 @@ static void tex_aux_run_node(void)
     halfword n = cur_chr;
     if (node_token_flagged(n)) {
         tex_get_token();
-        n = node_token_sum(n,cur_chr);
+        n = node_token_sum(n, cur_chr);
     }
     if (copy_lua_input_nodes_par) {
         n = tex_copy_node_list(n, null);

@@ -1059,7 +1059,7 @@ function resolvers.renewcache()
 end
 
 local function isreadable(name)
-    local readable = isfile(name) -- not file.is_readable(name) as it can be a dir
+    local readable = isfile(name) -- not file.isreadable(name) as it can be a dir
     if trace_details then
         if readable then
             report_resolving("file %a is readable",name)

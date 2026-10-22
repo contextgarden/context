@@ -1503,10 +1503,10 @@ local report_otf    = logs.reporter("fonts","otf loading")
 --     end
 -- end
 
-tabstr_normal  = sequencer.tabstr_normal
-tabstr_flat    = sequencer.tabstr_flat
-tabstr_mixed   = sequencer.tabstr_mixed
-tabstr_boolean = sequencer.tabstr_boolean
+local tabstr_normal  = sequencer.tabstr_normal
+local tabstr_flat    = sequencer.tabstr_flat
+local tabstr_mixed   = sequencer.tabstr_mixed
+local tabstr_boolean = sequencer.tabstr_boolean
 
 -- beware: we cannot unpack and repack the same table because then sharing
 -- interferes (we could catch this if needed) .. so for now: save, reload

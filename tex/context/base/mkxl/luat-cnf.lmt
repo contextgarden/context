@@ -32,50 +32,139 @@ luatex  = luatex  or { }
 texconfig.functionsize   = 32768
 texconfig.propertiessize = 10000
 
-luatex.starttime = os.gettimeofday()
-
 -- this will happen after the format is loaded
 
 function texconfig.init()
 
-    -- development: this has to be adapted or it will go (elsewhere)
+    local builtin = { }
+    local globals = { }
 
-    local builtin, globals = { }, { }
-
-    libraries = { -- we set it here as we want libraries also 'indexed'
+    libraries = {
         basiclua = {
-            "string", "table", "coroutine", "debug", "file", "io", "lpeg", "math", "os", "package",
+            "string",
+            "table",
+            "coroutine",
+            "debug",
+            "file",
+            "io",
+            "lpeg",
+            "math",
+            "os",
+            "package",
             "utf8",
         },
         basictex = {
-            "callback", "font", "lua", "node", "status", "tex", "texconfig", "texio", "token",
-            "font", "language",
+            "callback",
+            "font",
+            "language",
+            "library",
+            "luac",
+            "lua",
+            "mplib",
+            "node",
+            "security",
+            "status",
+            "tex",
+            "texconfig",
+            "texio",
+            "token",
+        },
+        extended = {
+            "file",
+            "io",
+            "os",
+            "string",
         },
         extralua = {
-            "library", "luac",
-            "xzip", "xmath", "xcomplex", "xdecimal", "basexx", "posit", "sparse",
-            "md5", "sha2", "aes", "fio", "sio",
-            "lfs","socket",
+            "aes",
+            "basexx",
+            "bitset",
+            "bytemap",
+            "client",
+            "pdfdecode", -- decode
+            "pngdecode", -- decode
+            "effects",
+            "fio",       -- io
+            "sio",       -- io
+            "kdtree",
+            "md5",
+            "nanojpeg",
+            "pdfe",
+            "posit",
+            "potrace",
+            "process",
+            "qrcodegen",
+            "serial",
+            "server",
+            "sha2",
+            "sparse",
+            "serial",    -- io
+            "sequencer", -- string
+            "timer",
             "vector",
+            "xcomplex",
+            "xdecimal",
+            "xinterval",
+            "xmath",
+            "zbuffer",
+            "xzip",
+            "bytemap",
+            "effects",
+            "lfs",
+            "point",
+            "vector",
+            "zbuffer",
         },
         extratex = {
-            "pdfe", "mplib", "potrace",
-            "pdfdecode", "pngdecode",
+            "helper",
         },
         optional = {
-            "cerf", "curl", "foreign", "ghostscript", "graphicsmagick", "hb", "imagemagick",
-            "kpse", "lzma", "lzo", "lz4", "mujs", "mysql", "optional", "postgress", "sqlite",
-            "zint", "zstd",
+            "cerf",
+            "curl",
+            "foreign",
+            "ghostscript",
+            "graphicsmagick",
+            "hb",
+            "imagemagick",
+            "kpse",
+            "lzma",
+            "lzo",
+            "lz4",
+            "mujs",
+            "mysql",
+            "optional",
+            "openssl",
+            "postgress",
+            "sqlite",
+            "zint",
+            "zstd",
         },
         obsolete = {
         },
         functions = {
-            "assert", "pcall", "xpcall", "error", "collectgarbage",
-            "dofile", "load","loadfile", "require", "module",
-            "getmetatable", "setmetatable",
-            "ipairs", "pairs", "rawequal", "rawget", "rawset", "next",
-            "tonumber", "tostring",
-            "type", "unpack", "select", "print",
+            "assert",
+            "collectgarbage",
+            "error",
+            "getmetatable",
+            "ipairs",
+            "load",
+            "loadfile",
+            "next",
+            "pairs",
+            "pcall",
+            "print",
+            "rawequal",
+            "rawget",
+            "rawset",
+            "require",
+            "select",
+            "setmetatable",
+            "tonumber",
+            "tostring",
+            "type",
+            "utf8",
+            "unpack",
+            "xpcall",
         },
         builtin = builtin, -- to be filled
         globals = globals, -- to be filled
@@ -96,7 +185,7 @@ function texconfig.init()
                 local tv = type(gv)
                 if tv == "table" then
                     for k, v in next, gv do
-                        keys[k] = tostring(v) -- true -- by tostring we cannot call overloads functions (security)
+                        keys[k] = type(v) -- tostring(v) -- true -- by tostring we cannot call overloads functions (security)
                     end
                 end
                 lib[v] = keys
@@ -112,7 +201,6 @@ function texconfig.init()
     libraries.extratex  = collect(libraries.extratex)
     libraries.functions = collect(libraries.functions,true)
     libraries.obsolete  = collect(libraries.obsolete)
-    libraries.optional  = collect(libraries.optional)
 
     -- shortcut and helper
 

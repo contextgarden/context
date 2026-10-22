@@ -29,7 +29,6 @@ luautilities.strippedchunks    = strippedchunks
 -- this is not needed but we show it like in util-lua.lua
 
 LUATEXENGINE    = "luametatex"
-JITSUPPORTED    = false
 CONTEXTLMTXMODE = CONTEXTLMTXMODE or 1
 
 luautilities.suffixes = {

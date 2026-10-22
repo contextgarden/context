@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2026-10-22 11:29
+-- merge date  : 2026-10-23 01:17
 
 do -- begin closure to overcome local limits and interference
 
@@ -137,7 +137,6 @@ if not modules then modules={} end modules ['l-lpeg']={
  copyright="PRAGMA ADE / ConTeXt Development Team",
  license="see context related readme files"
 }
-lpeg=require("lpeg") 
 local lpeg=lpeg
 if not lpeg.print then function lpeg.print(...) print(lpeg.pcode(...)) end end
 local type,next,tostring=type,next,tostring
@@ -2709,48 +2708,44 @@ local reslasher=lpeg.replacer(P("\\"),"/")
 function file.reslash(str)
  return str and lpegmatch(reslasher,str)
 end
-if lfs.isreadablefile and lfs.iswritablefile then
- file.is_readable=lfs.isreadablefile
- file.is_writable=lfs.iswritablefile
-else
- function file.is_writable(name)
-  if not name then
-  elseif lfs.isdir(name) then
-   name=name.."/m_t_x_t_e_s_t.tmp"
-   local f=io.open(name,"wb")
-   if f then
-    f:close()
-    os.remove(name)
-    return true
-   end
-  elseif lfs.isfile(name) then
-   local f=io.open(name,"ab")
-   if f then
-    f:close()
-    return true
-   end
-  else
-   local f=io.open(name,"ab")
-   if f then
-    f:close()
-    os.remove(name)
-    return true
-   end
+function file.iswritable(name)
+ if not name then
+ elseif lfs.isdir(name) then
+  name=name.."/m_t_x_t_e_s_t.tmp"
+  local f=io.open(name,"wb")
+  if f then
+   f:close()
+   os.remove(name)
+   return true
   end
+ elseif lfs.isfile(name) then
+  local f=io.open(name,"ab")
+  if f then
+   f:close()
+   return true
+  end
+ else
+  local f=io.open(name,"ab")
+  if f then
+   f:close()
+   os.remove(name)
+   return true
+  end
+ end
+ return false
+end
+local readable=P("r")*Cc(true)
+function file.isreadable(name)
+ if name then
+  local a=attributes(name)
+  return a and lpegmatch(readable,a.permissions) or false
+ else
   return false
  end
- local readable=P("r")*Cc(true)
- function file.is_readable(name)
-  if name then
-   local a=attributes(name)
-   return a and lpegmatch(readable,a.permissions) or false
-  else
-   return false
-  end
- end
 end
-file.isreadable=file.is_readable 
-file.iswritable=file.is_writable 
+file.canbewritten=file.iswritable
+file.is_readable=file.isreadable 
+file.is_writable=file.iswritable 
 function file.size(name)
  if name then
   local a=attributes(name)
@@ -4756,7 +4751,7 @@ do
     logs.report("system","creating cache path '%s'",cachepath)
    end
   end
-  if file.is_writable(cachepath) then
+  if file.iswritable(cachepath) then
    writable=file.join(cachepath,"luatex-cache")
    lfs.mkdir(writable)
    writable=file.join(writable,caches.namespace)
@@ -4765,7 +4760,7 @@ do
   end
  end
  for i=1,#cachepaths do
-  if file.is_readable(cachepaths[i]) then
+  if file.isreadable(cachepaths[i]) then
    readables[#readables+1]=file.join(cachepaths[i],"luatex-cache",caches.namespace)
   end
  end
@@ -4803,7 +4798,7 @@ local function makefullname(path,name)
 end
 function caches.is_writable(path,name)
  local fullname=makefullname(path,name)
- return fullname and file.is_writable(fullname)
+ return fullname and file.iswritable(fullname)
 end
 function caches.loaddata(readables,name,writable)
  for i=1,#readables do

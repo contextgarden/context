@@ -30,9 +30,9 @@ local searchers = package.searchers or package.loaders
 
 -- dummies
 
-local filejoin   = file and file.join        or function(path,name)   return path .. "/" .. name end
-local isreadable = file and file.is_readable or function(name)        local f = io.open(name) if f then f:close() return true end end
-local addsuffix  = file and file.addsuffix   or function(name,suffix) return name .. "." .. suffix end
+local filejoin   = file and file.join       or function(path,name)   return path .. "/" .. name end
+local isreadable = file and file.isreadable or function(name)        local f = io.open(name) if f then f:close() return true end end
+local addsuffix  = file and file.addsuffix  or function(name,suffix) return name .. "." .. suffix end
 
 -- local separator, concatinator, placeholder, pathofexecutable, ignorebefore = string.match(package.config,"(.-)\n(.-)\n(.-)\n(.-)\n(.-)\n")
 --

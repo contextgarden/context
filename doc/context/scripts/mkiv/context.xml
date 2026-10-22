@@ -287,7 +287,13 @@
                     <short>process multiple files at the same time (you can specify a number of processes, default: 8)</short>
                 </flag>
                 <flag name="parallellist">
-                    <short>process commands in this file (lines that start with 'context')</short>
+                    <short>process commands in this file (lines that start with 'context' or 'mtxrun')</short>
+                </flag>
+                <flag name="parallelsequence">
+                    <short>process the files according to the given specification file</short>
+                </flag>
+                <flag name="parallelmodes">
+                    <short>process the files in pattern with these modes (appends mode to result names)</short>
                 </flag>
                 <flag name="terminal">
                     <short>show parallel log output (=color)</short>

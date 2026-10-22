@@ -586,7 +586,7 @@ function visualizers.registercache(name)
     return caches[name]
 end
 
-local fontkern, italiccorrection, marginkern, mathkern, mathshapekern do
+local fontkern, characterkern, italiccorrection, marginkern, mathkern, mathshapekern do
 
     local f_cache = caches["fontkern"]
     local c_cache = caches["characterkern"]

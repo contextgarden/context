@@ -16,6 +16,8 @@ if not modules then modules = { } end modules ['data-tmp'] = {
 -- most caching involves fonts and the chance of them being written at the same time
 -- is small. We also need to extend luatools with a recache feature.
 
+-- in luatex/mkiv is_readable and iswritable handle files and directories
+
 local next, type = next, type
 local pcall, loadfile, collectgarbage = pcall, loadfile, collectgarbage
 local format, lower, gsub = string.format, string.lower, string.gsub

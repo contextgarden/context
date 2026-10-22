@@ -827,7 +827,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-package"] = package.loaded["l-package"] or true
 
--- original size: 12566, stripped down to: 8937
+-- original size: 12563, stripped down to: 8937
 
 if not modules then modules={} end modules ['l-package']={
  version=1.001,
@@ -842,9 +842,9 @@ local insert,remove=table.insert,table.remove
 local P,S,Cs,lpegmatch=lpeg.P,lpeg.S,lpeg.Cs,lpeg.match
 local package=package
 local searchers=package.searchers or package.loaders
-local filejoin=file and file.join  or function(path,name)   return path.."/"..name end
-local isreadable=file and file.is_readable or function(name)  local f=io.open(name) if f then f:close() return true end end
-local addsuffix=file and file.addsuffix   or function(name,suffix) return name.."."..suffix end
+local filejoin=file and file.join    or function(path,name)   return path.."/"..name end
+local isreadable=file and file.isreadable or function(name)  local f=io.open(name) if f then f:close() return true end end
+local addsuffix=file and file.addsuffix  or function(name,suffix) return name.."."..suffix end
 local function cleanpath(path) 
  return path
 end
@@ -1179,7 +1179,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 38898, stripped down to: 19609
+-- original size: 38901, stripped down to: 19587
 
 if not modules then modules={} end modules ['l-lpeg']={
  version=1.001,
@@ -1188,7 +1188,6 @@ if not modules then modules={} end modules ['l-lpeg']={
  copyright="PRAGMA ADE / ConTeXt Development Team",
  license="see context related readme files"
 }
-lpeg=require("lpeg") 
 local lpeg=lpeg
 if not lpeg.print then function lpeg.print(...) print(lpeg.pcode(...)) end end
 local type,next,tostring=type,next,tostring
@@ -4258,7 +4257,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-file"] = package.loaded["l-file"] or true
 
--- original size: 22720, stripped down to: 10501
+-- original size: 22130, stripped down to: 10365
 
 if not modules then modules={} end modules ['l-file']={
  version=1.001,
@@ -4447,48 +4446,44 @@ local reslasher=lpeg.replacer(P("\\"),"/")
 function file.reslash(str)
  return str and lpegmatch(reslasher,str)
 end
-if lfs.isreadablefile and lfs.iswritablefile then
- file.is_readable=lfs.isreadablefile
- file.is_writable=lfs.iswritablefile
-else
- function file.is_writable(name)
-  if not name then
-  elseif lfs.isdir(name) then
-   name=name.."/m_t_x_t_e_s_t.tmp"
-   local f=io.open(name,"wb")
-   if f then
-    f:close()
-    os.remove(name)
-    return true
-   end
-  elseif lfs.isfile(name) then
-   local f=io.open(name,"ab")
-   if f then
-    f:close()
-    return true
-   end
-  else
-   local f=io.open(name,"ab")
-   if f then
-    f:close()
-    os.remove(name)
-    return true
-   end
+function file.iswritable(name)
+ if not name then
+ elseif lfs.isdir(name) then
+  name=name.."/m_t_x_t_e_s_t.tmp"
+  local f=io.open(name,"wb")
+  if f then
+   f:close()
+   os.remove(name)
+   return true
   end
+ elseif lfs.isfile(name) then
+  local f=io.open(name,"ab")
+  if f then
+   f:close()
+   return true
+  end
+ else
+  local f=io.open(name,"ab")
+  if f then
+   f:close()
+   os.remove(name)
+   return true
+  end
+ end
+ return false
+end
+local readable=P("r")*Cc(true)
+function file.isreadable(name)
+ if name then
+  local a=attributes(name)
+  return a and lpegmatch(readable,a.permissions) or false
+ else
   return false
  end
- local readable=P("r")*Cc(true)
- function file.is_readable(name)
-  if name then
-   local a=attributes(name)
-   return a and lpegmatch(readable,a.permissions) or false
-  else
-   return false
-  end
- end
 end
-file.isreadable=file.is_readable 
-file.iswritable=file.is_writable 
+file.canbewritten=file.iswritable
+file.is_readable=file.isreadable 
+file.is_writable=file.iswritable 
 function file.size(name)
  if name then
   local a=attributes(name)
@@ -22078,7 +22073,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tmp"] = package.loaded["data-tmp"] or true
 
--- original size: 17391, stripped down to: 12369
+-- original size: 17466, stripped down to: 12369
 
 if not modules then modules={} end modules ['data-tmp']={
  version=1.100,
@@ -22637,7 +22632,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 71513, stripped down to: 45545
+-- original size: 71512, stripped down to: 45545
 
 if not modules then modules={} end modules ['data-res']={
  version=1.001,
@@ -26847,8 +26842,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua util-tmr.lua trac-tmr.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua util-sig.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua util-jsn.lua
 -- skipped libraries : -
--- original bytes    : 1076138
--- stripped bytes    : 429463
+-- original bytes    : 1075622
+-- stripped bytes    : 429105
 
 -- end library merge
 

@@ -75,7 +75,8 @@ function texconfig.init()
 
     -- development
 
-    local builtin, globals = { }, { }
+    local builtin = { }
+    local globals = { }
 
     libraries = { -- we set it here as we want libraries also 'indexed'
         basiclua = {
@@ -130,7 +131,9 @@ function texconfig.init()
                 local tv = type(gv)
                 if tv == "table" then
                     for k, v in next, gv do
-                        keys[k] = tostring(v) -- true -- by tostring we cannot call overloads functions (security)
+                     -- keys[k] = true -- by tostring we cannot call overloads functions (security)
+                        keys[k] = tostring(v) -- security
+                     -- keys[k] = type(v)
                     end
                 end
                 lib[v] = keys

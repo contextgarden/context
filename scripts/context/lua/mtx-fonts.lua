@@ -111,7 +111,7 @@ local application = logs.application {
 
 local report = application.report
 
-local suffixes = { "lmt", "lua" }
+local suffixes = CONTEXTLMTXMODE > 0 and { "lmt", "lua" } or { "lua" }
 
 local function loadmodule(nameonly,s)
     local s = s and { s } or suffixes

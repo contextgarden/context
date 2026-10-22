@@ -330,68 +330,48 @@ function file.reslash(str)
     return str and lpegmatch(reslasher,str)
 end
 
--- We should be able to use:
---
--- local writable = P(1) * P("w") * Cc(true)
---
--- function file.is_writable(name)
---     local a = attributes(name) or attributes(pathpart(name,"."))
---     return a and lpegmatch(writable,a.permissions) or false
--- end
---
--- But after some testing Taco and I came up with the more robust
--- variant:
-
-if lfs.isreadablefile and lfs.iswritablefile then
-
-    file.is_readable = lfs.isreadablefile
-    file.is_writable = lfs.iswritablefile
-
-else
-
-    function file.is_writable(name)
-        if not name then
-            -- error
-        elseif lfs.isdir(name) then
-            name = name .. "/m_t_x_t_e_s_t.tmp"
-            local f = io.open(name,"wb")
-            if f then
-                f:close()
-                os.remove(name)
-                return true
-            end
-        elseif lfs.isfile(name) then
-            local f = io.open(name,"ab")
-            if f then
-                f:close()
-                return true
-            end
-        else
-            local f = io.open(name,"ab")
-            if f then
-                f:close()
-                os.remove(name)
-                return true
-            end
+function file.iswritable(name)
+    if not name then
+        -- error
+    elseif lfs.isdir(name) then
+        name = name .. "/m_t_x_t_e_s_t.tmp"
+        local f = io.open(name,"wb")
+        if f then
+            f:close()
+            os.remove(name)
+            return true
         end
-        return false
-    end
-
-    local readable = P("r") * Cc(true)
-
-    function file.is_readable(name)
-        if name then
-            local a = attributes(name)
-            return a and lpegmatch(readable,a.permissions) or false
-        else
-            return false
+    elseif lfs.isfile(name) then
+        local f = io.open(name,"ab")
+        if f then
+            f:close()
+            return true
+        end
+    else
+        local f = io.open(name,"ab")
+        if f then
+            f:close()
+            os.remove(name)
+            return true
         end
     end
-
+    return false
 end
 
-file.isreadable = file.is_readable -- depricated
-file.iswritable = file.is_writable -- depricated
+local readable = P("r") * Cc(true)
+
+function file.isreadable(name)
+    if name then
+        local a = attributes(name)
+        return a and lpegmatch(readable,a.permissions) or false
+    else
+        return false
+    end
+end
+
+file.canbewritten = file.iswritable
+file.is_readable  = file.isreadable -- depricated
+file.is_writable  = file.iswritable -- depricated
 
 function file.size(name)
     if name then

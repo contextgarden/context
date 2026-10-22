@@ -210,7 +210,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-package"] = package.loaded["l-package"] or true
 
--- original size: 12566, stripped down to: 8937
+-- original size: 12563, stripped down to: 8937
 
 if not modules then modules={} end modules ['l-package']={
  version=1.001,
@@ -225,9 +225,9 @@ local insert,remove=table.insert,table.remove
 local P,S,Cs,lpegmatch=lpeg.P,lpeg.S,lpeg.Cs,lpeg.match
 local package=package
 local searchers=package.searchers or package.loaders
-local filejoin=file and file.join  or function(path,name)   return path.."/"..name end
-local isreadable=file and file.is_readable or function(name)  local f=io.open(name) if f then f:close() return true end end
-local addsuffix=file and file.addsuffix   or function(name,suffix) return name.."."..suffix end
+local filejoin=file and file.join    or function(path,name)   return path.."/"..name end
+local isreadable=file and file.isreadable or function(name)  local f=io.open(name) if f then f:close() return true end end
+local addsuffix=file and file.addsuffix  or function(name,suffix) return name.."."..suffix end
 local function cleanpath(path) 
  return path
 end
@@ -562,7 +562,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 38898, stripped down to: 19609
+-- original size: 38901, stripped down to: 19587
 
 if not modules then modules={} end modules ['l-lpeg']={
  version=1.001,
@@ -571,7 +571,6 @@ if not modules then modules={} end modules ['l-lpeg']={
  copyright="PRAGMA ADE / ConTeXt Development Team",
  license="see context related readme files"
 }
-lpeg=require("lpeg") 
 local lpeg=lpeg
 if not lpeg.print then function lpeg.print(...) print(lpeg.pcode(...)) end end
 local type,next,tostring=type,next,tostring
@@ -2841,7 +2840,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-file"] = package.loaded["l-file"] or true
 
--- original size: 14802, stripped down to: 8767
+-- original size: 15391, stripped down to: 9272
 
 if not modules then modules={} end modules ['l-file']={
  version=1.001,
@@ -2854,14 +2853,21 @@ file=file or {}
 local file=file
 local insert,concat=table.insert,table.concat
 local match,find,gmatch=string.match,string.find,string.gmatch
-local lpegmatch=lpeg.match
-local getcurrentdir,attributes=lfs.currentdir,lfs.attributes
-local checkedsplit=string.checkedsplit
 local P,R,S,C,Cs,Cp,Cc,Ct=lpeg.P,lpeg.R,lpeg.S,lpeg.C,lpeg.Cs,lpeg.Cp,lpeg.Cc,lpeg.Ct
-file.is_readable=lfs.isreadablefile 
-file.is_writable=lfs.iswritablefile 
-file.isreadable=lfs.isreadablefile
-file.iswritable=lfs.iswritablefile
+local lpegmatch=lpeg.match
+local checkedsplit=string.checkedsplit
+local getcurrentdir=lfs.currentdir
+local attributes=lfs.attributes
+local isfile=lfs.isfile
+local isdir=lfs.isdir
+local isreadablefile=lfs.isreadablefile
+local isreadabledir=lfs.isreadabledir
+local iswritablefile=lfs.iswritablefile
+local iswritabledir=lfs.iswritabledir
+file.is_readable=isreadablefile 
+file.is_writable=iswritablefile 
+file.isreadable=isreadablefile
+file.iswritable=iswritablefile
 function lfs.isfound(name)
  if name then
   local a=attributes(name,"mode")
@@ -3175,6 +3181,21 @@ function file.withinbase(path)
   end
  end
  return true
+end
+function file.canbewritten(name)
+ if not name or name=="" then
+  return false
+ elseif isfile(name) then
+  return iswritablefile(name)
+ elseif isdir(name) then
+  return iswritabledir(name)
+ else
+  local path=pathpart(name)
+  if not path or pathpath=="" then
+   path="."
+  end
+  return iswritabledir(path)
+ end
 end
 
 
@@ -9015,7 +9036,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lua"] = package.loaded["util-lua"] or true
 
--- original size: 6098, stripped down to: 4601
+-- original size: 6074, stripped down to: 4582
 
 if not modules then modules={} end modules ['util-lua']={
  version=1.001,
@@ -9041,7 +9062,6 @@ luautilities.nofstrippedbytes=0
 local strippedchunks={} 
 luautilities.strippedchunks=strippedchunks
 LUATEXENGINE="luametatex"
-JITSUPPORTED=false
 CONTEXTLMTXMODE=CONTEXTLMTXMODE or 1
 luautilities.suffixes={
  lmt="lmt",
@@ -16674,7 +16694,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tmp"] = package.loaded["data-tmp"] or true
 
--- original size: 17439, stripped down to: 12427
+-- original size: 17527, stripped down to: 12470
 
 if not modules then modules={} end modules ['data-tmp']={
  version=1.100,
@@ -16696,6 +16716,7 @@ local removefile=os.remove
 local md5hex=md5.hex
 local fileisreadable=file.isreadable
 local fileiswritable=file.iswritable
+local filecanbewritten=file.canbewritten
 local dirisreadable=dir.isreadable
 local diriswritable=dir.iswritable
 local trace_locating=false  trackers.register("resolvers.locating",function(v) trace_locating=v end)
@@ -16969,7 +16990,7 @@ function caches.loaddata(readables,name,writable)
 end
 function caches.is_writable(filepath,filename)
  local tmaname,tmcname=setluanames(filepath,filename)
- return fileiswritable(tmaname)
+ return filecanbewritten(tmaname)
 end
 if sequencer then
  serialize=sequencer.serialize
@@ -17236,7 +17257,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 71513, stripped down to: 45545
+-- original size: 71512, stripped down to: 45545
 
 if not modules then modules={} end modules ['data-res']={
  version=1.001,
@@ -20710,7 +20731,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["libs-ini"] = package.loaded["libs-ini"] or true
 
--- original size: 6462, stripped down to: 3886
+-- original size: 6438, stripped down to: 3865
 
 if not modules then modules={} end modules ['libs-ini']={
  version=1.001,
@@ -20846,9 +20867,8 @@ end
 do
  local dofile=dofile
  local savedrequire=require
-SAVEDREQUIRE=require
  function require(name,version)
-  if find(name,"%.lua$") or find(name,"%.lmt$") then
+  if find(name,"%.lmt$") or find(name,"%.lua$") then
    local m=dofile(findfile(name))
    if m then
     package.loaded[name]=m
@@ -21634,8 +21654,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lmt l-lua.lmt l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lmt l-io.lmt l-number.lmt l-os.lmt l-file.lmt l-md5.lmt l-sha.lua l-url.lua l-dir.lmt l-boolean.lua l-unicode.lmt l-math.lmt util-for.lmt util-str.lmt util-tab.lmt util-fil.lmt util-sac.lmt util-sto.lua util-prs.lmt util-fmt.lua trac-set.lmt trac-log.lua util-tmr.lua trac-tmr.lua trac-inf.lmt trac-pro.lua util-lua.lmt util-deb.lmt util-srv.lmt util-tpl.lua util-sbx.lmt util-mrg.lua util-env.lmt luat-env.lua util-zip.lua util-sig.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lmt data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lmt data-con.lua data-use.lmt data-zip.lua data-tre.lua luat-sbx.lmt data-sch.lmt data-lua.lua data-tmf.lua data-lst.lua libs-ini.lmt luat-sta.lua luat-fmt.lua util-jsn.lmt
 -- skipped libraries : -
--- original bytes    : 913384
--- stripped bytes    : 379702
+-- original bytes    : 914012
+-- stripped bytes    : 379844
 
 -- end library merge
 
@@ -21790,7 +21810,7 @@ local function locate_libs()
                 -- can be the development path !
                 local found = resolvers.findfile("data-res.lua")
                 if found and found ~= "" then
-                    ownlist = { file.dirname(found) }
+                    ownlist = { file.pathpart(found) }
                 end
             end
             if not ownlist then
@@ -22069,8 +22089,8 @@ runners.launchers = {
 -- like runners.libpath("framework"): looks on script's subpath
 
 function runners.libpath(...)
-    package.prepend_libpath(file.dirname(environment.ownscript),...)
-    package.prepend_libpath(file.dirname(environment.ownname)  ,...)
+    package.prepend_libpath(file.pathpart(environment.ownscript),...)
+    package.prepend_libpath(file.pathpart(environment.ownname)  ,...)
 end
 
 function runners.prepare()
@@ -22347,7 +22367,7 @@ function runners.launch_file(filename)
             for i=1,#t do
                 local name = t[i]
                 if listonly then
-                    report("% 3i:  %-30s %s",i,file.basename(name),file.dirname(name))
+                    report("% 3i:  %-30s %s",i,file.basename(name),file.pathpart(name))
                 else
                     report("launching: %s",name)
                     resolvers.launch(name)
@@ -22382,9 +22402,15 @@ local mtxprefixes = {
     { "^mtx%-t%-", "mtx-t-" },
 }
 
+local suffixes = { "lmt", "lua" }
+
 function runners.find_mtx_script(filename)
+    if filename == "context" then
+        -- safeguard because we can be in it's path
+        filename = "mtx-context"
+    end
     local function found(name)
-        local path = file.dirname(name)
+        local path = file.pathpart(name)
         if path and path ~= "" then
             return false
         else
@@ -22392,46 +22418,56 @@ function runners.find_mtx_script(filename)
             return io.exists(fullname) and fullname
         end
     end
-    filename = file.addsuffix(filename,"lua")
-    local basename = file.removesuffix(file.basename(filename))
     local suffix = file.suffix(filename)
-    -- qualified path, raw name
-    local fullname = file.is_qualified_path(filename) and io.exists(filename) and filename
-    if fullname and fullname ~= "" then
-        return fullname
-    end
-    -- current path, raw name
-    fullname = "./" .. filename
-    fullname = io.exists(fullname) and fullname
-    if fullname and fullname ~= "" then
-        return fullname
-    end
-    -- mtx- prefix checking
-    for i=1,#mtxprefixes do
-        local mtxprefix = mtxprefixes[i]
-        mtxprefix = find(filename,mtxprefix[1]) and "" or mtxprefix[2]
-        -- context namespace, mtx-<filename>
-        fullname = mtxprefix .. filename
-        fullname = found(fullname) or resolvers.findfile(fullname)
+    local suffixes = suffix == "" and suffixes or { suffix }
+    for i=1,#suffixes do
+        local suffix   = suffixes[i]
+        local filename = file.replacesuffix(filename,suffix)
+        local basename = file.removesuffix(file.basename(filename))
+        -- qualified path, raw name
+        local fullname = file.is_qualified_path(filename) and io.exists(filename) and filename
         if fullname and fullname ~= "" then
             return fullname
         end
-        -- context namespace, mtx-<filename>s
-        fullname = mtxprefix .. basename .. "s" .. "." .. suffix
-        fullname = found(fullname) or resolvers.findfile(fullname)
+        -- current path, raw name
+        fullname = "./" .. filename
+        fullname = io.exists(fullname) and fullname
         if fullname and fullname ~= "" then
             return fullname
         end
-        -- context namespace, mtx-<filename minus trailing s>
-        fullname = mtxprefix .. gsub(basename,"s$","") .. "." .. suffix
-        fullname = found(fullname) or resolvers.findfile(fullname)
-        if fullname and fullname ~= "" then
-            return fullname
+        -- mtx- prefix checking
+        for i=1,#mtxprefixes do
+            local mtxprefix = mtxprefixes[i]
+            mtxprefix = find(filename,mtxprefix[1]) and "" or mtxprefix[2]
+            -- context namespace, mtx-<filename>
+            fullname = mtxprefix .. filename
+            fullname = found(fullname) or resolvers.findfile(fullname)
+            if fullname and fullname ~= "" then
+                return fullname
+            end
+            -- context namespace, mtx-<filename>s
+            fullname = mtxprefix .. basename .. "s" .. "." .. suffix
+            fullname = found(fullname) or resolvers.findfile(fullname)
+            if fullname and fullname ~= "" then
+                return fullname
+            end
+            -- context namespace, mtx-<filename minus trailing s>
+            fullname = mtxprefix .. gsub(basename,"s$","") .. "." .. suffix
+            fullname = found(fullname) or resolvers.findfile(fullname)
+            if fullname and fullname ~= "" then
+                return fullname
+            end
         end
     end
     -- context namespace, just <filename>
-    fullname = resolvers.findfile(filename)
-    return fullname
+    for i=1,#suffixes do
+        local filename = file.addsuffix(filename,suffixes[i])
+        local fullname = resolvers.findfile(filename)
+        if fullname and fullname ~= "" then
+            return fullname
+        end
+    end
+ -- return filename
 end
 
 function runners.register_arguments(...)
@@ -22676,27 +22712,7 @@ end
 
 resolvers.load_tree(e_argument('tree'),e_argument("resolve"))
 
-if e_argument("script") or e_argument("scripts") then
-
-    -- run a script by loading it (using libs), pass args
-
-    if filename == "" then
-        report("no filename given")
-        ok = false
-    else
-        if e_argument("nofiledatabase") then
-            -- handy for mtx-update
-        else
-            runners.loadbase()
-        end
-        if is_mkii_stub then
-            ok = runners.execute_script(filename,false,true)
-        else
-            ok = runners.execute_ctx_script(filename)
-        end
-    end
-
-elseif e_argument("evaluate") then
+if e_argument("evaluate") then
 
     runners.evaluate(e_argument("evaluate"),filename)
 
@@ -22761,11 +22777,48 @@ elseif e_argument("selfupdate") then
         report("no runner %a source found",mtxrun)
     elseif not lfs.isfile(target) then
         report("no runner %a target found",mtxrun)
-    elseif dir.expandname(file.dirname(source)) == dir.expandname(file.dirname(target)) then
+    elseif dir.expandname(file.pathpart(source)) == dir.expandname(file.pathpart(target)) then
         report("runner %a source and target are the same",mtxrun)
     else
         report("runner %a copied to %a",mtxrun,own.path)
         file.copy(source,target)
+    end
+
+elseif e_argument("engine") == "luatex" or e_argument("luatex") then
+
+    runners.loadbase()
+    local mtxrun = resolvers.findfile("mtxrun.lua")
+    if lfs.isfile(mtxrun) then
+        local options = environment.reconstructcommandline(environment.arguments_after)
+        if filename and filename ~= "" then
+            filename = "--script " .. filename
+        else
+            filename = ""
+        end
+        command = "luatex --luaonly " .. mtxrun .. " " .. filename .. " " .. options
+        os.execute(command)
+    else
+        report("no runner source found")
+    end
+
+elseif e_argument("script") or e_argument("scripts") then
+
+    -- run a script by loading it (using libs), pass args
+
+    if filename == "" then
+        report("no filename given")
+        ok = false
+    else
+        if e_argument("nofiledatabase") then
+            -- handy for mtx-update
+        else
+            runners.loadbase()
+        end
+        if is_mkii_stub then
+            ok = runners.execute_script(filename,false,true)
+        else
+            ok = runners.execute_ctx_script(filename)
+        end
     end
 
 elseif e_argument("ctxlua") or e_argument("internal") then

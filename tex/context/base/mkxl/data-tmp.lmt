@@ -28,10 +28,11 @@ local osexit, osdate, osuuid = os.exit, os.date, os.uuid
 local removefile = os.remove
 local md5hex = md5.hex
 
-local fileisreadable = file.isreadable
-local fileiswritable = file.iswritable
-local dirisreadable  = dir.isreadable
-local diriswritable  = dir.iswritable
+local fileisreadable   = file.isreadable
+local fileiswritable   = file.iswritable
+local filecanbewritten = file.canbewritten
+local dirisreadable    = dir.isreadable
+local diriswritable    = dir.iswritable
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 local trace_cache    = false  trackers.register("resolvers.cache",    function(v) trace_cache    = v end)
@@ -368,7 +369,8 @@ end
 
 function caches.is_writable(filepath,filename)
     local tmaname, tmcname = setluanames(filepath,filename)
-    return fileiswritable(tmaname)
+ -- return diriswritable(filepath)
+    return filecanbewritten(tmaname)
 end
 
 if sequencer then

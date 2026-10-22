@@ -25,7 +25,7 @@ if not modules then modules = { } end modules ['l-lpeg'] = {
 -- lpeg.F = getmetatable(lpeg.P(1)).__len : forward  without consumption
 
 
-lpeg = require("lpeg") -- does lpeg register itself global?
+-- lpeg = require("lpeg") -- does lpeg register itself global?
 
 local lpeg = lpeg
 

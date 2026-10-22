@@ -16,8 +16,6 @@ local trace_details = false  trackers.register("system.randomizer.details", func
 local insert, remove = table.insert, table.remove
 
 local math       = math
-local context    = context
-local implement  = interfaces.implement
 
 local random     = math.random
 local randomseed = math.randomseed
@@ -142,12 +140,18 @@ utilities.randomizer = {
 
 -- todo: also open up in utilities.randomizer.*
 
-implement { name = "getrandomnumber",   actions = { getrandomnumber, context }, arguments = { "integer", "integer" } }
-implement { name = "getrandomdimen",    actions = { getrandomnumber, context }, arguments = { "dimen", "dimen" } }
-implement { name = "getrandomfloat",    actions = { getrandomnumber, context }, arguments = { "number", "number" } }
-implement { name = "getrandomseed",     actions = { getrandomseed,   context } }
-implement { name = "setrandomseed",     actions = setrandomseed, arguments = "integer" }
-implement { name = "pushrandomseed",    actions = pushrandomseed, public = true, }
-implement { name = "poprandomseed",     actions = poprandomseed, public = true, }
-implement { name = "reuserandomseed",   actions = reuserandomseed, public = true, }
+if context then
 
+    local context    = context
+    local implement  = interfaces and interfaces.implement
+
+    implement { name = "getrandomnumber",   actions = { getrandomnumber, context }, arguments = { "integer", "integer" } }
+    implement { name = "getrandomdimen",    actions = { getrandomnumber, context }, arguments = { "dimen", "dimen" } }
+    implement { name = "getrandomfloat",    actions = { getrandomnumber, context }, arguments = { "number", "number" } }
+    implement { name = "getrandomseed",     actions = { getrandomseed,   context } }
+    implement { name = "setrandomseed",     actions = setrandomseed, arguments = "integer" }
+    implement { name = "pushrandomseed",    actions = pushrandomseed, public = true, }
+    implement { name = "poprandomseed",     actions = poprandomseed, public = true, }
+    implement { name = "reuserandomseed",   actions = reuserandomseed, public = true, }
+
+end

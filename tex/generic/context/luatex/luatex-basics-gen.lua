@@ -236,7 +236,7 @@ do
                 logs.report("system","creating cache path '%s'",cachepath)
             end
         end
-        if file.is_writable(cachepath) then
+        if file.iswritable(cachepath) then
             writable = file.join(cachepath,"luatex-cache")
             lfs.mkdir(writable)
             writable = file.join(writable,caches.namespace)
@@ -246,7 +246,7 @@ do
     end
 
     for i=1,#cachepaths do
-        if file.is_readable(cachepaths[i]) then
+        if file.isreadable(cachepaths[i]) then
             readables[#readables+1] = file.join(cachepaths[i],"luatex-cache",caches.namespace)
         end
     end
@@ -290,7 +290,7 @@ end
 
 function caches.is_writable(path,name)
     local fullname = makefullname(path,name)
-    return fullname and file.is_writable(fullname)
+    return fullname and file.iswritable(fullname)
 end
 
 function caches.loaddata(readables,name,writable)

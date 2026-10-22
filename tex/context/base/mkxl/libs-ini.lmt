@@ -191,10 +191,8 @@ do
     local dofile       = dofile
     local savedrequire = require
 
-SAVEDREQUIRE = require
-
     function require(name,version)
-        if find(name,"%.lua$") or find(name,"%.lmt$") then
+        if find(name,"%.lmt$") or find(name,"%.lua$") then
             local m = dofile(findfile(name))
             if m then
                 package.loaded[name] = m

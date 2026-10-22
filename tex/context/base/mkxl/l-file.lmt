@@ -13,23 +13,29 @@ local file = file
 
 local insert, concat = table.insert, table.concat
 local match, find, gmatch = string.match, string.find, string.gmatch
-local lpegmatch = lpeg.match
-local getcurrentdir, attributes = lfs.currentdir, lfs.attributes
-local checkedsplit = string.checkedsplit
 
 local P, R, S, C, Cs, Cp, Cc, Ct = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Cp, lpeg.Cc, lpeg.Ct
 
--- lfs.isdir
--- lfs.isfile
+local lpegmatch      = lpeg.match
+local checkedsplit   = string.checkedsplit
 
-file.is_readable = lfs.isreadablefile -- depricated
-file.is_writable = lfs.iswritablefile -- depricated
+local getcurrentdir  = lfs.currentdir
+local attributes     = lfs.attributes
+local isfile         = lfs.isfile
+local isdir          = lfs.isdir
+local isreadablefile = lfs.isreadablefile
+local isreadabledir  = lfs.isreadabledir
+local iswritablefile = lfs.iswritablefile
+local iswritabledir  = lfs.iswritabledir
 
-file.isreadable  = lfs.isreadablefile
-file.iswritable  = lfs.iswritablefile
+file.is_readable = isreadablefile -- depricated
+file.is_writable = iswritablefile -- depricated
 
--- dir.isreadable   = lfs.isreadabledir
--- dir.iswritable   = lfs.iswritabledir
+file.isreadable  = isreadablefile
+file.iswritable  = iswritablefile
+
+-- dir.isreadable   = isreadabledir
+-- dir.iswritable   = iswritabledir
 
 function lfs.isfound(name)
     if name then
@@ -480,4 +486,20 @@ function file.withinbase(path) -- don't go beyond root
         end
     end
     return true
+end
+
+function file.canbewritten(name)
+    if not name or name == "" then
+        return false
+    elseif isfile(name) then
+        return iswritablefile(name)
+    elseif isdir(name) then
+        return iswritabledir(name)
+    else
+        local path = pathpart(name)
+        if not path or pathpath == "" then
+            path = "."
+        end
+        return iswritabledir(path)
+    end
 end
