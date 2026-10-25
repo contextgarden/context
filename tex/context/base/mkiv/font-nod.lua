@@ -63,7 +63,6 @@ local getwidth         = nuts.getwidth
 
 local setbox           = nuts.setbox
 local setchar          = nuts.setchar
-local setsubtype       = nuts.setsubtype
 
 local copy_node_list   = nuts.copylist
 local hpacknodelist    = nuts.hpack
@@ -73,6 +72,8 @@ local startofpar       = nuts.startofpar
 
 local nextnode         = nuts.traversers.node
 local nextglyph        = nuts.traversers.glyph
+
+local protectglyph     = nuts.protectglyph or nuts.protect_glyph
 
 local nodepool         = nuts.pool
 local new_glyph        = nodepool.glyph
@@ -203,7 +204,7 @@ end
 
 function tracers.fontchar(font,char)
     local n = new_glyph(font,char)
-    setsubtype(n,256)
+    protectglyph(n)
     context(tonode(n))
 end
 

@@ -197,6 +197,9 @@ extern halfword tex_badness(
 # define default_rule                           26214  /*tex 0.4pt */
 # define ignore_depth                      (-65536000) /*tex The magic dimension value to mean \quote {ignore me}: -1000pt */
 
+# define min_singleword                             0  /*tex The smallest allowable value in a |singleword|. */
+# define max_singleword                           255  /*tex The largest allowable value in a |singleword|. */
+
 # define min_quarterword                            0  /*tex The smallest allowable value in a |quarterword|. */
 # define max_quarterword                        65535  /*tex The largest allowable value in a |quarterword|. */
 

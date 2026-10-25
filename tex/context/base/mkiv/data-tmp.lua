@@ -23,7 +23,6 @@ local pcall, loadfile, collectgarbage = pcall, loadfile, collectgarbage
 local format, lower, gsub = string.format, string.lower, string.gsub
 local concat, serialize, fastserialize, serializetofile = table.concat, table.serialize, table.fastserialize, table.tofile
 local mkdirs, expanddirname, isdir, isfile = dir.mkdirs, dir.expandname, lfs.isdir, lfs.isfile
-local is_writable, is_readable = file.is_writable, file.is_readable
 local collapsepath, joinfile, addsuffix, dirname = file.collapsepath, file.join, file.addsuffix, file.dirname
 local savedata = file.savedata
 local formatters = string.formatters
@@ -31,17 +30,23 @@ local osexit, osdate, osuuid = os.exit, os.date, os.uuid
 local removefile = os.remove
 local md5hex = md5.hex
 
-local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
-local trace_cache    = false  trackers.register("resolvers.cache",    function(v) trace_cache    = v end)
+local fileisreadable   = file.isreadable
+local fileiswritable   = file.iswritable
+local filecanbewritten = file.canbewritten
+local dirisreadable    = dir.isreadable
+local diriswritable    = dir.iswritable
+
+local trace_locating   = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
+local trace_cache      = false  trackers.register("resolvers.cache",    function(v) trace_cache    = v end)
 
 local report_caches    = logs.reporter("resolvers","caches")
 local report_resolvers = logs.reporter("resolvers","caching")
 
-local resolvers    = resolvers
-local cleanpath    = resolvers.cleanpath
-local resolvepath  = resolvers.resolve
+local resolvers        = resolvers
+local cleanpath        = resolvers.cleanpath
+local resolvepath      = resolvers.resolve
 
-local luautilities = utilities.lua
+local luautilities     = utilities.lua
 
 -- intermezzo
 
@@ -124,17 +129,17 @@ local function identify()
                 cachepath = collapsepath(cachepath)
                 local valid = isdir(cachepath)
                 if valid then
-                    if is_readable(cachepath) then
+                    if dirisreadable(cachepath) then
                         readables[#readables+1] = cachepath
-                        if not writable and is_writable(cachepath) then
+                        if not writable and diriswritable(cachepath) then
                             writable = cachepath
                         end
                     end
                 elseif not writable then
                     local cacheparent = dirname(cachepath)
-                    if is_writable(cacheparent) then -- we go on anyway (needed for mojca's kind of paths)
+                    if diriswritable(cacheparent) then -- we go on anyway (needed for mojca's kind of paths)
                         mkdirs(cachepath)
-                        if isdir(cachepath) and is_writable(cachepath) then
+                        if isdir(cachepath) and diriswritable(cachepath) then
                             report_caches("path %a created",cachepath)
                             writable = cachepath
                             readables[#readables+1] = cachepath
@@ -155,8 +160,8 @@ local function identify()
                 cachepath = resolvepath(cachepath)
                 cachepath = cleanpath(cachepath)
                 local valid = isdir(cachepath)
-                if valid and is_readable(cachepath) then
-                    if not writable and is_writable(cachepath) then
+                if valid and dirisreadable(cachepath) then
+                    if not writable and diriswritable(cachepath) then
                         readables[#readables+1] = cachepath
                         writable = cachepath
                         break
@@ -282,7 +287,7 @@ end
 local function getfirstreadablefile(filename,...)
     -- check if we have already written once
     local fullname, path = setfirstwritablefile(filename,...)
-    if is_readable(fullname) then
+    if fileisreadable(fullname) then
         return fullname, path -- , true
     end
     -- otherwise search for pregenerated
@@ -290,7 +295,7 @@ local function getfirstreadablefile(filename,...)
     for i=1,#rd do
         local path = rd[i]
         local fullname = joinfile(path,filename)
-        if is_readable(fullname) then
+        if fileisreadable(fullname) then
             usedreadables[i] = true
             return fullname, path -- , false
         end
@@ -366,7 +371,8 @@ end
 
 function caches.is_writable(filepath,filename)
     local tmaname, tmcname = setluanames(filepath,filename)
-    return is_writable(tmaname)
+ -- return diriswritable(filepath)
+    return filecanbewritten(tmaname)
 end
 
 if sequencer then

@@ -792,8 +792,8 @@ typedef enum int_codes {
     number_integer_pars,
 } int_codes;
 
-# define first_integer_code pre_tolerance_code
-# define last_integer_code  line_snapping_dp_factor_code
+# define first_integer_code tracing_online_code
+# define last_integer_code  tracing_raggedness_code
 
 typedef enum dimension_codes {
     /* normal ones */
@@ -836,6 +836,9 @@ typedef enum dimension_codes {
     /*tex total number of dimension parameters */
     number_dimension_pars,
 } dimension_codes;
+
+# define first_tracing_code
+# define last_tracing_code
 
 # define first_dimension_code par_indent_code
 # define last_dimension_code  line_snapping_tolerance_code

@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['l-string'] = {
 }
 
 local string = string
-local sub, gmatch, format, char, byte, rep, lower, find = string.sub, string.gmatch, string.format, string.char, string.byte, string.rep, string.lower, string.find
+local sub, gsub, gmatch, format, char, byte, rep, lower, find = string.sub, string.gsub, string.gmatch, string.format, string.char, string.byte, string.rep, string.lower, string.find
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 local P, S, C, Ct, Cc, Cs = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.Cs
 
@@ -223,29 +223,42 @@ end
 
 string.itself  = function(s) return s end
 
--- also handy (see utf variant)
+-- handy from within tex (nowadays a gsub is faster):
 
-local pattern_c = Ct( C(1)      ^0) -- string and not utf !
-local pattern_b = Ct((C(1)/byte)^0)
-
-function string.totable(str,bytes)
-    return lpegmatch(bytes and pattern_b or pattern_c,str)
-end
-
--- handy from within tex:
-
-local replacer = lpeg.replacer("@","%%") -- Watch the escaped % in lpeg!
+-- local replacer = lpeg.replacer("@","%%") -- Watch the escaped % in lpeg!
+--
+-- function string.tformat(fmt,...)
+--     return format(lpegmatch(replacer,fmt),...)
+-- end
 
 function string.tformat(fmt,...)
-    return format(lpegmatch(replacer,fmt),...)
+    return format((gsub(fmt,"@","%%")),...)
 end
+
+-- local replacecharacter = string.replacecharacter
+-- local formatted        = string.formatted
+--
+-- function string.tformat(fmt,...)
+--     return formatted(replacecharacter(fmt,"@","%"),...)
+-- end
 
 -- obsolete names:
 
 string.quote   = string.quoted
 string.unquote = string.unquoted
 
--- new
+-- also handy (see utf variant)
+
+if not string.totable then
+
+    local pattern_c = Ct( C(1)      ^0) -- string and not utf !
+    local pattern_b = Ct((C(1)/byte)^0)
+
+    function string.totable(str,bytes)
+        return lpegmatch(bytes and pattern_b or pattern_c,str)
+    end
+
+end
 
 if not string.bytetable then -- used in font-cff.lua
 

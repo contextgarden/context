@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2026-10-23 01:17
+-- merge date  : 2026-10-25 20:06
 
 do -- begin closure to overcome local limits and interference
 
@@ -922,7 +922,8 @@ if not modules then modules={} end modules ['l-functions']={
  license="see context related readme files"
 }
 functions=functions or {}
-function functions.dummy() end
+function functions.dummy   ()    end
+function functions.identity(s) return s end
 
 end -- closure
 
@@ -936,7 +937,7 @@ if not modules then modules={} end modules ['l-string']={
  license="see context related readme files"
 }
 local string=string
-local sub,gmatch,format,char,byte,rep,lower,find=string.sub,string.gmatch,string.format,string.char,string.byte,string.rep,string.lower,string.find
+local sub,gsub,gmatch,format,char,byte,rep,lower,find=string.sub,string.gsub,string.gmatch,string.format,string.char,string.byte,string.rep,string.lower,string.find
 local lpegmatch,patterns=lpeg.match,lpeg.patterns
 local P,S,C,Ct,Cc,Cs=lpeg.P,lpeg.S,lpeg.C,lpeg.Ct,lpeg.Cc,lpeg.Cs
 do
@@ -1033,17 +1034,18 @@ function string.valid(str,default)
  return (type(str)=="string" and str~="" and str) or default or nil
 end
 string.itself=function(s) return s end
-local pattern_c=Ct(C(1)^0) 
-local pattern_b=Ct((C(1)/byte)^0)
-function string.totable(str,bytes)
- return lpegmatch(bytes and pattern_b or pattern_c,str)
-end
-local replacer=lpeg.replacer("@","%%") 
 function string.tformat(fmt,...)
- return format(lpegmatch(replacer,fmt),...)
+ return format((gsub(fmt,"@","%%")),...)
 end
 string.quote=string.quoted
 string.unquote=string.unquoted
+if not string.totable then
+ local pattern_c=Ct(C(1)^0) 
+ local pattern_b=Ct((C(1)/byte)^0)
+ function string.totable(str,bytes)
+  return lpegmatch(bytes and pattern_b or pattern_c,str)
+ end
+end
 if not string.bytetable then 
  local limit=5000 
  function string.bytetable(str) 
@@ -4751,7 +4753,7 @@ do
     logs.report("system","creating cache path '%s'",cachepath)
    end
   end
-  if file.iswritable(cachepath) then
+  if dir.iswritable(cachepath) then
    writable=file.join(cachepath,"luatex-cache")
    lfs.mkdir(writable)
    writable=file.join(writable,caches.namespace)
@@ -4760,7 +4762,7 @@ do
   end
  end
  for i=1,#cachepaths do
-  if file.isreadable(cachepaths[i]) then
+  if dir.isreadable(cachepaths[i]) then
    readables[#readables+1]=file.join(cachepaths[i],"luatex-cache",caches.namespace)
   end
  end
@@ -4798,7 +4800,7 @@ local function makefullname(path,name)
 end
 function caches.is_writable(path,name)
  local fullname=makefullname(path,name)
- return fullname and file.iswritable(fullname)
+ return fullname and file.canbewritten(fullname)
 end
 function caches.loaddata(readables,name,writable)
  for i=1,#readables do

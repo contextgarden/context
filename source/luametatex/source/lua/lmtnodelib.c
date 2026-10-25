@@ -634,7 +634,7 @@ static int nodelib_direct_setsubtype(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n && lua_type(L, 2) == LUA_TNUMBER) {
-        node_subtype(n) = lmt_toquarterword(L, 2);
+        tex_set_subtype(n, lmt_toquarterword(L, 2));
     }
     return 0;
 }
@@ -1117,17 +1117,17 @@ static int nodelib_direct_setclass(lua_State *L)
                 }
                 break;
             case glyph_node:
-                node_subtype(n) = glyph_math_ordinary_subtype + lmt_tosingleword(L, 2);
+                tex_set_subtype(n, glyph_math_ordinary_subtype + lmt_tosingleword(L, 2));
                 break;
             case disc_node:
                 disc_class(n) = lmt_tosingleword(L, 2);
                 break;
             case hlist_node:
             case vlist_node:
-                node_subtype(n) = noad_class_list_base + lmt_tosingleword(L, 2);
+                tex_set_subtype(n, noad_class_list_base + lmt_tosingleword(L, 2));
                 break;
             case delimiter_node:
-                node_subtype(n) = lmt_tosingleword(L, 2);
+                tex_set_subtype(n, lmt_tosingleword(L, 2));
                 return 1;
             case choice_node:
                 choice_class(n) = lmt_tosingleword(L, 2);
@@ -1707,7 +1707,7 @@ static int nodelib_direct_setkern(lua_State *L)
             case kern_node:
                 kern_amount(n) = lua_type(L, 2) == LUA_TNUMBER ? (halfword) lmt_roundnumber(L, 2) : 0;
                 if (lua_type(L, 3) == LUA_TNUMBER) {
-                    node_subtype(n) = lmt_toquarterword(L, 3);
+                    tex_set_subtype(n, lmt_toquarterword(L, 3));
                 }
                 break;
             case math_node:
@@ -1758,9 +1758,8 @@ static int nodelib_direct_setdirection(lua_State *L)
             case dir_node:
                 dir_direction(n) = nodelib_getdirection(L, 2);
                 if (lua_type(L, 3) == LUA_TBOOLEAN) {
-                 // if (lua_toboolean(L, 3)) {
-                        node_subtype(n) = (quarterword) (lua_toboolean(L, 3) ? cancel_dir_subtype : normal_dir_subtype);
-                 // }
+                    /* node_set_subtype(n, ...) */
+                    node_subtype(n) = (quarterword) (lua_toboolean(L, 3) ? cancel_dir_subtype : normal_dir_subtype);
                 }
                 break;
             case hlist_node:
@@ -2652,7 +2651,7 @@ static int nodelib_direct_setdisc(lua_State *L)
                 if (t > 3) {
                     tex_set_disc_field(n, no_break_code, nodelib_valid_direct_from_index(L, 4));
                     if (t > 4) {
-                        node_subtype(n) = lmt_toquarterword(L, 5);
+                        tex_set_subtype(n, lmt_toquarterword(L, 5));
                         if (t > 5) {
                             disc_penalty(n) = lmt_tohalfword(L, 6);
                         }
@@ -5093,7 +5092,8 @@ static halfword nodelib_new_node(lua_State *L)
                 break;
         }
         lmt_lua_state.last_node_error = lua_no_node_error;
-        return tex_new_node(i, (j == unknown_subtype) ? 0 : j);
+     // return tex_new_node(i, (j == unknown_subtype) ? 0 : j);
+        return tex_new_node(i, tex_valid_subtype(i, (j == unknown_subtype) ? 0 : j));
     } else  {
         lmt_lua_state.last_node_error = lua_new_node_error;
         if (! lmt_lua_state.ignore_node_error) {
@@ -9367,9 +9367,7 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                         goto CANTSET;
                     }
                 } else if (lua_key_eq(s, subtype)) {
-                    if (tex_nodetype_has_subtype(t)) {
-                        node_subtype(n) = lmt_toquarterword(L, 3);
-                    } else {
+                    if (! tex_set_subtype(n, lmt_toquarterword(L, 3))) {
                         goto CANTSET;
                     }
                 } else {

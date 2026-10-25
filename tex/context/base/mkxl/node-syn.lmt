@@ -169,8 +169,10 @@ if not modules then modules = { } end modules ['node-syn'] = {
 
 local type, rawset = type, rawset
 local concat = table.concat
-local addsuffix, replacesuffix, suffixonly, nameonly, collapsepath = file.addsuffix, file.replacesuffix, file.suffix, file.nameonly, file.collapsepath
-local openfile, removefile = io.open, os.remove
+local addsuffix, replacesuffix, suffixonly, basename, nameonly, collapsepath = file.addsuffix, file.replacesuffix, file.suffix, file.basename, file.nameonly, file.collapsepath
+
+local openfile   = io.open
+local removefile = os.remove
 
 local report_system = logs.reporter("system")
 
@@ -229,13 +231,13 @@ local foundintree         = resolvers.foundintree
 
 local getpagedimensions   = layouts.getpagedimensions
 
-local eol        <const>  = "\010"
-local f_hvoid    <const>  = "h%i,%i:%i,%i:%i,%i,%i\010"
-local b_hlist    <const>  = "(%i,%i:%i,%i:%i,%i,%i\010"
-local e_hlist    <const>  = ")\010"
-local f_rule     <const>  = "r%i,%i:%i,%s:%i,%i,%i\010"
-local b_vlist    <const>  = "[%i,%i:%i,%i:%i,%i,%i\010"
-local e_vlist    <const>  = "]\010"
+local eol         <const> = "\010"
+local f_hvoid     <const> = "h%i,%i:%i,%i:%i,%i,%i\010"
+local b_hlist     <const> = "(%i,%i:%i,%i:%i,%i,%i\010"
+local e_hlist     <const> = ")\010"
+local f_rule      <const> = "r%i,%i:%i,%s:%i,%i,%i\010"
+local b_vlist     <const> = "[%i,%i:%i,%i:%i,%i,%i\010"
+local e_vlist     <const> = "]\010"
 
 local synctex             = luatex.synctex or { }
 luatex.synctex            = synctex
@@ -451,6 +453,7 @@ end
 local collect      = nil
 local fulltrace    = false
 local trace        = false
+local visualize    = false
 local height       = 10 * 65536
 local depth        =  5 * 65536
 local traceheight  =      32768
@@ -459,8 +462,20 @@ local outlinewidth =      65536 / 4
 
 trackers.register("system.synctex.visualize", function(v)
     trace     = v
-    fulltrace = v == "real"
+    fulltrace = v == "real" or v == "detail"
+    -- no color, already processed anyway, and no caching either as all are unique
+    visualize = v == "detail" and nodes.visualizers.register("synctex",nil,nil,2.0,false) or false
 end)
+
+local function visualizeindeed(head,first,tag,line)
+    local detail = stnums[tag]
+    if detail then
+        detail = formatted("%i:%i:%s",tag,line,basename(detail))
+    else
+        detail = formatted("%i:%i",tag,line)
+    end
+    return insertbefore(head,first,visualize(detail))
+end
 
 local collect_min  do
 
@@ -474,6 +489,9 @@ local collect_min  do
         end
         if trace then
             if fulltrace then
+                if visualize then
+                    head = visualizeindeed(head,first,tag,line)
+                end
                 head = insertbefore(head,first,new_outline_rule(w,h,d,outlinewidth))
             else
                 head = insertbefore(head,first,new_rule(w,traceheight,tracedepth))
@@ -549,6 +567,9 @@ local collect_max  do
         end
         if trace then
             if fulltrace then
+                if visualize then
+                    head = visualizeindeed(head,first,tag,line)
+                end
                 head = insertbefore(head,first,new_outline_rule(w,h,d,outlinewidth))
             else
                 head = insertbefore(head,first,new_rule(w,traceheight,tracedepth))

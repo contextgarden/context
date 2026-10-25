@@ -3468,11 +3468,24 @@ extern halfword  tex_list_node_mem_usage  (void);
 extern halfword  tex_reversed_node_list   (halfword list);
 extern int       tex_n_of_used_nodes      (int counts[]);
 
+extern int       tex_set_subtype          (halfword n, quarterword subtype);
+
 # define _valid_node_(p) ((p > lmt_node_memory_state.reserved) && (p < lmt_node_memory_state.nodes_data.allocated) && (lmt_node_memory_state.nodesizes[p] > 0))
 
 static inline int tex_valid_node(halfword n)
 {
     return n && _valid_node_(n) ? n : null;
+}
+
+static inline quarterword tex_valid_subtype(halfword type, quarterword subtype)
+{
+    if lmt_likely(tex_nodetype_has_subtype(type)) {
+        node_info *info = &lmt_interface.node_data[type];
+        if lmt_likely(info->definable && (subtype <= info->max || (subtype >= info->first && subtype <= info->last))) {
+            return subtype;
+        }
+    }
+    return 0;
 }
 
 /*tex This is a bit strange place but better than a macro elsewhere: */

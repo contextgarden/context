@@ -210,7 +210,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-package"] = package.loaded["l-package"] or true
 
--- original size: 12563, stripped down to: 8937
+-- original size: 12583, stripped down to: 8949
 
 if not modules then modules={} end modules ['l-package']={
  version=1.001,
@@ -226,7 +226,7 @@ local P,S,Cs,lpegmatch=lpeg.P,lpeg.S,lpeg.Cs,lpeg.match
 local package=package
 local searchers=package.searchers or package.loaders
 local filejoin=file and file.join    or function(path,name)   return path.."/"..name end
-local isreadable=file and file.isreadable or function(name)  local f=io.open(name) if f then f:close() return true end end
+local fileisreadable=file and file.isreadable or function(name)  local f=io.open(name) if f then f:close() return true end end
 local addsuffix=file and file.addsuffix  or function(name,suffix) return name.."."..suffix end
 local function cleanpath(path) 
  return path
@@ -420,7 +420,7 @@ local function loadedbypath(name,rawname,paths,islib,what)
   if trace then
    helpers.report("%s path, identifying '%s' on '%s'",what,name,path)
   end
-  if isreadable(resolved) then
+  if fileisreadable(resolved) then
    if trace then
     helpers.report("%s path, '%s' found on '%s'",what,name,resolved)
    end
@@ -439,7 +439,7 @@ local function loadedbyname(name,rawname)
   if trace then
    helpers.report("qualified name, identifying '%s'",what,name)
   end
-  if isreadable(name) then
+  if fileisreadable(name) then
    if trace then
     helpers.report("qualified name, '%s' found",what,name)
    end
@@ -1351,7 +1351,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-function"] = package.loaded["l-function"] or true
 
--- original size: 361, stripped down to: 317
+-- original size: 418, stripped down to: 367
 
 if not modules then modules={} end modules ['l-functions']={
  version=1.001,
@@ -1361,7 +1361,8 @@ if not modules then modules={} end modules ['l-functions']={
  license="see context related readme files"
 }
 functions=functions or {}
-function functions.dummy() end
+function functions.dummy   ()    end
+function functions.identity(s) return s end
 
 
 end -- of closure
@@ -1370,7 +1371,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-string"] = package.loaded["l-string"] or true
 
--- original size: 7077, stripped down to: 3560
+-- original size: 5011, stripped down to: 3266
 
 if not modules then modules={} end modules ['l-string']={
  version=1.001,
@@ -1380,19 +1381,21 @@ if not modules then modules={} end modules ['l-string']={
  license="see context related readme files"
 }
 local string=string
-local sub,gmatch,format,char,byte,rep,lower,find=string.sub,string.gmatch,string.format,string.char,string.byte,string.rep,string.lower,string.find
-local lpegmatch,patterns=lpeg.match,lpeg.patterns
+local sub,gsub,gmatch,char,byte,rep,lower,find=string.sub,string.gsub,string.gmatch,string.char,string.byte,string.rep,string.lower,string.find
 local P,S,C,Ct,Cc,Cs=lpeg.P,lpeg.S,lpeg.C,lpeg.Ct,lpeg.Cc,lpeg.Cs
+local lpegmatch=lpeg.match
+local patterns=lpeg.patterns
 do
+ local formatted=sequencer.format
  local squote=patterns.squote
  local dquote=patterns.dquote
  local unquoted=squote*C(((1-squote)+squote*#P(1))^0)*squote+dquote*C(((1-dquote)+dquote*#P(1))^0)*dquote
  function string.unquoted(str)
   return lpegmatch(unquoted,str) or str
  end
-end
-function string.quoted(str)
- return format("%q",str) 
+ function string.quoted(str)
+  return formatted("%q",str) 
+ end
 end
 function string.count(str,pattern)
  local n=0
@@ -1417,90 +1420,77 @@ function string.limit(str,n,sentinel)
   return str
  end
 end
-local stripper=patterns.stripper
-local fullstripper=patterns.fullstripper
-local collapser=patterns.collapser
-local nospacer=patterns.nospacer
-local longtostring=patterns.longtostring
-function string.strip(str)
- return str and lpegmatch(stripper,str) or ""
-end
-function string.fullstrip(str)
- return str and lpegmatch(fullstripper,str) or ""
-end
-function string.collapsespaces(str)
- return str and lpegmatch(collapser,str) or ""
-end
-function string.nospaces(str)
- return str and lpegmatch(nospacer,str) or ""
-end
-function string.longtostring(str)
- return str and lpegmatch(longtostring,str) or ""
-end
-local pattern=P(" ")^0*P(-1)
-function string.is_empty(str)
- if not str or str=="" then
-  return true
- else
-  return lpegmatch(pattern,str) and true or false
+do
+ local stripper=patterns.stripper
+ local fullstripper=patterns.fullstripper
+ local collapser=patterns.collapser
+ local nospacer=patterns.nospacer
+ local longtostring=patterns.longtostring
+ function string.strip(str)
+  return str and lpegmatch(stripper,str) or ""
+ end
+ function string.fullstrip(str)
+  return str and lpegmatch(fullstripper,str) or ""
+ end
+ function string.collapsespaces(str)
+  return str and lpegmatch(collapser,str) or ""
+ end
+ function string.nospaces(str)
+  return str and lpegmatch(nospacer,str) or ""
+ end
+ function string.longtostring(str)
+  return str and lpegmatch(longtostring,str) or ""
  end
 end
-local anything=patterns.anything
-local moreescapes=Cc("%")*S(".-+%?()[]*$^{}")
-local allescapes=Cc("%")*S(".-+%?()[]*")   
-local someescapes=Cc("%")*S(".-+%()[]")  
-local matchescapes=Cc(".")*S("*?")     
-local pattern_m=Cs ((moreescapes+anything )^0 )
-local pattern_a=Cs ((allescapes+anything )^0 )
-local pattern_b=Cs ((someescapes+matchescapes+anything )^0 )
-local pattern_c=Cs (Cc("^")*(someescapes+matchescapes+anything )^0*Cc("$") )
-function string.escapedpattern(str,simple)
- return lpegmatch(simple and pattern_b or pattern_a,str)
-end
-function string.topattern(str,lowercase,strict)
- if str=="" or type(str)~="string" then
-  return ".*"
- elseif strict=="all" then
-  str=lpegmatch(pattern_m,str)
- elseif strict then
-  str=lpegmatch(pattern_c,str)
- else
-  str=lpegmatch(pattern_b,str)
+do
+ local pattern=P(" ")^0*P(-1)
+ function string.is_empty(str)
+  if not str or str=="" then
+   return true
+  else
+   return lpegmatch(pattern,str) and true or false
+  end
  end
- if lowercase then
-  return lower(str)
- else
-  return str
+end
+do
+ local anything=patterns.anything
+ local moreescapes=Cc("%")*S(".-+%?()[]*$^{}")
+ local allescapes=Cc("%")*S(".-+%?()[]*")   
+ local someescapes=Cc("%")*S(".-+%()[]")  
+ local matchescapes=Cc(".")*S("*?")     
+ local pattern_m=Cs ((moreescapes+anything )^0 )
+ local pattern_a=Cs ((allescapes+anything )^0 )
+ local pattern_b=Cs ((someescapes+matchescapes+anything )^0 )
+ local pattern_c=Cs (Cc("^")*(someescapes+matchescapes+anything )^0*Cc("$") )
+ function string.escapedpattern(str,simple)
+  return lpegmatch(simple and pattern_b or pattern_a,str)
+ end
+ function string.topattern(str,lowercase,strict)
+  if str=="" or type(str)~="string" then
+   return ".*"
+  elseif strict=="all" then
+   str=lpegmatch(pattern_m,str)
+  elseif strict then
+   str=lpegmatch(pattern_c,str)
+  else
+   str=lpegmatch(pattern_b,str)
+  end
+  if lowercase then
+   return lower(str)
+  else
+   return str
+  end
  end
 end
 function string.valid(str,default) 
  return (type(str)=="string" and str~="" and str) or default or nil
 end
-string.itself=function(s) return s end
-local pattern_c=Ct(C(1)^0) 
-local pattern_b=Ct((C(1)/byte)^0)
-function string.totable(str,bytes)
- return lpegmatch(bytes and pattern_b or pattern_c,str)
-end
-local replacer=lpeg.replacer("@","%%") 
-function string.tformat(fmt,...)
- return format(lpegmatch(replacer,fmt),...)
-end
-string.quote=string.quoted
-string.unquote=string.unquoted
-if not string.bytetable then 
- local limit=5000 
- function string.bytetable(str) 
-  local n=#str
-  if n>limit then
-   local t={ byte(str,1,limit) }
-   for i=limit+1,n do
-    t[i]=byte(str,i)
-   end
-   return t
-  else
-   return { byte(str,1,n) }
-  end
+function string.itself(s) return s end 
+do
+ local replacecharacter=string.replacecharacter
+ local formatted=sequencer.format
+ function string.tformat(fmt,...)
+  return formatted(replacecharacter(fmt,"@","%"),...)
  end
 end
 
@@ -2485,7 +2475,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 16237, stripped down to: 8500
+-- original size: 16237, stripped down to: 8504
 
 if not modules then modules={} end modules ['l-os']={
  version=1.001,
@@ -2532,12 +2522,12 @@ if os.name=="windows" then
  os.binsuffixes={ "exe","cmd","bat" }
 elseif os.name=="macosx" then
  os.libsuffix="dylib"
- os.libsuffix=""
- os.libsuffix={ "" }
+ os.binsuffix=""
+ os.binsuffixes={ "" }
 else
  os.libsuffix="so"
- os.libsuffix=""
- os.libsuffix={ "" }
+ os.binsuffix=""
+ os.binsuffixes={ "" }
 end
 do
  local iopopen=io.popen
@@ -2840,7 +2830,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-file"] = package.loaded["l-file"] or true
 
--- original size: 15391, stripped down to: 9272
+-- original size: 15387, stripped down to: 9268
 
 if not modules then modules={} end modules ['l-file']={
  version=1.001,
@@ -3191,7 +3181,7 @@ function file.canbewritten(name)
   return iswritabledir(name)
  else
   local path=pathpart(name)
-  if not path or pathpath=="" then
+  if not path or path=="" then
    path="."
   end
   return iswritabledir(path)
@@ -3270,7 +3260,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-sha"] = package.loaded["l-sha"] or true
 
--- original size: 1085, stripped down to: 969
+-- original size: 576, stripped down to: 404
 
 if not modules then modules={} end modules ['l-sha']={
  version=1.001,
@@ -3279,21 +3269,12 @@ if not modules then modules={} end modules ['l-sha']={
  copyright="PRAGMA ADE / ConTeXt Development Team",
  license="see context related readme files"
 }
-if sha2 then
- local lpegmatch=lpeg.match
- local lpegpatterns=lpeg.patterns
- local bytestohex=lpegpatterns.bytestohex
- local bytestoHEX=lpegpatterns.bytestoHEX
- local digest256=sha2.digest256
- local digest384=sha2.digest384
- local digest512=sha2.digest512
- sha2.hash256=function(str) return lpegmatch(bytestohex,digest256(str)) end
- sha2.hash384=function(str) return lpegmatch(bytestohex,digest384(str)) end
- sha2.hash512=function(str) return lpegmatch(bytestohex,digest512(str)) end
- sha2.HASH256=function(str) return lpegmatch(bytestoHEX,digest256(str)) end
- sha2.HASH384=function(str) return lpegmatch(bytestoHEX,digest384(str)) end
- sha2.HASH512=function(str) return lpegmatch(bytestoHEX,digest512(str)) end
-end
+sha2.hash256=sha2.hex256
+sha2.hash384=sha2.hex384
+sha2.hash512=sha2.hex512
+sha2.HASH256=sha2.HEX256
+sha2.HASH384=sha2.HEX384
+sha2.HASH512=sha2.HEX512
 
 
 end -- of closure
@@ -3566,7 +3547,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-dir"] = package.loaded["l-dir"] or true
 
--- original size: 20455, stripped down to: 8229
+-- original size: 20513, stripped down to: 8236
 
 if not modules then modules={} end modules ['l-dir']={
  version=1.001,
@@ -3590,12 +3571,12 @@ local isfile=lfs.isfile
 local currentdir=lfs.currentdir
 local chdir=lfs.chdir
 local mkdir=lfs.mkdir
-dir.isreadable=lfs.isreadabledir
+dir.isreadable=lfs.isreadabledir 
 dir.iswritable=lfs.iswritabledir
 local onwindows=os.type=="windows" or find(os.getenv("PATH"),";",1,true)
-local isreadable=dir.isreadable
+local dirisreadable=dir.isreadable
 local walkdir=function(p,...)
- if isreadable(p.."/.") then
+ if dirisreadable(p.."/.") then
   return scandir(p,...)
  else
   return function() end
@@ -16694,7 +16675,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tmp"] = package.loaded["data-tmp"] or true
 
--- original size: 17527, stripped down to: 12470
+-- original size: 17547, stripped down to: 12470
 
 if not modules then modules={} end modules ['data-tmp']={
  version=1.100,
@@ -21652,10 +21633,10 @@ package.loaded.json=json
 
 end -- of closure
 
--- used libraries    : l-bit32.lmt l-lua.lmt l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lmt l-io.lmt l-number.lmt l-os.lmt l-file.lmt l-md5.lmt l-sha.lua l-url.lua l-dir.lmt l-boolean.lua l-unicode.lmt l-math.lmt util-for.lmt util-str.lmt util-tab.lmt util-fil.lmt util-sac.lmt util-sto.lua util-prs.lmt util-fmt.lua trac-set.lmt trac-log.lua util-tmr.lua trac-tmr.lua trac-inf.lmt trac-pro.lua util-lua.lmt util-deb.lmt util-srv.lmt util-tpl.lua util-sbx.lmt util-mrg.lua util-env.lmt luat-env.lua util-zip.lua util-sig.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lmt data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lmt data-con.lua data-use.lmt data-zip.lua data-tre.lua luat-sbx.lmt data-sch.lmt data-lua.lua data-tmf.lua data-lst.lua libs-ini.lmt luat-sta.lua luat-fmt.lua util-jsn.lmt
+-- used libraries    : l-bit32.lmt l-lua.lmt l-package.lua l-lpeg.lua l-function.lua l-string.lmt l-table.lmt l-io.lmt l-number.lmt l-os.lmt l-file.lmt l-md5.lmt l-sha.lmt l-url.lua l-dir.lmt l-boolean.lua l-unicode.lmt l-math.lmt util-for.lmt util-str.lmt util-tab.lmt util-fil.lmt util-sac.lmt util-sto.lua util-prs.lmt util-fmt.lua trac-set.lmt trac-log.lua util-tmr.lua trac-tmr.lua trac-inf.lmt trac-pro.lua util-lua.lmt util-deb.lmt util-srv.lmt util-tpl.lua util-sbx.lmt util-mrg.lua util-env.lmt luat-env.lua util-zip.lua util-sig.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lmt data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lmt data-con.lua data-use.lmt data-zip.lua data-tre.lua luat-sbx.lmt data-sch.lmt data-lua.lua data-tmf.lua data-lst.lua libs-ini.lmt luat-sta.lua luat-fmt.lua util-jsn.lmt
 -- skipped libraries : -
--- original bytes    : 914012
--- stripped bytes    : 379844
+-- original bytes    : 911588
+-- stripped bytes    : 378210
 
 -- end library merge
 
@@ -21687,7 +21668,7 @@ local ownlibs = {
     'l-package.lua',
     'l-lpeg.lua',
     'l-function.lua',
-    'l-string.lua',
+    'l-string.lmt',
     'l-table.lmt',
     'l-io.lmt',
     'l-number.lmt',
@@ -21695,7 +21676,7 @@ local ownlibs = {
     'l-os.lmt',
     'l-file.lmt',
     'l-md5.lmt',
-    'l-sha.lua',
+    'l-sha.lmt',
     'l-url.lua',
     'l-dir.lmt',
     'l-boolean.lua',
@@ -22712,20 +22693,26 @@ end
 
 resolvers.load_tree(e_argument('tree'),e_argument("resolve"))
 
+local function delegatetoluatex(task)
+    runners.loadbase()
+    local mtxrun = resolvers.findfile("mtxrun.lua")
+    if lfs.isfile(mtxrun) then
+        os.execute("luatex --luaonly " .. mtxrun .. " " .. task)
+    else
+        report("no runner source found")
+    end
+end
+
+local forceluatex = e_argument("engine") == "luatex" or e_argument("luatex")
+
 if e_argument("evaluate") then
 
     runners.evaluate(e_argument("evaluate"),filename)
 
 elseif e_argument("selfmerge") then
 
-    if e_argument("engine") == "luatex" then
-        runners.loadbase()
-        local mtxrun = resolvers.findfile("mtxrun.lua")
-        if lfs.isfile(mtxrun) then
-            os.execute("luatex --luaonly " .. mtxrun .. " --selfmerge")
-        else
-            report("no runner source found")
-        end
+    if forceluatex then
+        delegatetoluatex("--selfmerge")
     else
         runners.loadbase()
         local path = locate_libs()
@@ -22746,14 +22733,8 @@ elseif e_argument("selfmerge") then
 
 elseif e_argument("selfclean") then
 
-    if e_argument("engine") == "luatex" then
-        runners.loadbase()
-        local mtxrun = resolvers.findfile("mtxrun.lua")
-        if lfs.isfile(mtxrun) then
-            os.execute("luatex --luaonly " .. mtxrun .. " --selfclean")
-        else
-            report("no runner source found")
-        end
+    if forceluatex then
+        delegatetoluatex("--selfclean")
     else
         runners.loadbase()
         local mtxrun = resolvers.findfile("mtxrun.lmt")
@@ -22767,10 +22748,10 @@ elseif e_argument("selfclean") then
 
 elseif e_argument("selfupdate") then
 
-    -- Here we don't call "luatex --luaonly ..." but do it directly:
+    -- Here we don't delegatetoluatex but do it directly:
 
     runners.loadbase()
-    local mtxrun = e_argument("engine") == "luatex" and "mtxrun.lua" or "mtxrun.lmt"
+    local mtxrun = forceluatex and "mtxrun.lua" or "mtxrun.lmt"
     local source = resolvers.findfile(mtxrun)
     local target = file.join(own.path,mtxrun)
     if not lfs.isfile(source) then
@@ -22784,22 +22765,15 @@ elseif e_argument("selfupdate") then
         file.copy(source,target)
     end
 
-elseif e_argument("engine") == "luatex" or e_argument("luatex") then
+elseif forceluatex then
 
-    runners.loadbase()
-    local mtxrun = resolvers.findfile("mtxrun.lua")
-    if lfs.isfile(mtxrun) then
-        local options = environment.reconstructcommandline(environment.arguments_after)
-        if filename and filename ~= "" then
-            filename = "--script " .. filename
-        else
-            filename = ""
-        end
-        command = "luatex --luaonly " .. mtxrun .. " " .. filename .. " " .. options
-        os.execute(command)
+    local options = environment.reconstructcommandline(environment.arguments_after)
+    if filename and filename ~= "" then
+        filename = "--script " .. filename
     else
-        report("no runner source found")
+        filename = ""
     end
+    delegatetoluatex(filename .. " " .. options)
 
 elseif e_argument("script") or e_argument("scripts") then
 
@@ -22985,9 +22959,15 @@ elseif e_argument("format-path") then
 
 elseif e_argument("generate") then
 
-    -- luatools
-
-    if filename and filename ~= "" then
+    if e_argument("engine") == "luatex" then
+        runners.loadbase()
+        local mtxrun = resolvers.findfile("mtxrun.lua")
+        if lfs.isfile(mtxrun) then
+            os.execute("luatex --luaonly " .. mtxrun .. " --generate")
+        else
+            report("no runner source found")
+        end
+    elseif filename and filename ~= "" then
         resolvers.load("nofiles")
         trackers.enable("resolvers.locating")
         resolvers.renew(filename)

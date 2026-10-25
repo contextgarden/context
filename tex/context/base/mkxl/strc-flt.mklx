@@ -819,6 +819,7 @@
 
 \permanent\tolerant\protected\def\startplacefloat[#tag]#spacer[#S#settings]#spacer[#S#userdata]%
   {\flushnotes
+   \synctexpushline
   %\setuplayout
    \page_otr_command_flush_side_floats % here !
    \strc_floats_begin_group
@@ -907,7 +908,8 @@
    \strc_floats_end_group}
 
 \permanent\protected\def\stopplacefloat
-  {\strc_floats_stop_place}
+  {\strc_floats_stop_place
+  \synctexpopline}
 
 % reserve
 

@@ -173,6 +173,12 @@ performance:
 context --parallel test1.tex test2.tex test3.tex test4.tex
 \stoptyping
 
+By default the output is suppressed unless you pass \type {--terminal} as in:
+
+\starttyping
+context --parallel --terminal test1.tex test2.tex test3.tex test4.tex
+\stoptyping
+
 In case every test file needs different command line arguments you can do this
 instead:
 
@@ -191,12 +197,6 @@ context test4 --result=test-4
 
 Here the runner will just take the lines that start with \type {context} which
 means that you can still run that command file directly.
-
-By default the output is suppressed unless you pass \type {--terminal} as in:
-
-\starttyping
-context --parallel --terminal test1.tex test2.tex test3.tex test4.tex
-\stoptyping
 
 The only drawback in this parallel approach is that when one run stalls its
 output (for instance because some huge graphic is rendered) the others will wait
@@ -302,6 +302,32 @@ can only process images when we have exported the content.
 Alternatively one can specify a \type {--parallellist} or \type
 {--parallelsequence} that takes the given files and looks for \type {context} or
 \type {mtxrun} commands to process. A sequence will process in batches.
+
+\stopsection
+
+\startsection[title=Processing]
+
+The feature presented in the previous section is also available outside the \type
+{context} runner. There it can be can be combined with a watched folder. Because
+this is still experimental we keep the description short. The script is called
+\type {process}, so
+
+\starttyping
+mtxrun --script process ...
+\stoptyping
+
+Parallel processing is triggered by the same keys as the \type {context} script,
+so we have \typ {--parallel} \typ {--parallelsequence} \typ {--parallellist} \typ
+{--parallelmodes}, combined with \typ {pattern} or one or more files. In addition
+to these we have \typ {runners}, \typ {terminal} and \typ {squid}.
+
+A watched folder needs the \typ {--watch} key in order to work. We can optionally
+pass \typ {--runners} but a \typ {--path} is more or less mandate (we default to the
+current path but better be explicit. The \type {--tickets} directive makes the watch
+dog pick up files with the suffix \type {ljt} and these are the specifications
+in the previous section, so \LUA\ files. Otherwise \typ {suffix} (default \typ {tex}) and
+\typ {--template} (default \type {"context %q"}) determine what happens with a file.
+
 
 \stopsection
 

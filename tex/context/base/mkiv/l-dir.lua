@@ -31,7 +31,8 @@ local mkdir      = lfs.mkdir
 
 local onwindows  = os.type == "windows" or find(os.getenv("PATH"),";",1,true)
 
--- in case we load outside luatex
+dir.iswritable   = file.iswritable -- not granular in luatex
+dir.isreadable   = file.isreadable -- not granular in luatex
 
 if onwindows then
 
@@ -72,10 +73,10 @@ end
 
 -- safeguard
 
-local isreadable = file.isreadable
+local dirisreadable = file.isreadable
 
 local walkdir = function(p,...)
-    if isreadable(p.."/.") then
+    if dirisreadable(p.."/.") then
         return scandir(p,...)
     else
         return function() end

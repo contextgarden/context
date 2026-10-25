@@ -11,7 +11,7 @@ if not modules then modules = { } end modules['mtx-context'] = {
 
 local type, next, tostring, tonumber = type, next, tostring, tonumber
 local format, gmatch, match, gsub, find = string.format, string.gmatch, string.match, string.gsub, string.find
-local quote, validstring, splitstring, splitlines = string.quote, string.valid, string.split, string.splitlines
+local validstring, splitstring, splitlines = string.valid, string.split, string.splitlines
 local sort, concat, insert, sortedhash, tohash = table.sort, table.concat, table.insert, table.sortedhash, table.tohash
 local settings_to_array = utilities.parsers.settings_to_array
 local appendtable = table.append
@@ -34,6 +34,8 @@ local renamefile       = os.rename
 
 local formatters       = string.formatters
 local formatted        = string.formatted or string.format
+
+local quoted           = string.quoted
 
 local starttiming      = statistics.starttiming
 local stoptiming       = statistics.stoptiming
@@ -579,7 +581,8 @@ local function flags_to_string(flags,prefix)
         elseif v == true then
             t[#t+1] = format('--%s',p)
         elseif type(v) == "string" then
-            t[#t+1] = format('--%s=%s',p,quote(v))
+         -- t[#t+1] = format('--%s=%s',p,quoted(v))
+            t[#t+1] = format('--%s=%q',p,v)
         else
             t[#t+1] = format('--%s=%s',p,tostring(v))
         end
@@ -1263,7 +1266,7 @@ do -- more or less copied from mtx-plain.lua:
                 local path = fmtpathspec[i]
                 if path ~= "." then
                     dir.makedirs(path)
-                    if lfs.isdir(path) and file.is_writable(path) then
+                    if lfs.isdir(path) and dir.iswritable(path) then
                         fmtpath = path
                         break
                     end
@@ -1799,7 +1802,9 @@ do
         if runners then
             parallel = true
         else
-            runners = environment.argument("runners") or 8
+            runners = environment.argument("runners")
+                   or (os.getcpucount and os.getcpucount())
+                   or 8
         end
         if type(parallel) == "string" then
             local specification = table.load(parallel)
@@ -2090,7 +2095,7 @@ do
                                         if terminal then
                                             report()
                                         end
-                                        report("process %02i, index %02i, %s %a, status %a, runtime %0.3f",i,pi.count,whattodo,pi.filename,pi.result,time)
+                                        report("process %02i, index %02i, %s %a, status %a, runtime %0.3f",pi.index,pi.count,whattodo,pi.filename,pi.result,time)
                                         if terminal then
                                             report()
                                         end

@@ -1,0 +1,183 @@
+if not modules then modules = { } end modules ['l-string'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- See l-string.lua for some oldies (that were not that bad in terms of performance
+-- but we had the helpers anywsy so ...).
+
+local string = string
+
+local sub, gsub, gmatch, char, byte, rep, lower, find = string.sub, string.gsub, string.gmatch, string.char, string.byte, string.rep, string.lower, string.find
+local P, S, C, Ct, Cc, Cs = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.Cs
+
+local lpegmatch = lpeg.match
+local patterns  = lpeg.patterns
+
+do
+
+    local formatted = sequencer.format
+
+    local squote    = patterns.squote
+    local dquote    = patterns.dquote
+
+    local unquoted  = squote * C(((1-squote) + squote * #P(1))^0) * squote
+                    + dquote * C(((1-dquote) + dquote * #P(1))^0) * dquote
+
+    function string.unquoted(str)
+        return lpegmatch(unquoted,str) or str
+    end
+
+    -- print(string.unquoted("test"))
+    -- print(string.unquoted([["t\"est"]]))
+    -- print(string.unquoted([["t\"est"x]]))
+    -- print(string.unquoted("\'test\'"))
+    -- print(string.unquoted('"test"'))
+    -- print(string.unquoted('"test"'))
+
+    function string.quoted(str)
+        return formatted("%q",str) -- always double quote
+    end
+
+ -- string.quote   = string.quoted
+ -- string.unquote = string.unquoted
+
+end
+
+function string.count(str,pattern)
+    local n = 0
+    local i = 1
+    local l = #pattern
+    while true do
+        i = find(str,pattern,i)
+        if i then
+            n = n + 1
+            i = i + l
+        else
+            break
+        end
+    end
+    return n
+end
+
+function string.limit(str,n,sentinel) -- not utf proof
+    if #str > n then
+        sentinel = sentinel or "..."
+        return sub(str,1,(n-#sentinel)) .. sentinel
+    else
+        return str
+    end
+end
+
+do
+
+    local stripper     = patterns.stripper
+    local fullstripper = patterns.fullstripper
+    local collapser    = patterns.collapser
+    local nospacer     = patterns.nospacer
+    local longtostring = patterns.longtostring
+
+    function string.strip(str)
+        return str and lpegmatch(stripper,str) or ""
+    end
+
+    function string.fullstrip(str)
+        return str and lpegmatch(fullstripper,str) or ""
+    end
+
+    function string.collapsespaces(str)
+        return str and lpegmatch(collapser,str) or ""
+    end
+
+    function string.nospaces(str)
+        return str and lpegmatch(nospacer,str) or ""
+    end
+
+    function string.longtostring(str)
+        return str and lpegmatch(longtostring,str) or ""
+    end
+
+end
+
+do
+
+    local pattern = P(" ")^0 * P(-1) -- maybe also newlines
+
+    -- patterns.onlyspaces = pattern
+
+    function string.is_empty(str)
+        if not str or str == "" then
+            return true
+        else
+            return lpegmatch(pattern,str) and true or false
+        end
+    end
+
+end
+
+do
+
+    local anything     = patterns.anything
+    local moreescapes  = Cc("%") * S(".-+%?()[]*$^{}")
+    local allescapes   = Cc("%") * S(".-+%?()[]*")   -- also {} and ^$ ?
+    local someescapes  = Cc("%") * S(".-+%()[]")     -- also {} and ^$ ?
+    local matchescapes = Cc(".") * S("*?")           -- wildcard and single match
+
+    local pattern_m = Cs ( ( moreescapes + anything )^0 )
+    local pattern_a = Cs ( ( allescapes  + anything )^0 )
+    local pattern_b = Cs ( ( someescapes + matchescapes + anything )^0 )
+    local pattern_c = Cs ( Cc("^") * ( someescapes + matchescapes + anything )^0 * Cc("$") )
+
+    function string.escapedpattern(str,simple)
+        return lpegmatch(simple and pattern_b or pattern_a,str)
+    end
+
+    function string.topattern(str,lowercase,strict)
+        if str == "" or type(str) ~= "string" then
+            return ".*"
+        elseif strict == "all" then
+            str = lpegmatch(pattern_m,str)
+        elseif strict then
+            str = lpegmatch(pattern_c,str)
+        else
+            str = lpegmatch(pattern_b,str)
+        end
+        if lowercase then
+            return lower(str)
+        else
+            return str
+        end
+    end
+
+    -- print(string.escapedpattern("abc*234",true))
+    -- print(string.escapedpattern("12+34*.tex",false))
+    -- print(string.escapedpattern("12+34*.tex",true))
+    -- print(string.topattern     ("12+34*.tex",false,false))
+    -- print(string.topattern     ("12+34*.tex",false,true))
+
+end
+
+function string.valid(str,default) -- we can this one more often
+    return (type(str) == "string" and str ~= "" and str) or default or nil
+end
+
+-- handy fallback
+
+function string.itself(s) return s end -- identity
+
+do
+
+    local replacecharacter = string.replacecharacter
+    local formatted        = sequencer.format
+
+    function string.tformat(fmt,...)
+        return formatted(replacecharacter(fmt,"@","%"),...)
+    end
+
+end
+
+-- string.totable  (str,bytes)
+-- string.bytetable(str)

@@ -172,6 +172,7 @@ extern int  luaopen_xmath       (lua_State *L);
 extern int  luaopen_xzip        (lua_State *L);
 extern int  luaopen_serial      (lua_State *L);
 extern int  luaopen_process     (lua_State *L);
+extern int  luaopen_watcher     (lua_State *L);
 extern int  luaopen_timer       (lua_State *L);
 extern int  luaopen_security    (lua_State *L);
 extern int  luaopen_vector      (lua_State *L);
@@ -381,6 +382,7 @@ extern int  luaextend_xcomplex  (lua_State *L);
 # define BYTEMAP_METATABLE_INSTANCE  "bytemap"
 # define SERIAL_METATABLE_INSTANCE   "serial"
 # define PROCESS_METATABLE_INSTANCE  "process"
+# define WATCHER_METATABLE_INSTANCE  "watcher"
 # define TIMER_METATABLE_INSTANCE    "timer"
 # define INTERVAL_METATABLE_INSTANCE "interval"
 # define KDTREE_METATABLE_INSTANCE   "kdtree"
@@ -440,6 +442,7 @@ typedef struct node_info {
     int           definable;
     int           first;
     int           last;
+    int           max;
 } node_info;
 
 typedef struct par_info {

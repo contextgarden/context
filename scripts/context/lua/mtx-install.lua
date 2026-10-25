@@ -53,30 +53,43 @@ local request  = false
 
 io.output():setvbuf("no")
 
+local application = logs.application {
+    name     = "mtx-install",
+    banner   = "ConTeXt Installer 2.02",
+    helpinfo = helpinfo,
+}
+
+local report = application.report
+
 -- check for 200
 
-if client and client.supported and client.supported() then
+if client and client.supported then
 
-    request = client.httprequest
-    https   = true
-    fetch   = function(url)
-        local detail, data = request(
-            url
-        -- ,nil,  -- method                   (default: "GET")
-        -- ,nil,  -- headers
-        -- ,nil,  -- body
-        -- ,nil,  -- timeout in seconds       (default: 0 == unset)
-        -- ,nil,  -- maxsize in bytes         (default: 512*1024*1024)
-        -- ,true  -- tolerant wrt certificate (default: false)
-        )
-        if tonumber(detail) == 200 then
-            return data, detail
-        else
-            return false, "download failed"
+    if client.supported() then
+        request = client.httprequest
+        https   = true
+        fetch   = function(url)
+            local detail, data = request(
+                url
+            -- ,nil,  -- method                   (default: "GET")
+            -- ,nil,  -- headers
+            -- ,nil,  -- body
+            -- ,nil,  -- timeout in seconds       (default: 0 == unset)
+            -- ,nil,  -- maxsize in bytes         (default: 512*1024*1024)
+            -- ,true  -- tolerant wrt certificate (default: false)
+            )
+            if tonumber(detail) == 200 then
+                return data, detail
+            else
+                return false, "download failed"
+            end
         end
+    else
+        report("you need to install curl (lib)")
+        os.exit()
     end
 
-else
+elseif socket then
 
     request = socket.http.request
     https   = false
@@ -98,15 +111,10 @@ else
         return data, detail
     end
 
+else
+    report("there is no socket library available in the engine")
+    os.exit()
 end
-
-local application = logs.application {
-    name     = "mtx-install",
-    banner   = "ConTeXt Installer 2.02",
-    helpinfo = helpinfo,
-}
-
-local report = application.report
 
 scripts         = scripts         or { }
 scripts.install = scripts.install or { }

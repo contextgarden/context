@@ -1,0 +1,17 @@
+if not modules then modules = { } end modules ['l-sha'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- We had these names so we just aliasd them now. See l-sha.lua for the older code
+-- that does the hexing using lpeg.
+
+sha2.hash256 = sha2.hex256
+sha2.hash384 = sha2.hex384
+sha2.hash512 = sha2.hex512
+sha2.HASH256 = sha2.HEX256
+sha2.HASH384 = sha2.HEX384
+sha2.HASH512 = sha2.HEX512

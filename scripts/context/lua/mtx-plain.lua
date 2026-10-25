@@ -100,7 +100,7 @@ function scripts.plain.make(texengine,texformat)
         local path = fmtpathspec[i]
         if path ~= "." then
             dir.makedirs(path)
-            if lfs.isdir(path) and file.is_writable(path) then
+            if lfs.isdir(path) and dir.iswritable(path) then
                 fmtpath = path
                 break
             end

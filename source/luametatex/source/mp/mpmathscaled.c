@@ -724,7 +724,8 @@ static void mp_scaled_wrapup_numeric_token(MP mp, mp_scaled_t n, mp_scaled_t f)
         mp_scaled_t mod = (n * unity + f);
         set_cur_mod((int) mod);
         if (mod >= fraction_one) {
-            if (internal_value(mp_warning_check_internal).data.val > 0 && (mp->scanner_status != mp_tex_flushing_state)) {
+         // if (internal_value(mp_warning_check_internal).data.val > 0 && (mp->scanner_status != mp_tex_flushing_state)) {
+            if (internal_value(mp_warning_check_internal).data.val > 0) {
                 char msg[256];
                 snprintf(msg, 256, "Number is too large (%s)", mp_string_scaled(mp, mod));
                 mp_error(
@@ -735,7 +736,8 @@ static void mp_scaled_wrapup_numeric_token(MP mp, mp_scaled_t n, mp_scaled_t f)
                 );
             }
         }
-    } else if (mp->scanner_status != mp_tex_flushing_state) {
+ // } else if (mp->scanner_status != mp_tex_flushing_state) {
+    } else {
         mp_error(
             mp,
             "Enormous number has been reduced",

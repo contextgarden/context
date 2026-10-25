@@ -8,4 +8,5 @@ if not modules then modules = { } end modules ['l-functions'] = {
 
 functions = functions or { }
 
-function functions.dummy() end
+function functions.dummy   ( )          end
+function functions.identity(s) return s end

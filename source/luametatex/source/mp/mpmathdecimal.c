@@ -738,7 +738,8 @@ static void mp_decimal_aux_wrapup_numeric_token(MP mp, const unsigned char *star
     mp_memory_free(buf);
     if (mp_decimal_data.set.status == 0) {
         set_cur_mod(&result);
-    } else if (mp->scanner_status != mp_tex_flushing_state) {
+ // } else if (mp->scanner_status != mp_tex_flushing_state) {
+    } else {
         if (too_large(mp_decimal_data.set.status)) {
             mp_decnumber_check(mp, &result, &mp_decimal_data.set);
             set_cur_mod(&result);
@@ -749,7 +750,8 @@ static void mp_decimal_aux_wrapup_numeric_token(MP mp, const unsigned char *star
             );
         } else if (too_precise(mp_decimal_data.set.status)) {
             set_cur_mod(&result);
-            if (decNumberIsPositive((decNumber *) internal_value(mp_warning_check_internal).data.num) && (mp->scanner_status != mp_tex_flushing_state)) {
+         // if (decNumberIsPositive((decNumber *) internal_value(mp_warning_check_internal).data.num) && (mp->scanner_status != mp_tex_flushing_state)) {
+            if (decNumberIsPositive((decNumber *) internal_value(mp_warning_check_internal).data.num)) {
                 char msg[256];
                 snprintf (msg, 256, "Number is too precise (numberprecision = %d)", mp_decimal_data.set.digits);
                 mp_error(

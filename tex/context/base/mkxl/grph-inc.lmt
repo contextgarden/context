@@ -898,7 +898,7 @@ local function register(askedname,specification)
                 end
                 if not isdir(newpath) then
                     dir.makedirs(newpath)
-                    if not file.iswritable(newpath) then
+                    if not dir.iswritable(newpath) then
                         if trace_conversion then
                             report_inclusion("path %a is not writable, forcing conversion path %a",newpath,".")
                         end

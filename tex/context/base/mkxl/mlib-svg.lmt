@@ -1605,7 +1605,7 @@ local handledefinitions do
             end
         end
 
-        function handlers.style()
+        function handlers.style() -- c,at
             -- ignore
         end
 
@@ -1780,8 +1780,8 @@ local handledefinitions do
 
     end
 
-    function handlers.symbol(c)
-        local at  = c.at
+    function handlers.symbol(c,at)
+     -- local at  = c.at
         -- x y refX refY
         local boffset, eoffset = handleoffset(at)
         local bsize, esize = handlesize(at)
@@ -1797,16 +1797,16 @@ local handledefinitions do
             r = r + 1 ; result[r] = bsize
         end
 
--- local _x = at.x       at.x      = 0
--- local _y = at.y       at.y      = 0
--- local _w = at.width   at.width  = 0
--- local _h = at.height  at.height = 0
+     -- local _x = at.x       at.x      = 0
+     -- local _y = at.y       at.y      = 0
+     -- local _w = at.width   at.width  = 0
+     -- local _h = at.height  at.height = 0
 
         process(c,"/*")
--- at.x      = _x
--- at.y      = _y
--- at.width  = _w
--- at.height = _h
+     -- at.x      = _x
+     -- at.y      = _y
+     -- at.width  = _w
+     -- at.height = _h
 
         if esize then
             r = r + 1 result[r] = esize
@@ -1851,7 +1851,7 @@ local handledefinitions do
             r      = 0
             result = { }
             --
-         -- handlers.pattern(spec)
+         -- handlers.pattern(spec,spec.at)
             --
             -- inlined because of width
             --
@@ -2241,11 +2241,11 @@ local handledefinitions do
         end
     end
 
- --  function handlers.defs(c)
+ --  function handlers.defs(c,at)
  --     for c in xmlcollected(c,"/*") do
- --         local a = c.at
- --         if a then
- --             local id = rawget(a,"id")
+ --         local at = c.at
+ --         if at then
+ --             local id = rawget(at,"id")
  --             if id then
  --                 definitions["#"     .. id       ] = c
  --                 definitions["url(#" .. id .. ")"] = c
@@ -2258,8 +2258,8 @@ local handledefinitions do
 
     local uselevel = 0
 
-    function handlers.use(c)
-        local at  = c.at
+    function handlers.use(c,at)
+     -- local at  = c.at
         local id  = rawget(at,"href") or rawget(at,"xlink:href") -- better a rawget
         local res = locate(id,c)
         if res then
@@ -2394,10 +2394,10 @@ local handledefinitions do
 
         -- markers are a quite rediculous thing .. let's assume simple usage for now
 
-        function handlers.marker(c)
-         -- local a = c.at
-         -- if a then
-         --     local id = rawget(a,"id")
+        function handlers.marker(c,at)
+         -- local at = c.at
+         -- if at then
+         --     local id = rawget(at,"id")
          --     if id then
          --         definitions["#"     .. id       ] = c
          --         definitions["url(#" .. id .. ")"] = c
@@ -2513,7 +2513,7 @@ local handledefinitions do
             local _transform = transform
             at["transform"] = false
 
-            handlers.g(c)
+            handlers.g(c,at)
 
             at["transform"] = _transform
 
@@ -2664,8 +2664,8 @@ local handledefinitions do
         local f_ellipse   <const> = formatting('(fullcircle xyscaled (%N,%N) shifted (%N,%N))')
         local f_circle    <const> = formatting('(fullcircle scaled %N shifted (%N,%N))')
 
-        function handlers.line(c)
-            local at = c.at
+        function handlers.line(c,at)
+         -- local at = c.at
             local x1 = rawget(at,"x1")
             local y1 = rawget(at,"y1")
             local x2 = rawget(at,"x2")
@@ -2679,8 +2679,8 @@ local handledefinitions do
             flush(formatted(f_line,x1,y1,x2,y2),false,false,at)
         end
 
-        function handlers.rect(c)
-            local at     = c.at
+        function handlers.rect(c,at)
+         -- local at     = c.at
             local width  = rawget(at,"width")
             local height = rawget(at,"height")
             local x      = rawget(at,"x")
@@ -2707,8 +2707,8 @@ local handledefinitions do
             end
         end
 
-        function handlers.ellipse(c)
-            local at = c.at
+        function handlers.ellipse(c,at)
+         -- local at = c.at
             local cx = rawget(at,"cx")
             local cy = rawget(at,"cy")
             local rx = rawget(at,"rx")
@@ -2722,8 +2722,8 @@ local handledefinitions do
             flush(formatted(f_ellipse,2*rx,2*ry,cx,cy),true,true,at)
         end
 
-        function handlers.circle(c)
-            local at = c.at
+        function handlers.circle(c,at)
+         -- local at = c.at
             local cx = rawget(at,"cx")
             local cy = rawget(at,"cy")
             local r  = rawget(at,"r")
@@ -2744,8 +2744,8 @@ local handledefinitions do
         local p_polyline = Cs(p_open * (p_pair / f_lineto_z) * (p_pair / f_lineto_n)^0 * p_close)
         local p_polypair = Ct(p_pair^0)
 
-        local function poly(c,final)
-            local at     = c.at
+        local function poly(c,at,final)
+         -- local at     = c.at
             local points = rawget(at,"points")
             if points then
                 local path = lpegmatch(p_polyline,points,1,final)
@@ -2761,11 +2761,11 @@ local handledefinitions do
             end
         end
 
-        function handlers.polyline(c) poly(c,       ")") end
-        function handlers.polygon (c) poly(c,"--cycle)") end
+        function handlers.polyline(c,at) poly(c,at,       ")") end
+        function handlers.polygon (c,at) poly(c,at,"--cycle)") end
 
-        function handlers.path(c)
-            local at = c.at
+        function handlers.path(c,at)
+         -- local at = c.at
             local d  = rawget(at,"d")
             if d then
                 local shape, l = grabpath(d)
@@ -2882,8 +2882,8 @@ end
 
      -- local nofimages = 0
 
-        function handlers.image(c)
-            local at = c.at
+        function handlers.image(c,at)
+         -- local at = c.at
             local im = rawget(at,"xlink:href")
             if im then
                 local kind, data = match(im,"^data:image/([a-z]+);base64,(.*)$")
@@ -2946,12 +2946,12 @@ end
 
     do
 
-        function handlers.a(c)
+        function handlers.a(c) -- c,at
             process(c,"/*")
         end
 
-        function handlers.g(c) -- much like flushobject so better split and share
-            local at = c.at
+        function handlers.g(c,at) -- much like flushobject so better split and share
+         -- local at = c.at
 
             local btransform, etransform, transform = handletransform(at)
             local cpath, clippath, ctransform = handleclippath(at)
@@ -3311,7 +3311,7 @@ end
 
             local textlevel = 0
 
-            function handlers.text(c)
+            function handlers.text(c,at)
                 if textlevel == 0 then
                     x_family = v_family
                     x_weight = v_weight
@@ -3321,7 +3321,7 @@ end
                 textlevel = textlevel + 1
                 -- analyze
                 local only = fullstrip(xmltextonly(c))
-                local at   = c.at
+             -- local at   = c.at
                 local x    = rawget(at,"x")
                 local y    = rawget(at,"y")
 
@@ -3427,8 +3427,8 @@ end
 
         end
 
-        function handlers.svg(c,x,y,w,h,noclip,notransform,normalize)
-            local at = c.at
+        function handlers.svg(c,at,x,y,w,h,noclip,notransform,normalize)
+         -- local at = c.at
 
             local wrapupviewport
             local bhacked
@@ -3526,12 +3526,19 @@ end
 
     end
 
+    local showhidden = false
+
+    directives.register("metapost.svg.showhidden",function(v) showhidden = v end)
+
     process = function(x,p)
         for c in xmlcollected(x,p) do
             local tg = c.tg
             local h  = handlers[c.tg]
             if h then
-                h(c)
+                local at = c.at
+                if showhidden or at.visibility ~= "hidden" then
+                    h(c,at)
+                end
             end
         end
     end
@@ -3567,6 +3574,7 @@ end
                 handledefinitions(c)
                 handlers.svg (
                     c,
+                    c.at,
                     specification.x,
                     specification.y,
                     specification.width,

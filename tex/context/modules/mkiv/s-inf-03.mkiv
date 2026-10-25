@@ -1,16 +1,15 @@
+%D Remark:
+%D
+%D The current version of luatex (top line engine=luatex) doesn't work due to the
+%D >=2026 version using more nodes which prohibits too many nodes being in
+%D store/progress. I have a (working) patch for luatex but any change might trigger
+%D complaints when there is some side effect (read: we can only apply tricks used in
+%D luametatex when carefully tested) and I'm done with nagging. I will test it
+%D locally. In the meantime we just quit.
 
+\continuewhenlmtxmode
 
-
-
-% engine=luatex
-
-% \nopdfcompression
-
-% \starttext
-%   There is a loop somewhere ... todo.
-% \stoptext
-
-\enablemode[tablet] % whatever that means
+\enablemode[tablet]
 
 \setupbodyfont[dejavu]
 
@@ -22,7 +21,7 @@
 
     \definefont
       [TitlePageFont]
-      [MonoBold at 14pt]
+      [MonoBold at 12.5pt]
 
     \setupbodyfont
       [tt,8pt]
@@ -31,7 +30,7 @@
 
     \definefont
       [TitlePageFont]
-      [MonoBold at 17pt]
+      [MonoBold at 16pt]
 
     \setupbodyfont
       [tt]
@@ -96,28 +95,44 @@
 
 \startbuffer
 \startluacode
-local basiclua = libraries.basiclua
-local basictex = libraries.basictex
-local extratex = libraries.extratex
-local extralua = libraries.extralua
-local obsolete = libraries.obsolete
+local basiclua = libraries.basiclua or { }
+local basictex = libraries.basictex or { }
+local extratex = libraries.extratex or { }
+local extralua = libraries.extralua or { }
+local obsolete = libraries.obsolete or { }
+local extended = libraries.extended or { }
+
+extended = table.swapped(extended)
 
 local find = string.find
-local color, gotolocation = context.color, context["goto"]
+
+local color        = context["color"]
+local gotolocation = context["goto"]
+
+local darkred     = { "darkred"     }
+local darkgreen   = { "darkgreen"   }
+local darkblue    = { "darkblue"    }
+local darkcyan    = { "darkcyan"    }
+local darkmagenta = { "darkmagenta" }
+local darkyellow  = { "darkyellow"  }
+local white       = { "white"       }
 
 for k, v in table.sortedpairs(_G) do
     if obsolete[k] or find(k,"_") or k == "arg" or k == "utf" then
+ -- if obsolete[k] or find(k,"_") or k == "arg" then
         --
+    elseif extended[k] then
+        gotolocation(function() color( darkmagenta, k) end, { k } )
     elseif basiclua[k] then
-        gotolocation(function() color( { "darkred" }, k) end, { k } )
+        gotolocation(function() color( darkred,     k) end, { k } )
     elseif extralua[k] then
-        gotolocation(function() color( { "darkgreen" }, k) end, { k } )
+        gotolocation(function() color( darkgreen,   k) end, { k } )
     elseif basictex[k] then
-        gotolocation(function() color( { "darkblue" }, k) end, { k } )
+        gotolocation(function() color( darkblue,    k) end, { k } )
     elseif extratex[k] then
-        gotolocation(function() color( { "darkyellow" }, k) end, { k } )
+        gotolocation(function() color( darkyellow,  k) end, { k } )
     elseif type(v) == "table" then
-        gotolocation(function() color( { "white" }, k) end, { k } )
+        gotolocation(function() color( white,       k) end, { k } )
     end
     context(" ")
 end
@@ -152,13 +167,14 @@ end
   [background=]
 
 \startluacode
-local builtin  = libraries.builtin
-local globals  = libraries.globals
-local basiclua = libraries.basiclua
-local basictex = libraries.basictex
-local extratex = libraries.extratex
-local extralua = libraries.extralua
-local obsolete = libraries.obsolete
+local builtin    = libraries.builtin  or { }
+local globals    = libraries.globals  or { }
+local basiclua   = libraries.basiclua or { }
+local basictex   = libraries.basictex or { }
+local extratex   = libraries.extratex or { }
+local extralua   = libraries.extralua or { }
+local obsolete   = libraries.obsolete or { }
+local extended   = libraries.extended or { }
 
 local sortedkeys = table.sortedkeys
 local mark       = storage.mark
@@ -168,10 +184,16 @@ local sub        = string.sub
 local byte       = string.byte
 local upper      = string.upper
 
+-- check all namespaced
+-- maybe more allocate, can also be a global hash
+-- this needs an update
+
 local skipglobal = table.tohash {
     "_G", "_M", "_ENV", "",
-    "context", "modules", "global", "arg", "utf", 1,
-    "kpse", "commands", "ffi",
+    "context", "commands",
+    "modules", "moduledata", "userdata", "thirddata",
+    "global", "arg", "utf", 1,
+    "kpse", "ffi",
 }
 
 local skipkeys = table.tohash {
@@ -251,19 +273,44 @@ local NC, NR = context.NC, context.NR
 local overstrike, rlap, bf = context.overstrike, context.rlap, context.bf
 local color, gotolocation = context.color, context["goto"]
 
-local function cleanup(s)
-    return "\\char" ..byte(s) .. " "
-end
+local handler ; if false then
 
-local function handler(k,t,depth)
-    k = gsub(k,"([~#$%%^&{}\\|])",cleanup)
-    NC() rlap("\\quad\\tx\\kern" .. (depth or 0).. "em" .. upper(sub(t,1,1)) .. " ".. k) NC() NC() NR()
+    local function cleanup(s)
+        return "\\char" ..byte(s) .. " "
+    end
+
+    handler = function(k,t,depth)
+        NC()
+            rlap("\\quad\\tx\\kern" .. (depth or 0).. "em" .. upper(sub(t,1,1)) .. " ".. k)
+        NC()
+        NC() NR()
+    end
+
+else
+
+    local f_object = string.formatters["\\quad\\tx\\kern%Nem%s %s"]
+
+    handler = function(k,t,depth)
+        if k == "%" or k == "\\" then
+            -- skip
+        else
+            NC()
+                rlap(
+                    f_object(
+                        depth or 0,
+                        upper(sub(t,1,1)),
+                        k
+                    )
+                )
+            NC()
+            NC() NR()
+        end
+    end
+
 end
 
 local function show(title,subtitle,alias,builtin,t,lib,libcolor,glo,glocolor,mark,obsolete)
-    -- todo: table as argument
- -- print(title,subtitle,alias,builtin,t,lib,libcolor,glo,glocolor,mark,obsolete)
-    local keys = sortedkeys(t) -- no sorted_pairs
+    local keys = sortedkeys(t)
     if #keys > 0 then
         local fulltitle = title
         if subtitle and subtitle ~= "" then
@@ -361,18 +408,27 @@ show("global","",sameglobal["global"],false,_G,builtin,"darkgreen",globals,"dark
 
 -- inspect(table.sortedkeys(context))
 
+local function showshow(a,b,c,d,e,f,g,h,j,i,k,l,m)
+    context(function() show(a,b,c,d,e,f,g,h,j,i,k,l,m) end)
+end
+
 for k, v in table.sortedpairs(_G) do
-    if not skipglobal[k] and not obsolete[k] and type(v) == "table" and not marked(v) then
+    if
+        not skipglobal[k]  and
+        not obsolete[k]    and
+        type(v) == "table" and
+        not marked(v)
+    then
 
  --     local mt = getmetatable(v)
  --     print("!!!!!!!!!!",k,v,mt,mt and mt.__index)
 
-        if     basiclua[k] then show(k,"basic lua",sameglobal[k],basiclua[k],v,builtin[k],"darkred",   false,false,true)
-        elseif extralua[k] then show(k,"extra lua",sameglobal[k],extralua[k],v,builtin[k],"darkred",   false,false,true)
-        elseif basictex[k] then show(k,"basic tex",sameglobal[k],basictex[k],v,builtin[k],"darkred",   false,false,true)
-        elseif extratex[k] then show(k,"extra tex",sameglobal[k],extratex[k],v,builtin[k],"darkred",   false,false,true)
+        if     basiclua[k] then showshow(k,"basic lua",sameglobal[k],basiclua[k],v,builtin[k],"darkred",   false,false,true)
+        elseif extralua[k] then showshow(k,"extra lua",sameglobal[k],extralua[k],v,builtin[k],"darkred",   false,false,true)
+        elseif basictex[k] then showshow(k,"basic tex",sameglobal[k],basictex[k],v,builtin[k],"darkred",   false,false,true)
+        elseif extratex[k] then showshow(k,"extra tex",sameglobal[k],extratex[k],v,builtin[k],"darkred",   false,false,true)
         else
-            show(k,"context",  sameglobal[k],false,      v,builtin[k],"darkyellow",false,false,true)
+            showshow(k,"context",  sameglobal[k],false,      v,builtin[k],"darkyellow",false,false,true)
         end
     end
 end

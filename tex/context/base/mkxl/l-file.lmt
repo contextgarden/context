@@ -497,7 +497,7 @@ function file.canbewritten(name)
         return iswritabledir(name)
     else
         local path = pathpart(name)
-        if not path or pathpath == "" then
+        if not path or path == "" then
             path = "."
         end
         return iswritabledir(path)

@@ -840,7 +840,7 @@ typedef enum mp_class_codes {
     mp_period_class            =  1, /* the class number of |.| */
     mp_space_class             =  2, /* the class number of spaces and nonstandard characters */
     mp_percent_class           =  3, /* the class number of `\.\%' */
-    mp_string_class            =  4, /* the class number of |"| */
+    mp_string_class            =  4, /* the class number of |"|, |'| and |\x02| */
     mp_comma_class             =  5, /* the , */
     mp_semicolon_class         =  6, /* the ; */
     mp_left_parenthesis_class  =  7, /* the class number of |(| */
@@ -872,7 +872,7 @@ typedef enum mp_scanner_states {
     mp_var_defining_state,  /* |scanner_status| when a |vardef| is being scanned */
     mp_op_defining_state,   /* |scanner_status| when a macro |def| is being scanned */
     mp_loop_defining_state, /* |scanner_status| when a |for| loop is being scanned */
-    mp_tex_flushing_state,
+ // mp_tex_flushing_state,  /* we have a different |btex ... etex| scanner */
 } mp_scanner_states;
 
 typedef enum mp_verbatim_codes {

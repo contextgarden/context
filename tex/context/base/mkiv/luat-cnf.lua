@@ -90,6 +90,9 @@ function texconfig.init()
             "callback", "font", "lua", "node", "status", "tex", "texconfig", "texio", "token",
             "img", "pdf", "lang",
         },
+        extended = {
+            "file", "io", "os", "string",
+        },
         extralua = {
             "unicode", "utf", "gzip",  "zip", "zlib",
             "lz4", "lzo",
@@ -120,35 +123,30 @@ function texconfig.init()
         globals[k] = tostring(v)
     end
 
-    local function collect(t,fnc)
+    local function collect(t)
         local lib = { }
         for k, v in next, t do
-            if fnc then
-                lib[v] = _G[v]
-            else
-                local keys = { }
-                local gv = _G[v]
-                local tv = type(gv)
-                if tv == "table" then
-                    for k, v in next, gv do
-                     -- keys[k] = true -- by tostring we cannot call overloads functions (security)
-                        keys[k] = tostring(v) -- security
-                     -- keys[k] = type(v)
-                    end
+            local keys = { }
+            local gv = _G[v]
+            local tv = type(gv)
+            if tv == "table" then
+                for k, v in next, gv do
+                 -- keys[k] = true -- by tostring we cannot call overloads functions (security)
+                    keys[k] = tostring(v) -- security
+                 -- keys[k] = type(v)
                 end
-                lib[v] = keys
-                builtin[v] = keys
             end
+            lib[v] = keys
+            builtin[v] = keys
         end
         return lib
     end
 
-    libraries.basiclua  = collect(libraries.basiclua)
-    libraries.basictex  = collect(libraries.basictex)
-    libraries.extralua  = collect(libraries.extralua)
-    libraries.extratex  = collect(libraries.extratex)
-    libraries.functions = collect(libraries.functions,true)
-    libraries.obsolete  = collect(libraries.obsolete)
+    libraries.basiclua = collect(libraries.basiclua)
+    libraries.basictex = collect(libraries.basictex)
+    libraries.extralua = collect(libraries.extralua)
+    libraries.extratex = collect(libraries.extratex)
+    libraries.obsolete = collect(libraries.obsolete)
 
     -- shortcut and helper
 

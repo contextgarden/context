@@ -1548,6 +1548,50 @@ static int filelib_package_searcher_file(lua_State *L)
 
 /* */
 
+static int filelib_isready(lua_State *L)
+{
+    const char *filename = luaL_checkstring(L, 1);
+    int         ready    = 0;
+
+    # if defined(_WIN32)
+
+        // open the file with zero share mode (exclusive lock)
+        HANDLE hFile = CreateFileA(
+            filename,
+            GENERIC_READ | GENERIC_WRITE,
+            0, // no sharing -> fails if another process has it open
+            NULL,
+            OPEN_EXISTING,
+            FILE_ATTRIBUTE_NORMAL,
+            NULL
+        );
+        if (hFile != INVALID_HANDLE_VALUE) {
+            CloseHandle(hFile);
+            ready = 1;
+        }
+
+    # else
+
+        // try opening for read/write and check for locking/busy errors
+        int fd = open(filename, O_RDWR);
+        if (fd == -1) {
+            // if file exists and opened, check if we can acquire an advisory lock (ensures no one else is writing)
+            if (lockf(fd, F_TLOCK, 0) != -1) {
+                // unlock immediately
+                lockf(fd, F_ULOCK, 0);
+                ready = 1;
+            }
+            close(fd);
+        }
+
+    # endif
+
+    lua_pushboolean(L, ready);
+    return 1;
+}
+
+/* */
+
 static const struct luaL_Reg filelib_function_list[] = {
     { "attributes",      filelib_attributes        },
     { "currentdir",      filelib_currentdir        },
@@ -1571,6 +1615,7 @@ static const struct luaL_Reg filelib_function_list[] = {
     { "iswritablefile",  filelib_iswritablefile    }, /* security */
     { "isreadabledir",   filelib_isreadabledir     }, /* security */
     { "isreadablefile",  filelib_isreadablefile    }, /* security */
+    { "isready",         filelib_isready           },
     /* */
     { "lessweird",       filelib_lessweird         },
     { "moreweird",       filelib_moreweird         },

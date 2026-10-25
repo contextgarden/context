@@ -79,12 +79,12 @@ if os.name == "windows" then
     os.binsuffixes = { "exe", "cmd", "bat" }
 elseif os.name == "macosx" then
     os.libsuffix   = "dylib"
-    os.libsuffix   = ""
-    os.libsuffix   = { "" }
+    os.binsuffix   = ""
+    os.binsuffixes = { "" }
 else
     os.libsuffix   = "so"
-    os.libsuffix   = ""
-    os.libsuffix   = { "" }
+    os.binsuffix   = ""
+    os.binsuffixes = { "" }
 end
 
 do

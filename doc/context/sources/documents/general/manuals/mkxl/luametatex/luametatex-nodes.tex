@@ -9,10 +9,8 @@
 % node.direct.ignoremathskip
 % node.direct.makeextensible
 % node.direct.collapsing
-% node.direct.exchange
 % node.direct.getnormalizedline
 % node.direct.migrate
-% node.direct.reverse
 
 % node.direct.getnodes
 % getusage
@@ -1049,18 +1047,20 @@ function node.direct.getidsubtype ( <t:direct> n )
 end
 \stoptyping
 
-You can't change the id of a node, but you can set the subtype:
+You can't change the id of a node, but you can set the subtype but you need to be
+aware of possible side effects because the engine makes assumptions to what
+fields mean given a subtype:
 
-%  function node.direct.setsubtype
+\starttyping[option=LUA]
+function node.direct.setsubtype (
+    <t:direct> n,
+    <t:direct> subtype
+)
+    return <t:integer> subtype
+end
+\stoptyping
 
-% \starttyping[option=LUA]
-% function node.direct.setsubtype (
-%     <t:direct> n
-%     <t:direct> subtype
-% )
-%     return <t:integer> subtype
-% end
-% \stopsubsection
+\stopsubsection
 
 Data fields are general purpose so these helpers come in variants:
 
@@ -1911,6 +1911,29 @@ function node.direct.findnode ( <t:direct> n )
 end
 \stoptyping
 
+A list can be reversed with:
+
+\starttyping[option=LUA]
+function node.direct.reverse ( <t:direct> n )
+    return <t:direct> -- head
+end
+\stoptyping
+
+Two nodes in a list can be swapped using:
+
+\starttyping[option=LUA]
+function node.direct.reverse (
+    <t:direct> head,
+    <t:direct> first,
+    <t:direct> second
+)
+    return <t:direct> -- head
+end
+\stoptyping
+
+% node.direct.exchange
+
+
 \stopsubsection
 
 \startsubsection[title={Traversing}]
@@ -2725,6 +2748,18 @@ This function returns the first glyph or disc node in the given list:
 \starttyping[option=LUA]
 function node.direct.hasglyph ( <t:direct> n )
     return <t:direct> -- n
+end
+\stoptyping
+
+Glyphs can have a slant property which make it a candidate for being an italic
+(around which you want to apply spacing). However, when you've set the glyph
+option \typ {noitaliccorrection}, a slanted glyph will return \type {false}. When
+there is no slant specified it can still qualify as italic when the text control
+is set to \typ {hasitalics} or \type {autoitalics}.
+
+\starttyping[option=LUA]
+function node.direct.isitalicglyph ( <t:direct> n )
+    return <t:boolean>
 end
 \stoptyping
 

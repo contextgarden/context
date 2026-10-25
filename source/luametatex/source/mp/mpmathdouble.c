@@ -456,7 +456,8 @@ static void mp_wrapup_numeric_token(MP mp, unsigned char *start, unsigned char *
     if (errno == 0) {
         set_cur_mod(result);
         if (result >= warning_limit) {
-            if (internal_value(mp_warning_check_internal).data.dval > 0 && (mp->scanner_status != mp_tex_flushing_state)) {
+         // if (internal_value(mp_warning_check_internal).data.dval > 0 && (mp->scanner_status != mp_tex_flushing_state)) {
+            if (internal_value(mp_warning_check_internal).data.dval > 0) {
                 char msg[256];
                 snprintf(msg, 256, "Number is too large (%g)", result);
                 mp_error(
@@ -467,7 +468,8 @@ static void mp_wrapup_numeric_token(MP mp, unsigned char *start, unsigned char *
                 );
             }
         }
-    } else if (mp->scanner_status != mp_tex_flushing_state) {
+ // } else if (mp->scanner_status != mp_tex_flushing_state) {
+    } else {
         mp_error(
             mp,
             "Enormous number has been reduced.",

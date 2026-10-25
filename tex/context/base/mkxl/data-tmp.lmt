@@ -34,17 +34,17 @@ local filecanbewritten = file.canbewritten
 local dirisreadable    = dir.isreadable
 local diriswritable    = dir.iswritable
 
-local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
-local trace_cache    = false  trackers.register("resolvers.cache",    function(v) trace_cache    = v end)
+local trace_locating   = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
+local trace_cache      = false  trackers.register("resolvers.cache",    function(v) trace_cache    = v end)
 
 local report_caches    = logs.reporter("resolvers","caches")
 local report_resolvers = logs.reporter("resolvers","caching")
 
-local resolvers    = resolvers
-local cleanpath    = resolvers.cleanpath
-local resolvepath  = resolvers.resolve
+local resolvers        = resolvers
+local cleanpath        = resolvers.cleanpath
+local resolvepath      = resolvers.resolve
 
-local luautilities = utilities.lua
+local luautilities     = utilities.lua
 
 -- intermezzo
 

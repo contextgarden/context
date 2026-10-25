@@ -422,17 +422,71 @@ static int strlib_characters(lua_State *L)
     return 1;
 }
 
+/*tex
+    These deal with raw bytes (not \UTF).
+*/
+
 static int strlib_bytetable(lua_State *L)
 {
-    size_t l;
-    const char *s = luaL_checklstring(L, 1, &l);
-    lua_createtable(L, (int) l, 0);
-    for (size_t i = 0; i < l; i++) {
-        lua_pushinteger(L, (unsigned char)*(s + i));
+    size_t      len;
+    const char *str = luaL_checklstring(L, 1, &len);
+    lua_createtable(L, (int) len, 0);
+    for (size_t i = 0; i < len; i++) {
+        lua_pushinteger(L, (unsigned char) *(str + i));
         lua_rawseti(L, -2, i + 1);
     }
     return 1;
 }
+
+static int strlib_chartable(lua_State *L)
+{
+    size_t      len;
+    const char *str = luaL_checklstring(L, 1, &len);
+    lua_createtable(L, (int) len, 0);
+    for (size_t i = 0; i < len; i++) {
+        lua_pushlstring(L, str + i, 1);
+        lua_rawseti(L, -2, i + 1);
+    }
+    return 1;
+}
+
+static int strlib_totable(lua_State *L)
+{
+    size_t      len;
+    const char *str = luaL_checklstring(L, 1, &len);
+    int         byt = lua_toboolean(L, 2);
+    lua_createtable(L, (int) len, 0);
+    for (size_t i = 0; i < len; i++) {
+        if (byt) {
+            lua_pushinteger(L, (unsigned char) *(str + i));
+        } else {
+            lua_pushlstring(L, str + i, 1);
+        }
+        lua_rawseti(L, -2, i + 1);
+    }
+    return 1;
+}
+
+/* */
+
+static int strlib_replacecharacter(lua_State *L)
+{
+    size_t source_len, old_len, new_len;
+    luaL_Buffer b;
+    const char *source_str = luaL_checklstring(L, 1, &source_len);
+    const char *old_str    = luaL_checklstring(L, 2, &old_len);
+    const char *new_str    = luaL_checklstring(L, 3, &new_len);
+    char       *target_str = luaL_buffinitsize(L, &b, source_len);
+    char old = old_str[0];
+    char new = new_str[0];
+    for (size_t i = 0; i < source_len; i++) {
+        target_str[i] = (source_str[i] == old) ? new : source_str[i];
+    }
+    luaL_pushresultsize(&b, source_len);
+    return 1;
+}
+
+/* */
 
 static int strlib_utfvaluetable(lua_State *L)
 {
@@ -5410,6 +5464,8 @@ static const luaL_Reg strlib_function_list[] = {
     { "bytes",             strlib_bytes             },
     { "bytepairs",         strlib_bytepairs         },
     { "bytetable",         strlib_bytetable         },
+    { "chartable",         strlib_chartable         },
+    { "totable",           strlib_totable           },
     { "linetable",         strlib_linetable         },
     { "utfvalues",         strlib_utfvalues         },
     { "utfcharacters",     strlib_utfcharacters     },
@@ -5439,6 +5495,7 @@ static const luaL_Reg strlib_function_list[] = {
     { "hextointeger",      strlib_hextointeger      },
     { "chrtointeger",      strlib_chrtointeger      },
     { "splitintolines",    strlib_splitintolines    },
+    { "replacecharacter",  strlib_replacecharacter  },
     /* handy for pdf strings */                     
     { "topdfsixteen",      strlib_topdfsixteen      }, 
     { "topdfeight",        strlib_topdfeight        },

@@ -602,6 +602,35 @@ static int oslib_launch(lua_State *L)
 
 # endif
 
+# if defined(_WIN32)
+
+    static int oslib_getcpucount(lua_State *L)
+    {
+        SYSTEM_INFO sysinfo;
+        GetSystemInfo(&sysinfo);
+        lua_pushinteger(L, (int) sysinfo.dwNumberOfProcessors);
+        return 1;
+    }
+
+# elif defined(__unix__) || defined(__APPLE__)
+
+    static int oslib_getcpucount(lua_State *L)
+    {
+        long n = sysconf(_SC_NPROCESSORS_ONLN);
+        lua_pushinteger(L, (n < 1) ? 1 : (int) n);
+        return 1;
+    }
+
+# else
+
+    static int oslib_getcpucount(lua_State *L)
+    {
+        lua_pushinteger(L, 1);
+        return 1;
+    }
+
+# endif
+
 static const luaL_Reg oslib_function_list[] = {
     { "sleep",          oslib_sleep          },
     { "uname",          oslib_uname          },
@@ -621,6 +650,7 @@ static const luaL_Reg oslib_function_list[] = {
     { "getnamevalues",  oslib_getnamevalues  },
     { "gettypevalues",  oslib_gettypevalues  },
     { "getunamefields", oslib_getunamefields },
+    { "getcpucount",    oslib_getcpucount    },
     /* */
     { NULL,             NULL                 },
 };

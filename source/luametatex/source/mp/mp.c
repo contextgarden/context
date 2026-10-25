@@ -15339,25 +15339,25 @@ static int mp_check_outer_validity(MP mp)
 {
     if (mp->scanner_status == mp_normal_state) {
         return 1;
-    } else if (mp->scanner_status == mp_tex_flushing_state) {
-        /*tex
-            Check if the file has ended while flushing \tex\ material and set the result value for
-            |check_outer_validity|.
-        */
-        if (cur_sym != NULL) {
-            return 1;
-        } else {
-            char msg[256];
-            snprintf(msg, 256, "TeX mode didn't end; all text was ignored after line %d", (int) mp->warning_line);
-            set_cur_sym(mp->frozen_etex);
-            mp_ins_error(
-                mp,
-                msg,
-                "The file ended while I was looking for the 'etex' to finish this TeX material.\n"
-                "I've inserted 'etex' now."
-            );
-            return 0;
-        }
+ // } else if (mp->scanner_status == mp_tex_flushing_state) {
+ //     /*tex
+ //         Check if the file has ended while flushing \tex\ material and set the result value for
+ //         |check_outer_validity|.
+ //     */
+ //     if (cur_sym != NULL) {
+ //         return 1;
+ //     } else {
+ //         char msg[256];
+ //         snprintf(msg, 256, "TeX mode didn't end; all text was ignored after line %d", (int) mp->warning_line);
+ //         set_cur_sym(mp->frozen_etex);
+ //         mp_ins_error(
+ //             mp,
+ //             msg,
+ //             "The file ended while I was looking for the 'etex' to finish this TeX material.\n"
+ //             "I've inserted 'etex' now."
+ //         );
+ //         return 0;
+ //     }
     } else {
         /*tex  back up an outer symbolic token so that it can be reread */
         // if (cur_sym != NULL) {
@@ -15541,10 +15541,10 @@ static void mp_get_next(MP mp)
             case mp_space_class:
                 goto SWITCH;
             case mp_percent_class:
-                if (mp->scanner_status == mp_tex_flushing_state && mp_input_location < mp_input_limit) {
-                    /*tex |btex .. etex|: */
-                    goto SWITCH;
-                }
+             // if (mp->scanner_status == mp_tex_flushing_state && mp_input_location < mp_input_limit) {
+             //     /*tex |btex .. etex|: */
+             //     goto SWITCH;
+             // }
                 /*tex
                     Move to next line of file, or |goto restart| if there is no
                     next line.
@@ -15555,9 +15555,10 @@ static void mp_get_next(MP mp)
                     goto SWITCH;
                 }
             case mp_string_class:
-                if (mp->scanner_status == mp_tex_flushing_state) {
-                    goto SWITCH;
-                } else {
+             // if (mp->scanner_status == mp_tex_flushing_state) {
+             //     goto SWITCH;
+             // } else {
+                {
                     /* We also accept ASCII BTX ... ETX here. */
                     unsigned char cend = c == '"' ? '"' : c == '\'' ? '\'' : 3 ;
                     if (c == '\'') {
@@ -15604,7 +15605,7 @@ static void mp_get_next(MP mp)
                     ++mp_input_location;
                     set_cur_cmd(mp_string_command);
                     return;
-                }
+                 }
             case mp_comma_class:
             case mp_semicolon_class:
             case mp_left_parenthesis_class:
@@ -15612,9 +15613,9 @@ static void mp_get_next(MP mp)
                 k = mp_input_location - 1;
                 goto FOUND;
             case mp_invalid_class:
-                if (mp->scanner_status == mp_tex_flushing_state) {
-                    goto SWITCH;
-                } else {
+             // if (mp->scanner_status == mp_tex_flushing_state) {
+             //     goto SWITCH;
+             // } else {
                     /*tex
                         Decry the invalid character and |goto restart|. We go to |restart| instead of
                         to |SWITCH|, because we might enter |token_state| after the error has been
@@ -15627,7 +15628,7 @@ static void mp_get_next(MP mp)
                         "that it ever happened."
                     );
                     goto RESTART;
-                }
+             // }
             default:
                 /*tex letters, etc. */
                 break;

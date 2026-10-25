@@ -20,7 +20,7 @@
 \registerctxluafile{l-package} {autosuffix}
 \registerctxluafile{l-lpeg}    {}
 \registerctxluafile{l-function}{}
-\registerctxluafile{l-string}  {}
+\registerctxluafile{l-string}  {autosuffix}
 \registerctxluafile{l-table}   {autosuffix}
 \registerctxluafile{l-boolean} {}
 \registerctxluafile{l-number}  {autosuffix}
@@ -29,7 +29,7 @@
 \registerctxluafile{l-os}      {autosuffix}
 \registerctxluafile{l-file}    {autosuffix}
 \registerctxluafile{l-md5}     {autosuffix}
-\registerctxluafile{l-sha}     {}
+\registerctxluafile{l-sha}     {autosuffix}
 \registerctxluafile{l-dir}     {autosuffix}
 \registerctxluafile{l-unicode} {autosuffix}
 \registerctxluafile{l-url}     {}

@@ -971,3 +971,366 @@ int luaopen_process(lua_State *L)
     lua_settable(L, -3);
     return 1;
 }
+
+/*tex
+
+    For now we put this code here because processes and watchdogs kind of relate (or can be
+    combined). As usual with this low level hackery, the operating specific code was the
+    result of some querying on the web and from that we moved on.
+
+    We use a simple model: we create a watchdog and bind a callback function to it that we
+    register in the \LUA\ registry. We limits the functionality here because the (various)
+    applications can best be done at the \LUA\ end (which is also more fun). We can quit
+    am event handler explicitly because the garbage collector can take a while to kick in
+    because we use little memory.
+
+    Because this is not a POSIX feature we need a seperate branch for linux and the bsd
+    operating systems. We could also trigger on a change in file but that feature is not
+    available on osx so not portable. In practice we should work with a job ticket (at
+    leat that's what I always did) and those are unique (and later cleaned up). Anyway, the
+    intelligence sits at the \LUA\ end.
+
+*/
+
+# if defined(_WIN32)
+
+    // already ok
+
+# elif defined(__linux__)
+
+    # include <sys/inotify.h>
+
+# elif defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
+
+    # include <sys/types.h>
+    # include <sys/event.h>
+
+# endif
+
+typedef struct watch_data {
+    int        lua_ref;
+    char      *path;
+
+# if defined(_WIN32)
+
+    HANDLE     hDir;
+    OVERLAPPED overlapped;
+    char       buffer[4096];
+    DWORD      bytesReturned;
+
+# elif defined(__linux__)
+
+    int        fd;
+    int        wd;
+
+# elif defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
+
+    int        fd;
+    int        kq;
+
+# endif
+} watch_data;
+
+// /* todo (when we add more features) */
+//
+// static inline watch_data * watchlib_aux_valid(lua_State *L)
+// {
+//     watch_data * w = lua_touserdata(L, 1);
+//     if (w && lua_getmetatable(L, i)) {
+//         lua_get_metatablelua(watch_instance);
+//         if (! lua_rawequal(L, -1, -2)) {
+//             w = NULL;
+//         }
+//         lua_pop(L, 2);
+//     }
+//     return w;
+// }
+
+static void watchlib_aux_callback(lua_State *L, int lua_ref, const char *filename)
+{
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lua_ref);
+    lua_pushstring(L, filename ? filename : "");
+    /*tex We might at some point pass more details. */
+    if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
+        tex_formatted_warning("watcher","error in callback: %s", lua_tostring(L, -1));
+        lua_pop(L, 1);
+    }
+}
+
+static int watchlib_register(lua_State *L)
+{
+    const char *path = luaL_checkstring(L, 1);
+    luaL_checktype(L, 2, LUA_TFUNCTION);
+
+    watch_data *w = (watch_data *) lua_newuserdata(L, sizeof(watch_data));
+    memset(w, 0, sizeof(watch_data));
+
+    w->path = lmt_memory_strdup(path);
+
+    lua_pushvalue(L, 2);
+    w->lua_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+
+    luaL_getmetatable(L, WATCHER_METATABLE_INSTANCE);
+    lua_setmetatable(L, -2); /* so we gc on error */
+
+    # if defined(_WIN32)
+
+        w->hDir = CreateFileA(
+            path,
+            FILE_LIST_DIRECTORY,
+            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+            NULL,
+            OPEN_EXISTING,
+            FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
+            NULL
+        );
+        if (w->hDir == INVALID_HANDLE_VALUE) {
+            return luaL_error(L, "watcher: failed to open directory for monitoring");
+        }
+        memset(&w->overlapped, 0, sizeof(OVERLAPPED));
+        w->overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+        ReadDirectoryChangesW(
+            w->hDir, w->buffer, sizeof(w->buffer),
+            FALSE,
+            FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME,
+         // FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_ATTRIBUTES;
+            &w->bytesReturned,
+            &w->overlapped,
+            NULL
+        );
+
+    # elif defined(__linux__)
+
+        w->fd = inotify_init1(IN_NONBLOCK);
+        if (w->fd < 0) {
+            return luaL_error(L, "watcher: failed to initialize inotify");
+        }
+        w->wd = inotify_add_watch(w->fd, path, IN_CREATE | IN_MOVED_TO);
+     // w->wd = inotify_add_watch(w->fd, path, IN_CREATE | IN_MOVED_TO | IN_MODIFY | IN_ATTRIB);
+        if (w->wd < 0) {
+            close(w->fd);
+            return luaL_error(L, "watcher: failed to add watch for path: %s", path);
+        }
+
+    # elif defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
+
+        w->kq = kqueue();
+        if (w->kq == -1) {
+            return luaL_error(L, "watcher: failed to create kqueue");
+        }
+        w->fd = open(path, O_RDONLY);
+        if (w->fd == -1) {
+            close(w->kq);
+            return luaL_error(L, "watcher: failed to open directory for kqueue");
+        }
+        struct kevent ev;
+        EV_SET(
+            &ev,
+            w->fd,
+            EVFILT_VNODE,
+            EV_ADD | EV_ENABLE | EV_CLEAR,
+            NOTE_WRITE | NOTE_EXTEND | NOTE_RENAME | NOTE_DELETE,
+            0,
+            NULL
+        );
+        if (kevent(w->kq, &ev, 1, NULL, 0, NULL) == -1) {
+            close(w->fd);
+            close(w->kq);
+            return luaL_error(L, "watcher: failed to register kqueue event");
+        }
+
+    # endif
+
+    return 1;
+}
+
+static int watchlib_check(lua_State *L)
+{
+    watch_data *w = (watch_data *) luaL_checkudata(L, 1, WATCHER_METATABLE_INSTANCE);
+
+    if (! w->path) {
+        return 0;
+    }
+
+    # if defined(_WIN32)
+
+        DWORD transferred = 0;
+        if (GetOverlappedResult(w->hDir, &w->overlapped, &transferred, FALSE)) {
+            if (transferred > 0) {
+                char *p = w->buffer;
+                for (;;) {
+                    FILE_NOTIFY_INFORMATION *fni = (FILE_NOTIFY_INFORMATION *)p;
+                    if (fni->Action == FILE_ACTION_ADDED || fni->Action == FILE_ACTION_RENAMED_NEW_NAME) {
+                        char filename[MAX_PATH];
+                        int size = WideCharToMultiByte(CP_UTF8, 0, fni->FileName, fni->FileNameLength / sizeof(WCHAR), filename, sizeof(filename) - 1, NULL, NULL);
+                        filename[size] = '\0';
+                        watchlib_aux_callback(L, w->lua_ref, filename);
+                    }
+                    if (fni->NextEntryOffset == 0) break;
+                    p += fni->NextEntryOffset;
+                }
+            }
+            // re-arm asynchronous read
+            memset(&w->overlapped, 0, sizeof(OVERLAPPED));
+            w->overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+            ReadDirectoryChangesW(
+                w->hDir,
+                w->buffer,
+                sizeof(w->buffer),
+                FALSE,
+                FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME,
+                &w->bytesReturned,
+                &w->overlapped,
+                NULL
+            );
+        }
+
+     # elif defined(__linux__)
+
+        char buf[4096] __attribute__ ((aligned(__alignof__(struct inotify_event))));
+        ssize_t len = read(w->fd, buf, sizeof(buf));
+        if (len < 0) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                return 0;
+            } else {
+                return luaL_error(L, "watcher: error reading inotify events");
+            }
+        }
+
+        const struct inotify_event *event;
+        for (char *ptr = buf; ptr < buf + len; ptr += sizeof(struct inotify_event) + event->len) {
+            event = (const struct inotify_event *) ptr;
+            if (event->len > 0 && (event->mask & (IN_CREATE | IN_MOVED_TO))) {
+                watchlib_aux_callback(L, w->lua_ref, event->name);
+            }
+        }
+
+    # elif defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
+
+        struct timespec timeout = { 0, 0 }; /* Non-blocking poll */
+        struct kevent ev;
+        int n = kevent(w->kq, NULL, 0, &ev, 1, &timeout);
+        if (n > 0) {
+            // kqueue signals that directory changed; pass directory path or notification
+            watchlib_aux_callback(L, w->lua_ref, w->path);
+            // re-add event structure if cleared
+            struct kevent readd;
+            EV_SET(
+                &readd,
+                w->fd,
+                EVFILT_VNODE,
+                EV_ADD | EV_ENABLE | EV_CLEAR,
+                NOTE_WRITE | NOTE_EXTEND | NOTE_RENAME | NOTE_DELETE,
+                0,
+                NULL
+            );
+            kevent(w->kq, &readd, 1, NULL, 0, NULL);
+        }
+
+    # endif
+
+    return 0;
+}
+
+static int watchlib_gc(lua_State *L)
+{
+    watch_data *w = (watch_data *) luaL_checkudata(L, 1, WATCHER_METATABLE_INSTANCE);
+
+    if (! w->path) {
+        return 0;
+    }
+
+    if (w->lua_ref != LUA_NOREF) {
+        luaL_unref(L, LUA_REGISTRYINDEX, w->lua_ref);
+    }
+    if (w->path) {
+        lmt_memory_free(w->path);
+        w->path = NULL;
+    }
+
+    # if defined(_WIN32)
+
+        if (w->hDir != INVALID_HANDLE_VALUE) {
+            CancelIo(w->hDir);
+            CloseHandle(w->hDir);
+        }
+        if (w->overlapped.hEvent) {
+            CloseHandle(w->overlapped.hEvent);
+        }
+
+    # elif defined(__linux__)
+
+        if (w->fd >= 0) {
+            if (w->wd >= 0) {
+                inotify_rm_watch(w->fd, w->wd);
+            }
+            close(w->fd);
+        }
+
+    # elif defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
+
+        if (w->fd >= 0) {
+            close(w->fd);
+        }
+        if (w->kq >= 0) {
+            close(w->kq);
+        }
+
+    # endif
+
+    w->path = NULL; /* A signal that we're done with it. */
+
+    return 0;
+}
+
+/*tex
+
+    Currently this one is the same as a garbage collection. We let \LUA\ do the userdata cleanup
+    but this way we can make sure that there is no dangling event handler when we're done.
+
+*/
+
+static int watchlib_unregister(lua_State *L)
+{
+    return watchlib_gc(L);
+}
+
+static int watchlib_tostring(lua_State *L)
+{
+    watch_data *w = (watch_data *) luaL_checkudata(L, 1, WATCHER_METATABLE_INSTANCE);
+    if (w) {
+        lua_pushfstring(L, "<watcher %p : %s>", w, w->path ? w->path : "not active");
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+static const struct luaL_Reg watchlib_function_list[] = {
+    { "register",   watchlib_register   },
+    { "unregister", watchlib_unregister },
+    { "check",      watchlib_check      },
+    /* */
+    { "tostring",   watchlib_tostring   },
+    /* */
+    { "__gc",       watchlib_gc         },
+    /* */
+    { NULL,         NULL                }
+};
+
+int luaopen_watcher(lua_State *L)
+{
+    luaL_newmetatable(L, WATCHER_METATABLE_INSTANCE);
+    luaL_setfuncs(L, watchlib_function_list, 0);
+    lua_pushliteral(L, "__index");
+    lua_pushvalue(L, -2);
+    lua_settable(L, -3);
+    lua_pushliteral(L, "__tostring");
+    lua_pushliteral(L, "tostring");
+    lua_gettable(L, -3);
+    lua_settable(L, -3);
+    lua_pushliteral(L, "__name");
+    lua_pushliteral(L, "watcher");
+    lua_settable(L, -3);
+    return 1;
+}

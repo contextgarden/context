@@ -827,7 +827,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-package"] = package.loaded["l-package"] or true
 
--- original size: 12563, stripped down to: 8937
+-- original size: 12583, stripped down to: 8949
 
 if not modules then modules={} end modules ['l-package']={
  version=1.001,
@@ -843,7 +843,7 @@ local P,S,Cs,lpegmatch=lpeg.P,lpeg.S,lpeg.Cs,lpeg.match
 local package=package
 local searchers=package.searchers or package.loaders
 local filejoin=file and file.join    or function(path,name)   return path.."/"..name end
-local isreadable=file and file.isreadable or function(name)  local f=io.open(name) if f then f:close() return true end end
+local fileisreadable=file and file.isreadable or function(name)  local f=io.open(name) if f then f:close() return true end end
 local addsuffix=file and file.addsuffix  or function(name,suffix) return name.."."..suffix end
 local function cleanpath(path) 
  return path
@@ -1037,7 +1037,7 @@ local function loadedbypath(name,rawname,paths,islib,what)
   if trace then
    helpers.report("%s path, identifying '%s' on '%s'",what,name,path)
   end
-  if isreadable(resolved) then
+  if fileisreadable(resolved) then
    if trace then
     helpers.report("%s path, '%s' found on '%s'",what,name,resolved)
    end
@@ -1056,7 +1056,7 @@ local function loadedbyname(name,rawname)
   if trace then
    helpers.report("qualified name, identifying '%s'",what,name)
   end
-  if isreadable(name) then
+  if fileisreadable(name) then
    if trace then
     helpers.report("qualified name, '%s' found",what,name)
    end
@@ -1968,7 +1968,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-function"] = package.loaded["l-function"] or true
 
--- original size: 361, stripped down to: 317
+-- original size: 418, stripped down to: 367
 
 if not modules then modules={} end modules ['l-functions']={
  version=1.001,
@@ -1978,7 +1978,8 @@ if not modules then modules={} end modules ['l-functions']={
  license="see context related readme files"
 }
 functions=functions or {}
-function functions.dummy() end
+function functions.dummy   ()    end
+function functions.identity(s) return s end
 
 
 end -- of closure
@@ -1987,7 +1988,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-string"] = package.loaded["l-string"] or true
 
--- original size: 7077, stripped down to: 3560
+-- original size: 7468, stripped down to: 3570
 
 if not modules then modules={} end modules ['l-string']={
  version=1.001,
@@ -1997,7 +1998,7 @@ if not modules then modules={} end modules ['l-string']={
  license="see context related readme files"
 }
 local string=string
-local sub,gmatch,format,char,byte,rep,lower,find=string.sub,string.gmatch,string.format,string.char,string.byte,string.rep,string.lower,string.find
+local sub,gsub,gmatch,format,char,byte,rep,lower,find=string.sub,string.gsub,string.gmatch,string.format,string.char,string.byte,string.rep,string.lower,string.find
 local lpegmatch,patterns=lpeg.match,lpeg.patterns
 local P,S,C,Ct,Cc,Cs=lpeg.P,lpeg.S,lpeg.C,lpeg.Ct,lpeg.Cc,lpeg.Cs
 do
@@ -2094,17 +2095,18 @@ function string.valid(str,default)
  return (type(str)=="string" and str~="" and str) or default or nil
 end
 string.itself=function(s) return s end
-local pattern_c=Ct(C(1)^0) 
-local pattern_b=Ct((C(1)/byte)^0)
-function string.totable(str,bytes)
- return lpegmatch(bytes and pattern_b or pattern_c,str)
-end
-local replacer=lpeg.replacer("@","%%") 
 function string.tformat(fmt,...)
- return format(lpegmatch(replacer,fmt),...)
+ return format((gsub(fmt,"@","%%")),...)
 end
 string.quote=string.quoted
 string.unquote=string.unquoted
+if not string.totable then
+ local pattern_c=Ct(C(1)^0) 
+ local pattern_b=Ct((C(1)/byte)^0)
+ function string.totable(str,bytes)
+  return lpegmatch(bytes and pattern_b or pattern_c,str)
+ end
+end
 if not string.bytetable then 
  local limit=5000 
  function string.bytetable(str) 
@@ -5071,7 +5073,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-dir"] = package.loaded["l-dir"] or true
 
--- original size: 19895, stripped down to: 11692
+-- original size: 19989, stripped down to: 11762
 
 if not modules then modules={} end modules ['l-dir']={
  version=1.001,
@@ -5096,6 +5098,8 @@ local currentdir=lfs.currentdir
 local chdir=lfs.chdir
 local mkdir=lfs.mkdir
 local onwindows=os.type=="windows" or find(os.getenv("PATH"),";",1,true)
+dir.iswritable=file.iswritable 
+dir.isreadable=file.isreadable 
 if onwindows then
  local tricky=S("/\\")*P(-1)
  isdir=function(name)
@@ -5120,9 +5124,9 @@ else
  lfs.isdir=isdir
  lfs.isfile=isfile
 end
-local isreadable=file.isreadable
+local dirisreadable=file.isreadable
 local walkdir=function(p,...)
- if isreadable(p.."/.") then
+ if dirisreadable(p.."/.") then
   return scandir(p,...)
  else
   return function() end
@@ -22073,7 +22077,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tmp"] = package.loaded["data-tmp"] or true
 
--- original size: 17466, stripped down to: 12369
+-- original size: 17682, stripped down to: 12513
 
 if not modules then modules={} end modules ['data-tmp']={
  version=1.100,
@@ -22087,13 +22091,17 @@ local pcall,loadfile,collectgarbage=pcall,loadfile,collectgarbage
 local format,lower,gsub=string.format,string.lower,string.gsub
 local concat,serialize,fastserialize,serializetofile=table.concat,table.serialize,table.fastserialize,table.tofile
 local mkdirs,expanddirname,isdir,isfile=dir.mkdirs,dir.expandname,lfs.isdir,lfs.isfile
-local is_writable,is_readable=file.is_writable,file.is_readable
 local collapsepath,joinfile,addsuffix,dirname=file.collapsepath,file.join,file.addsuffix,file.dirname
 local savedata=file.savedata
 local formatters=string.formatters
 local osexit,osdate,osuuid=os.exit,os.date,os.uuid
 local removefile=os.remove
 local md5hex=md5.hex
+local fileisreadable=file.isreadable
+local fileiswritable=file.iswritable
+local filecanbewritten=file.canbewritten
+local dirisreadable=dir.isreadable
+local diriswritable=dir.iswritable
 local trace_locating=false  trackers.register("resolvers.locating",function(v) trace_locating=v end)
 local trace_cache=false  trackers.register("resolvers.cache",function(v) trace_cache=v end)
 local report_caches=logs.reporter("resolvers","caches")
@@ -22161,17 +22169,17 @@ local function identify()
     cachepath=collapsepath(cachepath)
     local valid=isdir(cachepath)
     if valid then
-     if is_readable(cachepath) then
+     if dirisreadable(cachepath) then
       readables[#readables+1]=cachepath
-      if not writable and is_writable(cachepath) then
+      if not writable and diriswritable(cachepath) then
        writable=cachepath
       end
      end
     elseif not writable then
      local cacheparent=dirname(cachepath)
-     if is_writable(cacheparent) then 
+     if diriswritable(cacheparent) then 
       mkdirs(cachepath)
-      if isdir(cachepath) and is_writable(cachepath) then
+      if isdir(cachepath) and diriswritable(cachepath) then
        report_caches("path %a created",cachepath)
        writable=cachepath
        readables[#readables+1]=cachepath
@@ -22190,8 +22198,8 @@ local function identify()
     cachepath=resolvepath(cachepath)
     cachepath=cleanpath(cachepath)
     local valid=isdir(cachepath)
-    if valid and is_readable(cachepath) then
-     if not writable and is_writable(cachepath) then
+    if valid and dirisreadable(cachepath) then
+     if not writable and diriswritable(cachepath) then
       readables[#readables+1]=cachepath
       writable=cachepath
       break
@@ -22304,14 +22312,14 @@ local function setluanames(path,name)
 end
 local function getfirstreadablefile(filename,...)
  local fullname,path=setfirstwritablefile(filename,...)
- if is_readable(fullname) then
+ if fileisreadable(fullname) then
   return fullname,path 
  end
  local rd=getreadablepaths(...)
  for i=1,#rd do
   local path=rd[i]
   local fullname=joinfile(path,filename)
-  if is_readable(fullname) then
+  if fileisreadable(fullname) then
    usedreadables[i]=true
    return fullname,path 
   end
@@ -22365,7 +22373,7 @@ function caches.loaddata(readables,name,writable)
 end
 function caches.is_writable(filepath,filename)
  local tmaname,tmcname=setluanames(filepath,filename)
- return is_writable(tmaname)
+ return filecanbewritten(tmaname)
 end
 if sequencer then
  serialize=sequencer.serialize
@@ -26842,8 +26850,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua util-tmr.lua trac-tmr.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua util-sig.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua util-jsn.lua
 -- skipped libraries : -
--- original bytes    : 1075622
--- stripped bytes    : 429105
+-- original bytes    : 1076400
+-- stripped bytes    : 429597
 
 -- end library merge
 

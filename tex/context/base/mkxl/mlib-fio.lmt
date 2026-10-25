@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['mlib-fio'] = {
 local type = type
 local find, formatters = string.find, string.formatters
 local concat = table.concat
-local suffix, addsuffix, iswritable = file.suffix, file.addsuffix, file.iswritable
+local suffix, addsuffix, canbewritten = file.suffix, file.addsuffix, file.canbewritten
 local urlhashed = url.hashed
 
 local findfile     = resolvers.findfile
@@ -100,35 +100,9 @@ local function findmpfile(name,ftype)
     return nil
 end
 
--- variant 1
-
--- finders.file = function(specification,name,mode,kind)
---     if mode == "r" then
---         return findmpfile(name,kind)
---     elseif iswritable(name) then
---         return name
---     else
---         return nil
---     end
--- end
-
--- variant 2
-
--- finders.file = function(specification,name,mode,kind)
---     if not mode or mode == "r" then
---         return findmpfile(name,kind)
---     elseif iswritable(name) then
---         return name
---     else
---         return nil
---     end
--- end
-
--- variant 3
-
 finders.file = function(specification,name,mode,kind)
     if mode == "w" then
-        return iswritable(name) and name or nil
+        return canbewritten(name) and name or nil
     else
         return findmpfile(name,kind) or nil
     end

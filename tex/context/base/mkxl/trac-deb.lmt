@@ -305,7 +305,7 @@ local function processwarning()
 end
 
 function tracers.printwarning(specification)
-    logs.report("luatex warning","%s: %s",specification.lastlocation,specification.lastwarning)
+    logs.report("luametatex warning","%s: %s",specification.lastlocation,specification.lastwarning)
 end
 
 directives.register("system.errorcontext", function(v)

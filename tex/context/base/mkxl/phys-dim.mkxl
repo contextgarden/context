@@ -427,7 +427,8 @@
 \newtoks \everyunits % we keep the old \units command so we need a longer one
 
 \appendtoks
-    \disablemathpunctuation
+  % \disablemathpunctuation
+    \enablemathpunctuation
     \nocharacteralign
 \to \everyunits
 
