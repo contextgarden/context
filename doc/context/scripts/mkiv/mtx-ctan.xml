@@ -8,10 +8,18 @@
  <flags>
   <category name="basic">
    <subcategory>
-    <flag name="packages"><short>list available packages [--field=key|name|caption]</short></flag>
-    <flag name="topics"><short>list available topics [--field=key|name|details]</short></flag>
-    <flag name="details"><short>show details about package</short></flag>
     <flag name="pattern" value="string"><short>use this pattern, otherwise first argument</short></flag>
+    <flag name="download" value="string"><short>install (fonts) from texlive</short></flag>
+    <flag name="force" value="string"><short>force installation even when present</short></flag>
+    <flag name="all" value="string"><short>also install when multiple packages</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="packages"><short>list available ctan packages [--field=key|name|caption]</short></flag>
+    <flag name="topics"><short>list available ctan topics [--field=key|name|details]</short></flag>
+    <flag name="details"><short>show details about a ctan package</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="texlive"><short>install a texlive package [--download] [--force] [--all]</short></flag>
    </subcategory>
   </category>
  </flags>

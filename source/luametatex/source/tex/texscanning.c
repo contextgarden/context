@@ -1,4 +1,4 @@
-﻿/*
+/*
     See license.txt in the root of this project.
 */
 
@@ -4000,7 +4000,7 @@ halfword tex_scan_glue(int level, int optional_equal, int options_too, halfword 
     }
     while (1) {
      // switch (tex_scan_character(options_too ? "pmlsd" : "pms", 0, 1, 0)) {
-        switch (tex_scan_character(options_too ? "pmls"  : "pms", 0, 1, 0)) {
+        switch (tex_scan_character(options_too ? "pmlsnd" : "pms", 0, 1, 0)) {
             case 0:
                 return q;
             case 'p':
@@ -4030,6 +4030,11 @@ halfword tex_scan_glue(int level, int optional_equal, int options_too, halfword 
                     halfword order = normal_glue_order;
                     glue_stretch(q) = tex_scan_dimension(mu, 1, 0, 0, &order, NULL);
                     glue_stretch_order(q) = order;
+                }
+                break;
+            case 'n':
+                if (tex_scan_mandate_keyword("nobreak", 1)) {
+                    glue_options(q) |= glue_option_no_auto_break;
                 }
                 break;
             case 'm':

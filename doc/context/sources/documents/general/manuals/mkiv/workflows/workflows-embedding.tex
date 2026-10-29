@@ -1,0 +1,160 @@
+% language=us runpath=texruns:manuals/workflows
+
+\environment workflows-style
+
+\startcomponent workflows-embedding
+
+\startchapter[title={Embedding text}]
+
+When you embed graphics that use fonts the filesize can be reduced by sharing
+fonts. Doing this is somewhat complicated by the fact that the logic must be
+robust which is not trivial given the way \PDF\ files can be made. For instance,
+when I implemented this feature in \MKIV\ I had an application in mind that in
+the end was not suitable: all the included text in the (\EPS\ images) turned out
+to be either unfamiliar \TYPEONE\ clones (operating systems and graphic editors
+can make mess of this) or the text was turned into vectors images (probably to
+work around possible validation issues).
+
+So, for now I assume that we're dealing with for instance text made by \TEX\
+(read: \LUATEX), for instance typesetting buffers in a sub|-|run (which is handy
+when writing a manual) or using precooked \METAFUN\ images. In order for this to
+work (at least for now) we need to enable inclusion via \LUA: \footnote {In
+\CONTEXT\ \LMTX\ these things will happen automatically.}
+
+\startbuffer
+\enabledirectives[graphics.pdf.uselua]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Also, because we don't want unexpected side effects, you need to be explicit
+about sharing fonts using the \type {compact} option, as in:
+
+\starttyping
+\externalfigure[one.pdf][compact=yes]
+\externalfigure[two.pdf][compact=yes]
+\stoptyping
+
+Here we give an example of embedded typeset buffers:
+
+\startbuffer
+\startbuffer[one]
+\setupbodyfont[dejavu]
+\startTEXpage
+  \samplefile{ward} \sl \samplefile{klein} \bf \samplefile{sapolsky}
+\stopTEXpage
+\stopbuffer
+
+\startbuffer[two]
+\setupbodyfont[dejavu]
+\startTEXpage
+  \samplefile{klein} \bf \samplefile{ward} \sl \samplefile{sapolsky}
+\stopTEXpage
+\stopbuffer
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The actual typesetting takes place with:
+
+\startbuffer
+\startcombination
+  {\typesetbuffer[one]
+    [height=.25\textheight,compact=yes,frame=on,rulethickness=.2pt]}
+  {one}
+  {\typesetbuffer[two]
+    [height=.25\textheight,compact=yes,frame=on,rulethickness=.2pt]}
+  {two}
+\stopcombination
+\stopbuffer
+
+\typebuffer
+
+In \in {figure} [fig:sharedfonts-1] we see the two pages. The \type {compact}
+option makes sure that we share fonts when possible. In this case we used
+\LUATEX\ to create these (independent) \PDF\ files so we can be rather sure that
+we use the same fonts. On the console the merging is reported:
+
+\starttyping
+mkiv lua stats  > merged fonts:
+    DejaVuSerif (+38)
+    DejaVuSerif-Bold (+39)
+    DejaVuSerif-Italic (+39)
+\stoptyping
+
+The number of characters that get forced into the file is shown between
+parentheses but the real number can be larger of course when the font is also
+used in the main document.
+
+\startplacefigure[title={A few typeset pages.},reference=fig:sharedfonts-1]
+  \getbuffer
+\stopplacefigure
+
+A second example involves \METAPOST\ graphics. Here we use buffers but you can
+imagine collecting graphics in one file and then including them with:
+
+\starttyping
+\externalfigure[myimages.pdf][compact=yes,page=4]
+\stoptyping
+
+Beware: this only makes sense if such graphics take runtime, which in a normal
+usage of \METAPOST\ in \CONTEXT\ is no real issue: runtime rendering is quite
+efficient and not slower than inclusion. The example code is:
+
+\startbuffer
+\startbuffer[three]
+\setupbodyfont[dejavu]
+\starttext
+\startMPpage
+  draw textext("Example 1") xsized 3cm withcolor "darkred" ;
+  draw boundingbox currentpicture enlarged 2mm withcolor "darkblue" ;
+\stopMPpage
+\startMPpage
+  draw textext("Example 2") xsized 3cm withcolor "darkblue" ;
+  draw boundingbox currentpicture enlarged 2mm withcolor "darkred" ;
+\stopMPpage
+\stoptext
+\stopbuffer
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startcombination
+  {\typesetbuffer[three][compact=yes,page=1]} {Page 1}
+  {\typesetbuffer[three][compact=yes,page=2]} {Page 2}
+\stopcombination
+\stopbuffer
+
+\typebuffer
+
+\startplacefigure[title={A few prepared graphics.},reference=fig:sharedfonts-2]
+  \getbuffer
+\stopplacefigure
+
+In \in {figure} [fig:sharedfonts-2] we see the two graphics. In this case they
+come from one file so the fonts are shared in embedding anyway, but the \type
+{compact} option will make sure that they are also shared with the main document
+fonts if possible. In fact, while normal embedding will include the normal font
+resources the \type {compact} variant will only embed the glyphs that are used,
+so it might even be more efficient. Because the examples use digits we actually
+get this report on the console now:
+
+\starttyping
+mkiv lua stats  > merged fonts:
+    DejaVuSerif (+40)
+    DejaVuSerif-Bold (+39)
+    DejaVuSerif-Italic (+39)
+\stoptyping
+
+This mechanism might be refined, depending on realistic use cases, user input and
+my own demands. Currently we use the font name as check but we might add some kind
+of mapping mechanism to work around fuzzy naming of what is actually the same
+font.
+
+There is more possible when embedding files, but that is discussed in the \type
+{pdfmerge} manual.
+
+\stopchapter
+
+\stopcomponent

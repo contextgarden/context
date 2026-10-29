@@ -128,6 +128,7 @@ end
 -- loader code (per 2026-09 we load the lmt files as they can be more advanced)
 
 loadmodule("char-def","lua")
+loadmodule("char-utf")
 
 loadmodule("supp-ran")
 

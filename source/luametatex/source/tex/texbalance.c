@@ -529,9 +529,7 @@ static void tex_check_skips_shortfall(const balance_properties *properties, half
         *shortfall -= e;
     }
     if ((top || bottom) && properties->tracing_balancing > 2) {
-        tex_begin_diagnostic();
-        tex_print_format("%l[balance: correction, top %p, bottom %p]", top, bottom);
-        tex_end_diagnostic();
+        tex_print_format("%<%l[balance: correction, top %p, bottom %p]%>", top, bottom);
     }
     if (lmt_balance_state.inserts_found) { 
         *shortfall -= tex_insert_distances(left, current ? node_next(current) : null, stretch, shrink);
@@ -834,15 +832,13 @@ static scaled tex_aux_try_balance(
         artificial_demerits = 0;
         shortfall = page_height - current_active_height[total_advance_amount];
         if (properties->tracing_balancing > 2) {
-            tex_begin_diagnostic();
-            tex_print_format("%l[balance: check, page %i, height %p, total %p, extra %p, shortfall %p]",
+            tex_print_format("%<%l[balance: check, page %i, height %p, total %p, extra %p, shortfall %p]%>",
                 page, 
                 page_height,
                 lmt_balance_state.active_height[total_advance_amount],
                 extra, 
                 shortfall
             );
-            tex_end_diagnostic();
         }
         shortfall -= extra; 
         tex_check_skips_shortfall(properties, current, first_p, cur_p, page_topskip, page_bottomskip, &shortfall, &stretch, &shrink, options);
@@ -1245,11 +1241,9 @@ static int tex_aux_set_sub_pass_parameters(
 
 static void tex_aux_skip_message(halfword passes, int subpass, int nofsubpasses, const char *str)
 {
-    tex_begin_diagnostic();
-    tex_print_format("%l[balance: id %i, subpass %i of %i, skip %s]\n",
+    tex_print_format("%<%l[balance: id %i, subpass %i of %i, skip %s]\n%>",
         passes_identifier(passes), subpass, nofsubpasses, str
     );
-    tex_end_diagnostic();
 }
 
 static inline int tex_aux_next_subpass(const balance_properties *properties, halfword passes, int subpass, int nofsubpasses, int tracing)
@@ -1297,11 +1291,9 @@ static inline int tex_aux_check_sub_pass(balance_properties *properties, scaled 
     int result = tex_check_balance_quality(shortfall, &overfull, &underfull, &verdict, &classified);
     if (result) {
         if (tracing && result > 1) {
-            tex_begin_diagnostic();
-            tex_print_format("%l[balance: id %i, subpass %i of %i, overfull %p, verdict %i, special case, entering subpasses]\n",
+            tex_print_format("%<%l[balance: id %i, subpass %i of %i, overfull %p, verdict %i, special case, entering subpasses]\n%>",
                 passes_identifier(passes), subpass, nofsubpasses, overfull, verdict
             );
-            tex_end_diagnostic();
         }
         while (subpass < nofsubpasses) {
             subpass = tex_aux_next_subpass(properties, passes, subpass, nofsubpasses, tracing);
@@ -1381,8 +1373,7 @@ static inline int tex_aux_check_sub_pass(balance_properties *properties, scaled 
 
 static void tex_aux_trace_list(halfword current, int line, const char *action)
 {
-    tex_begin_diagnostic();
-    tex_print_format("%l[balance: list, slot %i, line %i, height %p, depth %p, total %p, %s]",
+    tex_print_format("%<%l[balance: list, slot %i, line %i, height %p, depth %p, total %p, %s]%>",
         lmt_balance_state.current_slot_number, 
         line,
         box_height(current), 
@@ -1390,13 +1381,11 @@ static void tex_aux_trace_list(halfword current, int line, const char *action)
         lmt_balance_state.active_height[total_advance_amount],
         action
     );
-    tex_end_diagnostic();
 }
 
 static void tex_aux_trace_rule(halfword current, int line, const char *action)
 {
-    tex_begin_diagnostic();
-    tex_print_format("%l[balance: list, slot %i, line %i, height %p, depth %p, total %p, %s]",
+    tex_print_format("%<%l[balance: list, slot %i, line %i, height %p, depth %p, total %p, %s]%>",
         lmt_balance_state.current_slot_number, 
         line,
         rule_height(current), 
@@ -1404,43 +1393,36 @@ static void tex_aux_trace_rule(halfword current, int line, const char *action)
         lmt_balance_state.active_height[total_advance_amount],
         action
     );
-    tex_end_diagnostic();
 }
 
 static void tex_aux_trace_glue(halfword current, const char *action)
 {
-    tex_begin_diagnostic();
-    tex_print_format("%l[balance: glue, slot %i, amount %p, total %p, %s]",
+    tex_print_format("%<%l[balance: glue, slot %i, amount %p, total %p, %s]%>",
         lmt_balance_state.current_slot_number, 
         glue_amount(current),
         lmt_balance_state.active_height[total_advance_amount],
         action
     );
-    tex_end_diagnostic();
 }
 
 static void tex_aux_trace_kern(halfword current, const char *action)
 {
-    tex_begin_diagnostic();
-    tex_print_format("%l[balance: kern, slot %i, amount %p, total %p, %s]",
+    tex_print_format("%<%l[balance: kern, slot %i, amount %p, total %p, %s]%>",
         lmt_balance_state.current_slot_number, 
         kern_amount(current),
         lmt_balance_state.active_height[total_advance_amount],
         action
     );
-    tex_end_diagnostic();
 }
 
 static void tex_aux_trace_penalty(halfword current, const char *action)
 {
-    tex_begin_diagnostic();
-    tex_print_format("%l[balance: penalty, slot %i, amount %i, total %p, %s]",
+    tex_print_format("%<%l[balance: penalty, slot %i, amount %i, total %p, %s]%>",
         lmt_balance_state.current_slot_number, 
         node_type(current) == penalty_node ? penalty_amount(current) : glue_penalty(current),
         lmt_balance_state.active_height[total_advance_amount],
         action
     );
-    tex_end_diagnostic();
 }
 
 // halfword tex_get_balance_currentheight(void)
@@ -1878,9 +1860,7 @@ void tex_balance(balance_properties *properties, halfword head)
         lmt_balance_state.threshold = properties->pretolerance; /* or tolerance */
         if (properties->tracing_balancing > 0 || properties->tracing_passes > 0) {
             if (specification_presets(passes)) {
-                tex_begin_diagnostic();
-                tex_print_format("%l[balance: specification presets]");
-                tex_end_diagnostic();
+                tex_print_format("%<%l[balance: specification presets]%>");
             }
         }
         if (specification_presets(passes)) {

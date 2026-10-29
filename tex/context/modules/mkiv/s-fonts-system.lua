@@ -99,12 +99,13 @@ function moduledata.fonts.system.cacheinstalled(specification)
                 local fullname = resolvers.findfile(filename)
                 context.start()
                 context.type(fullname)
-                context.par()
                 if threshold and file.size(fullname) > threshold then
                     logs.report("fonts","ignoring : %s",fullname)
                 else
                     logs.report("fonts","caching  : %s",fullname)
                     context.definedfont { filename }
+                    context(" !")
+                    context.par()
                 end
                 context.stop()
             end

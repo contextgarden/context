@@ -73,7 +73,7 @@ dir build\%luametatexbuildpath%\Release\luametatex.exe
 @echo .
 @echo binaries:
 @echo .
-@echo tex/texmf-win64/bin/luametatex.exe : the compiled binary (some 2-3MB)
+@echo tex/texmf-win64/bin/luametatex.exe : the compiled binary (some 4-5MB)
 @echo tex/texmf-win64/bin/mtxrun.exe     : copy of or link to luametatex.exe
 @echo tex/texmf-win64/bin/context.exe    : copy of or link to luametatex.exe
 @echo tex/texmf-win64/bin/mtxrun.lua     : copy of tex/texmf-context/scripts/context/lua/mtxrun.lua

@@ -998,6 +998,8 @@ int luaopen_process(lua_State *L)
 
 # elif defined(__linux__)
 
+    /* It is actually a kernel feature, so the library is basically a wrapper. */
+
     # include <sys/inotify.h>
 
 # elif defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)

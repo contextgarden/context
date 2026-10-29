@@ -838,9 +838,7 @@ void tex_start_mvl(void)
             prevdepth = lmt_mvl_state.mvl[index].prev_depth;
         }
         if (tracing_mvl_par) { 
-            tex_begin_diagnostic();
-            tex_print_format("%l[mvl: index %i, options %x, prevdepth %p, %s]", index, options, prevdepth, start ? "start" : "restart");
-            tex_end_diagnostic();
+            tex_print_format("%<%l[mvl: index %i, options %x, prevdepth %p, %s]%>", index, options, prevdepth, start ? "start" : "restart");
         }
         if (start) { 
             mvl->head = tex_new_temp_node();
@@ -860,9 +858,7 @@ void tex_stop_mvl(void)
         list_state_record *mvl = &lmt_mvl_state.mvl[index];
         int something = mvl->tail != mvl->head;
         if (tracing_mvl_par) { 
-            tex_begin_diagnostic();
-            tex_print_format("%l[mvl: index %i, options %x, stop with%s contributions]", index, mvl->options, something ? "" : "out");
-            tex_end_diagnostic();
+            tex_print_format("%<%l[mvl: index %i, options %x, stop with%s contributions]%>", index, mvl->options, something ? "" : "out");
         }
         if (something && (mvl->options & mvl_discard_bottom)) {
             halfword last = mvl->tail;
@@ -910,9 +906,7 @@ halfword tex_flush_mvl(halfword index)
         tex_flush_node(lmt_mvl_state.mvl[index].head);
         tex_aux_reset_mvl(index);
         if (tracing_mvl_par) { 
-            tex_begin_diagnostic();
-            tex_print_format("%l[mvl: index %i, %s]", index, "flush");
-            tex_end_diagnostic();
+            tex_print_format("%<%l[mvl: index %i, %s]%>", index, "flush");
         }
         node_prev(head) = null;
 # if page_callback
@@ -981,9 +975,7 @@ int tex_appended_mvl(halfword context, halfword boundary)
             }
             if (contribute_head != contribute_tail && first) {
                 if (tracing_mvl_par) { 
-                    tex_begin_diagnostic();
-                    tex_print_format("%l[mvl: index %i, %s]", lmt_mvl_state.slot, assign ? "assign" : "append");
-                    tex_end_diagnostic();
+                    tex_print_format("%<%l[mvl: index %i, %s]%>", lmt_mvl_state.slot, assign ? "assign" : "append");
                 }
                 if (assign) { 
                     tex_couple_nodes(lmt_mvl_state.mvl[lmt_mvl_state.slot].head, first);

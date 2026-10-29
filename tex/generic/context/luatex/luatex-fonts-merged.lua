@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2026-10-25 20:06
+-- merge date  : 2026-10-29 17:23
 
 do -- begin closure to overcome local limits and interference
 
@@ -4204,6 +4204,27 @@ if CONTEXTLMTXMODE and CONTEXTLMTXMODE>0 then
  function string.texhashed(s)
   return (gsub(s,".",t))
  end
+end
+if characters and characters.lower then
+ string.tolower=characters.lower
+ string.toupper=characters.upper
+else
+ local ulower 
+ local uupper 
+ local function check()
+  if not characters then
+   dofile(resolvers.findfile("char-def.lua"))
+   dofile(resolvers.findfile("char-utf.lua"))
+  end
+  ulower=characters.lower
+  uupper=characters.upper
+  string.tolower=ulower
+  string.toupper=uupper
+ end
+ ulower=function(str) check() return ulower(str) end
+ uupper=function(str) check() return uupper(str) end
+ function string.tolower(str) return ulower(str) end
+ function string.toupper(str) return uupper(str) end
 end
 
 end -- closure

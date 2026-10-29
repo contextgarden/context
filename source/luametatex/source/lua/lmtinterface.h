@@ -170,6 +170,7 @@ extern int  luaopen_xdecimal    (lua_State *L);
 extern int  luaopen_xinterval   (lua_State *L);
 extern int  luaopen_xmath       (lua_State *L);
 extern int  luaopen_xzip        (lua_State *L);
+extern int  luaopen_xz          (lua_State *L);
 extern int  luaopen_serial      (lua_State *L);
 extern int  luaopen_process     (lua_State *L);
 extern int  luaopen_watcher     (lua_State *L);

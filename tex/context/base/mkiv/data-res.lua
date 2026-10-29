@@ -1038,7 +1038,7 @@ function resolvers.registerfilehash(name,content,someerror)
         files[name] = content
     else
         files[name] = { }
-        if somerror == true then -- can be unset
+        if someerror == true then -- can be unset
             instance.loaderror = someerror
         end
     end

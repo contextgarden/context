@@ -218,6 +218,184 @@ static int strlib_aux_utf_failed(lua_State *L, int new_ind)
     return 1;
 }
 
+/*tex
+    We can process 8 bytes at a time on 64-bit architectures. The memcpy is needed because
+    we dont operate with (aligned) copies on the stack so we need to obey strict alignment
+    conditions. We use the fact that > 127 means one bit is set. And the accumulator check
+    does that for 8 bytes at once.
+
+    Checking inside the loop gives bad branch prediction and we seldom have a hit and
+    compilers will optimize this kind of loops anyway.
+
+*/
+
+# ifdef _MSC_VER
+    # define fast_memcpy(dest, src, count) memcpy(dest, src, count)
+# else
+    # define fast_memcpy(dest, src, count) __builtin_memcpy(dest, src, count)
+# endif
+
+# if 0
+
+    /*tex
+        Given modern processors this is pretty fast.
+    */
+
+    static int strlib_onlyascii(lua_State *L)
+    {
+        size_t      len = 0;
+        const char *str = lua_tolstring(L, 1, &len);
+
+        const unsigned char *s = (const unsigned char *) str;
+
+        size_t   i     = 0;
+        uint64_t accum = 0;
+        int      ascii = 1;
+
+        for (; i + 8 <= len; i += 8) {
+            uint64_t chunk;
+            /* this is needed to prevent strict alignment conditions */
+            fast_memcpy(&chunk, s + i, 8);
+            accum |= chunk;
+        }
+        if (accum & 0x8080808080808080ULL) {
+            /* if any high bit is set a non-ascii character exists */
+            ascii = 0;
+        } else {
+            /* handle remaining bytes (0 to 7 bytes) */
+            for (; i < len; i++) {
+                if (s[i] > 127) {
+                    ascii = 0;
+                    break;
+                }
+            }
+        }
+        lua_pushboolean(L, ascii);
+        return 1;
+    }
+
+# else
+
+    /*tex
+        As we can apply this to whole files chunking makes more sense, so we add an
+        extra outer loop. As usual this one went through a few steps, like figuring
+        out how to optimize for small strings.
+    */
+
+    static int strlib_onlyascii(lua_State *L)
+    {
+        size_t      len = 0;
+        const char *str = lua_tolstring(L, 1, &len);
+
+        if (str == NULL) {
+            return luaL_error(L, "string expected for ascii check");
+        }
+
+        const unsigned char *s = (const unsigned char *) str;
+
+        size_t   i   = 0;
+        uint64_t acc = 0;
+
+        /* fast (8 byte) word loop (automatically skipped if len < 8) */
+
+        for (; i + 8 <= len; i += 8) {
+            uint64_t chunk;
+            fast_memcpy(&chunk, s + i, 8);
+            acc |= chunk;
+        }
+
+        /* set initial status based on the accumulator */
+
+        int ascii = ((acc & 0x8080808080808080ULL) == 0);
+
+        /* only check the remainder (< 8 bytes) if the main chunks were clean */
+
+        if (ascii) {
+            for (; i < len; i++) {
+                if (s[i] > 127) {
+                    ascii = 0;
+                    break;
+                }
+            }
+        }
+
+        lua_pushboolean(L, ascii);
+        return 1;
+    }
+
+# endif
+
+/*
+    Here is a nice test for gemini (best also feed it a coding style):
+
+    -- can you make me function that strips characters that don't match 0-9, a-z, A-Z, and > 127
+    -- good, but instead of adding chars to the buffer can we check if needed first
+    -- better, now let's add the first slice when we have a hit and go from there
+    -- nice, so how about an outer loop and just add slices
+    -- last, let's make the triple check an inline function
+
+    After that one has a template and can clean it up bit. It saves a little time and one still
+    has to use one's brain. Between the stages one gets compliments about the suggestions. It's
+    a bit of a game.
+
+*/
+
+static inline int is_allowed(unsigned char c)
+{
+    return (c >= '0' && c <= '9') ||
+           (c >= 'A' && c <= 'Z') ||
+           (c >= 'a' && c <= 'z') ||
+           (c > 127);
+}
+
+static int strlib_filter_weird(lua_State *L)
+{
+    size_t      len;
+    const char *str = lua_tolstring(L, 1, &len);
+    if (! str) {
+        lua_pushnil(L);
+        return 1;
+    }
+    /* check if the string is already 100% clean */
+    size_t first_bad = len;
+    for (size_t i = 0; i < len; i++) {
+        if (! is_allowed((unsigned char) str[i])) {
+            first_bad = i;
+            break;
+        }
+    }
+    if (first_bad == len) {
+        lua_pushvalue(L, 1);
+        return 1;
+    }
+    /* initialize buffer and add the initial clean prefix */
+    luaL_Buffer b;
+    luaL_buffinit(L, &b);
+    if (first_bad > 0) {
+        luaL_addlstring(&b, str, first_bad);
+    }
+    /* outer loop: jump over bad characters and bulk-copy subsequent clean slices */
+    size_t i = first_bad;
+    while (i < len) {
+        /* skip past consecutive bad characters */
+        while (i < len && ! is_allowed((unsigned char) str[i])) {
+            i++;
+        }
+        if (i >= len) {
+            break;
+        }
+        /* find the end of this clean slice */
+        size_t slice_start = i;
+        while (i < len && is_allowed((unsigned char) str[i])) {
+            i++;
+        }
+        /* bulk-copy the entire clean slice in one shot */
+        luaL_addlstring(&b, str + slice_start, i - slice_start);
+    }
+    luaL_pushresult(&b);
+    return 1;
+}
+
 /* kind of complex ... these masks */
 
 // static int strlib_aux_utfcharacters(lua_State *L)
@@ -341,14 +519,14 @@ static int strlib_utfcharacters(lua_State *L)
 
 static int strlib_aux_utfvalues(lua_State *L)
 {
-    size_t l = 0;
-    const char *s = lua_tolstring(L, lua_upvalueindex(1), &l);
-    size_t ind = lmt_tointeger(L, lua_upvalueindex(2));
-    if (ind < l) {
-        int v = strlib_aux_tounicode(s, l, &ind);
+    size_t      len = 0;
+    const char *str = lua_tolstring(L, lua_upvalueindex(1), &len);
+    size_t      ind = lmt_tointeger(L, lua_upvalueindex(2));
+    if (ind < len) {
+        int val = strlib_aux_tounicode(str, len, &ind);
         lua_pushinteger(L, ind);
         lua_replace(L, lua_upvalueindex(2));
-        lua_pushinteger(L, v);
+        lua_pushinteger(L, val);
         return 1;
     } else {
         return 0;
@@ -4749,7 +4927,12 @@ static int strlib_fastserialize(lua_State *L)
 
 */ 
 
-/* Helper structure for zero-copy entry sorting */
+/*
+    This is a helper structure for zero-copy entry sorting. We just point to the start
+    of a substring. Sorting is needed for consistency and has no real meaning. (So we
+    can cast numbers, see below.) We use a buffer and not many small allocated strings,
+    but we do need something we can swap:
+*/
 
 typedef struct tabstr_entry {
     const char *str;
@@ -4763,8 +4946,8 @@ typedef struct tabstr_item {
 
 static int tabstr_entry_compare(const void *a, const void *b)
 {
-    const tabstr_entry *ea = (const tabstr_entry *)a;
-    const tabstr_entry *eb = (const tabstr_entry *)b;
+    const tabstr_entry *ea = (const tabstr_entry *) a;
+    const tabstr_entry *eb = (const tabstr_entry *) b;
     uint32_t minlen = ea->len < eb->len ? ea->len : eb->len;
     int cmp = memcmp(ea->str, eb->str, minlen);
     if (cmp != 0) {
@@ -4776,16 +4959,82 @@ static int tabstr_entry_compare(const void *a, const void *b)
 
 /* Helper to append key/value strings safely without mutating Lua keys during lua_next */
 
+/* This one is simple (100%). */
+
 static inline void tabstr_add_value_string(lua_State *L, int idx, lmt_string_buffer *b)
 {
     size_t len;
-    /* 
-        luaL_tolstring pushes the string representation onto the top of stack
-        without mutating the value at 'idx' (critical for lua_next key safety). 
-    */
+    /*
+     luaL_tolstring pushes the string representation onto the top of stack
+     without mutating the value at 'idx' (critical for lua_next key safety).
+     */
     const char *s = luaL_tolstring(L, idx, &len);
     lmt_buffer_add_lstring(b, s, len);
     lua_pop(L, 1);
+}
+
+/*
+    But this one is faster (50%) and it is one of these things you realize when pondering
+    a bottleneck during a walk: hex is always more efficient than decimal. And then it is
+    a small step to just cast bytes (35%). We sort using memcmp so we're zero byte okay.
+*/
+
+static inline void tabstr_add_value_string_raw(lua_State *L, int idx, lmt_string_buffer *b)
+{
+    switch (lua_type(L, idx)) {
+     // case LUA_TNUMBER:
+     //     {
+     //         char hexbuf[64];
+     //         if (lua_isinteger(L, idx)) {
+     //             lua_Integer n = lua_tointeger(L, idx);
+     //             int len = snprintf(hexbuf, sizeof(hexbuf), "I%llx", (unsigned long long)n);
+     //             lmt_buffer_add_lstring(b, hexbuf, len);
+     //         } else {
+     //             lua_Number n = lua_tonumber(L, idx);
+     //             int len = snprintf(hexbuf, sizeof(hexbuf), "F%a", n);
+     //             lmt_buffer_add_lstring(b, hexbuf, len);
+     //         }
+     //         break;
+     //     }
+        case LUA_TNUMBER:
+            {
+                /* this is alignment safe as we're on the stack */
+                if (lua_isinteger(L, idx)) {
+                    lua_Integer n = lua_tointeger(L, idx);
+                    lmt_buffer_add_char(b, 'I');
+                    lmt_buffer_add_lstring(b, (const char *) &n, sizeof(n));
+                } else {
+                    lua_Number n = lua_tonumber(L, idx);
+                    /* we normalize -0.0 but it's unlikely to happen */
+                    if (n == 0.0) {
+                        n = 0.0;
+                    }
+                    /* NaN and INF don't occur here */
+                    lmt_buffer_add_char(b, 'F');
+                    lmt_buffer_add_lstring(b, (const char *) &n, sizeof(n));
+                }
+                break;
+            }
+        case LUA_TBOOLEAN:
+            {
+                lmt_buffer_add_lstring(b, lua_toboolean(L, idx) ? "B1" : "B0", 2);
+                break;
+            }
+        case LUA_TNIL:
+            {
+                lmt_buffer_add_char(b, 'N');
+                break;
+            }
+        default:
+            {
+                lmt_buffer_add_char(b, 'S');
+                size_t      len;
+                const char *str = luaL_tolstring(L, idx, &len);
+                lmt_buffer_add_lstring(b, str, len);
+                lua_pop(L, 1);
+                break;
+            }
+    }
 }
 
 /* tabstr_normal */
@@ -4809,24 +5058,36 @@ static void strlib_aux_tabstr_normal(lua_State *L, int index, lmt_string_buffer 
         }
         size_t start_off = text_buf.length;
         /* key: */
-        tabstr_add_value_string(L, -2, &text_buf);
-        /* value:
-           - table:  k .. ">" .. tabstr_normal(v)
-           - true:   k .. "+"
-           - truthy: k .. "=" .. v
-           - falsy:  k .. "-"
-        */
+        tabstr_add_value_string_raw(L, -2, &text_buf);
+        /* */
+     // /* value:
+     //    - table  : k .. ">" .. tabstr_normal(v)
+     //    - true   : k .. "+"
+     //    - truthy : k .. "=" .. v
+     //    - falsy  : k .. "-"
+     //    - string : k
+     // */
+     // if (lua_istable(L, -1)) {
+     //     lmt_buffer_add_char(&text_buf, '>');
+     //     strlib_aux_tabstr_normal(L, lua_gettop(L), &text_buf, seen, depth + 1);
+     // } else if (lua_isboolean(L, -1) && lua_toboolean(L, -1)) {
+     //     lmt_buffer_add_char(&text_buf, '+');
+     // } else if (lua_toboolean(L, -1)) { /* truthy (non-boolean, non-nil, non-table) */
+     //     lmt_buffer_add_char(&text_buf, '=');
+     //     tabstr_add_value_string(L, -1, &text_buf);
+     // } else { /* falsy (false or nil) */
+     //     lmt_buffer_add_char(&text_buf, '-');
+     // }
+        /* */
         if (lua_istable(L, -1)) {
-            lmt_buffer_add_char(&text_buf, '>');
+            lmt_buffer_add_lstring(&text_buf, "={", 2);
             strlib_aux_tabstr_normal(L, lua_gettop(L), &text_buf, seen, depth + 1);
-        } else if (lua_isboolean(L, -1) && lua_toboolean(L, -1)) {
-            lmt_buffer_add_char(&text_buf, '+');
-        } else if (lua_toboolean(L, -1)) { /* truthy (non-boolean, non-nil, non-table) */
+            lmt_buffer_add_char(&text_buf, '}');
+        } else {
             lmt_buffer_add_char(&text_buf, '=');
-            tabstr_add_value_string(L, -1, &text_buf);
-        } else { /* falsy (false or nil) */
-            lmt_buffer_add_char(&text_buf, '-');
+            tabstr_add_value_string_raw(L, -1, &text_buf);
         }
+        /* */
         entries[nofentries].offset = (uint32_t) start_off;
         entries[nofentries].len    = (uint32_t) (text_buf.length - start_off);
         nofentries++;
@@ -4862,10 +5123,8 @@ static int strlib_tabstr_normal(lua_State *L)
     }
     int check = lua_toboolean(L, 2);
     int seen  = 0;
-
     lmt_string_buffer buffer;
     lmt_buffer_allocate(L, &buffer);
-
     if (check) {
         lua_newtable(L);
         seen = lua_gettop(L);
@@ -4874,7 +5133,6 @@ static int strlib_tabstr_normal(lua_State *L)
     if (check) {
         lua_remove(L, seen);
     }
-
     lua_pushlstring(L, buffer.buffer, buffer.length);
     lmt_buffer_dispose(&buffer);
     return 1;
@@ -4900,9 +5158,9 @@ static int strlib_tabstr_flat(lua_State *L)
             entries = (tabstr_item *) lmt_memory_realloc(entries, maxentries * sizeof(tabstr_item));
         }
         size_t start_off = text_buf.length;
-        tabstr_add_value_string(L, -2, &text_buf);
+        tabstr_add_value_string_raw(L, -2, &text_buf);
         lmt_buffer_add_char(&text_buf, '=');
-        tabstr_add_value_string(L, -1, &text_buf);
+        tabstr_add_value_string_raw(L, -1, &text_buf);
         entries[nofentries].offset = (uint32_t) start_off;
         entries[nofentries].len    = (uint32_t) (text_buf.length - start_off);
         nofentries++;
@@ -4953,16 +5211,16 @@ static int strlib_tabstr_mixed(lua_State *L)
         if (i > 1) {
             lmt_buffer_add_char(&b, ',');
         }
-        lua_rawgeti(L, 1, (lua_Integer)i);
-        if (lua_isboolean(L, -1)) {
-            if (lua_toboolean(L, -1)) {
-                lmt_buffer_add_lstring(&b, "++", 2);
-            } else {
-                lmt_buffer_add_lstring(&b, "--", 2);
-            }
-        } else {
-            tabstr_add_value_string(L, -1, &b);
-        }
+        lua_rawgeti(L, 1, (lua_Integer) i);
+     // if (lua_isboolean(L, -1)) {
+     //     if (lua_toboolean(L, -1)) {
+     //         lmt_buffer_add_lstring(&b, "++", 2);
+     //     } else {
+     //         lmt_buffer_add_lstring(&b, "--", 2);
+     //     }
+     // } else {
+            tabstr_add_value_string_raw(L, -1, &b);
+     // }
         lua_pop(L, 1);
     }
     lua_pushlstring(L, b.buffer, b.length);
@@ -4990,12 +5248,8 @@ static int strlib_tabstr_boolean(lua_State *L)
             entries = (tabstr_item *) lmt_memory_realloc(entries, maxentries * sizeof(tabstr_item));
         }
         size_t start_off = text_buf.length;
-        tabstr_add_value_string(L, -2, &text_buf);
-        if (lua_toboolean(L, -1)) {
-            lmt_buffer_add_char(&text_buf, '+');
-        } else {
-            lmt_buffer_add_char(&text_buf, '-');
-        }
+        tabstr_add_value_string_raw(L, -2, &text_buf);
+        lmt_buffer_add_char(&text_buf, lua_toboolean(L, -1) ? '+' : '-');
         entries[nofentries].offset = (uint32_t) start_off;
         entries[nofentries].len    = (uint32_t) (text_buf.length - start_off);
         nofentries++;
@@ -5450,6 +5704,7 @@ int luaopen_sequencer(lua_State *L)
 
     return 1;                                                   /* return library table */
 }
+
 /*tex 
 
     The next list of functions registers in the |string| namespace. Maybe in retrospect we should
@@ -5475,6 +5730,8 @@ static const luaL_Reg strlib_function_list[] = {
     { "utfvaluetable",     strlib_utfvaluetable     },
     { "utfcharactertable", strlib_utfcharactertable },
     { "utftabletostring",  strlib_utftabletostring  },
+    { "onlyascii",         strlib_onlyascii         },
+    { "filterweird",       strlib_filter_weird      },
     { "f6",                strlib_format_f6         },
     { "g6",                strlib_format_g6         },
     { "fd",                strlib_format_fd         },

@@ -198,7 +198,8 @@ static struct luaL_Reg ziplib_function_list[] = {
     { NULL,             NULL                  },
 };
 
-int luaopen_xzip(lua_State *L) {
+int luaopen_xzip(lua_State *L)
+{
     lua_newtable(L);
     luaL_setfuncs(L, ziplib_function_list, 0);
     return 1;

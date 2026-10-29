@@ -1731,3 +1731,34 @@ if CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 then
     end
 
 end
+
+if characters and characters.lower then
+
+    string.tolower = characters.lower
+    string.toupper = characters.upper
+
+else
+
+    local ulower -- = false
+    local uupper -- = false
+
+    local function check()
+        if not characters then
+         -- local c = os.clock()
+            dofile(resolvers.findfile("char-def.lua"))
+            dofile(resolvers.findfile("char-utf.lua"))
+         -- print(os.clock()-c)
+        end
+        ulower = characters.lower
+        uupper = characters.upper
+        string.tolower = ulower
+        string.toupper = uupper
+    end
+
+    ulower = function(str) check() return ulower(str) end
+    uupper = function(str) check() return uupper(str) end
+
+    function string.tolower(str) return ulower(str) end
+    function string.toupper(str) return uupper(str) end
+
+end

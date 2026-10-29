@@ -533,9 +533,7 @@ void tex_save_halfword_on_stack(quarterword t, halfword v) /* todo: also value_2
 
 static void tex_aux_group_trace(int g)
 {
-    tex_begin_diagnostic();
-    tex_print_format(g ? "%l{leaving %G}" : "%l{entering %G}", g);
-    tex_end_diagnostic();
+    tex_print_format(g ? "%<%l{leaving %G}%>" : "%<%l{entering %G}%>", g);
 }
 
 /*tex
@@ -600,9 +598,7 @@ static void tex_aux_group_warning(void)
         --index;
     }
     if (warning) {
-        tex_begin_diagnostic();
-        tex_print_format("%l[warning: end of %G of a different file]", 1);
-        tex_end_diagnostic();
+        tex_print_format("%<%l[warning: end of %G of a different file]%>", 1);
         if (tracing_nesting_par > 1) {
             tex_show_context();
         }

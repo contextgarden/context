@@ -20,7 +20,6 @@ local next, tonumber, type, tostring = next, tonumber, type, tostring
 local sub, gsub, match, find, lower, upper = string.sub, string.gsub, string.match, string.find, string.lower, string.upper
 local concat, sort, fastcopy, tohash = table.concat, table.sort, table.fastcopy, table.tohash
 local serialize, sortedhash = table.serialize, table.sortedhash
-local lpegmatch = lpeg.match
 local unpack = unpack or table.unpack
 local formatters, topattern = string.formatters, string.topattern
 local round = math.round
@@ -541,7 +540,6 @@ names.cleanfilename = cleanfilename
 --     end
 --     return result
 -- end
-
 
 local function check_name(data,result,filename,modification,suffix,subfont)
     -- shortcuts

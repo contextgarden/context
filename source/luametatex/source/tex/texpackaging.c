@@ -3641,9 +3641,7 @@ void tex_run_unpackage(void)
                                     node_prev(list) = null;
                                 }
                                 if (pre_adjusted && tracing_adjusts_par > 1) {
-                                    tex_begin_diagnostic();
-                                    tex_print_format("%l[adjust: topskip moved]");
-                                    tex_end_diagnostic();
+                                    tex_print_format("%<%l[adjust: topskip moved]%>");
                                 }
                             }
                         }

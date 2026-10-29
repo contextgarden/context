@@ -49,8 +49,8 @@
 % \registerctxluafile{util-soc-imp-http}   {}
 % \registerctxluafile{util-soc-imp-tp}     {}
 
-\registerctxluafile{util-zip}{}
-\registerctxluafile{util-tar}{}
+\registerctxluafile{util-zip}{autosuffix}
+\registerctxluafile{util-tar}{autosuffix}
 
 \registerctxluafile{util-sig}{}
 

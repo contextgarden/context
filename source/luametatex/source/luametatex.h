@@ -127,7 +127,7 @@
 # define luametatex_release          10
 # define luametatex_version_string   "2.11.10"
 # define luametatex_version_number   211.10
-# define luametatex_functionality    20261025
+# define luametatex_functionality    20261029
 # define luametatex_distribution     "regular" /* LMT_DISTRIBUTION_USED */
 # define luametatex_name_camelcase   "LuaMetaTeX"
 # define luametatex_name_lowercase   "luametatex"

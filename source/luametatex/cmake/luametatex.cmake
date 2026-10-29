@@ -34,6 +34,7 @@ target_link_libraries(luametatex
     triangles
     nanojpeg    
     filib
+    xzembedded
 
 #   qhull
 )

@@ -963,9 +963,7 @@ static void tex_aux_align_peek(void);
 static void tex_aux_trace_no_align(const char *s)
 {
     if (tracing_alignments_par > 0) {
-        tex_begin_diagnostic();
-        tex_print_format("%l[alignment: %s noalign, level %i]", s, lmt_alignment_state.no_align_level);
-        tex_end_diagnostic();
+        tex_print_format("%<%l[alignment: %s noalign, level %i]%>", s, lmt_alignment_state.no_align_level);
     }
 }
 

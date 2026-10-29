@@ -1,0 +1,107 @@
+% language=us runpath=texruns:manuals/workflows
+
+\environment workflows-style
+
+\startcomponent workflows-archives
+
+\startchapter[title=Archives]
+
+\startsection[title=Compression]
+
+The \CONTEXT\ distribution comes with quite some tools and among them are scripts
+that can decompress archives. When we started with \LUATEX\ we played with the
+idea to run from a zip file and actually that worked so some day we might pick up
+on that. Here are a few commands that are available:
+
+\starttyping
+mtxrun --script unzip --list       cont-tmf.zip
+mtxrun --script unzip --extract    cont-tmf.zip
+mtxrun --script unzip --decompress cont-en.fmt
+mtxrun --script unzip --decompress foo.gz
+mtxrun --script unzip --decompress foo.xz
+\stoptyping
+
+The (de)flate and xz decompression are available in the engine and don't depend
+on libraries or external programs. We can also work with tarballs:
+
+\starttyping
+mtxrun --script untar --list    cont-tmf.tar
+mtxrun --script untar --extract cont-tmf.tar.xz
+\stoptyping
+
+Both these scripts are reasonable fast and often not much slower than the
+independent programs, sometimes even faster.
+
+\stopsection
+
+\startsection[title=\CTAN]
+
+The \CONTEXT\ distributions comes with plenty fonts but you might want to see
+what more is available.
+
+\starttyping
+mtxrun --script ctan --packages
+mtxrun --script ctan --packages --pattern=gyre
+\stoptyping
+
+The problem is that there is (end 2026) no way to locate where the files are or
+to download a package without maintaining some some registry since we had this
+script so we've given up on that and looked at a way to get the files using the
+\TEX live repository that has data files at a better defined position. See the
+next section for this.
+
+\stopsection
+
+\startsection[title=\TEXLIVE]
+
+The main \TEX\ live installation file has information about packages and when
+files come with it. Unfortunately the dependencies or history has resulted in
+mixtures of files that are not suitable for \CONTEXT\ so we need to be selective.
+Because we're only interested in fonts, we can filter the relevant files (\type
+{otf} and \type {ttf}).
+
+\starttyping
+mtxrun --script ctan --texlive
+\stoptyping
+
+Lists all packages. Based on the name you can decide to focus on one or a few.
+You need to be patient because (rather large) compressed files are downloaded
+that need to be compressed.
+
+\starttyping
+mtxrun --script ctan --packages
+mtxrun --script ctan --packages --pattern=pennstander
+\stoptyping
+
+You will get a list that indicates what files are available with an indication of
+them being already installed or not. With \type {--download} the not yet
+installed ones will end up on the current directory, with \type {--force} you get
+them all. When there are more packages involved, \type {--all} can be used. When you
+install fonts, you best can make a directory, like:
+
+\starttyping
+<texroot>/tex/texmf-fonts/fonts/data/somefont
+\stoptyping
+
+go there and install in that location. Don't forget to run:
+
+\starttyping
+mtxrun --generate
+\stoptyping
+
+and if needed:
+
+\starttyping
+mtxrun --script font --reload
+\stoptyping
+
+Make sure not to install fonts that come with the \CONTEXT\ installer, unless you
+know what you're doing.
+
+{\em I might improve this feature over time.}
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

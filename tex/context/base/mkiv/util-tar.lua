@@ -8,8 +8,8 @@ if not modules then modules = { } end modules ['util-tar'] = {
 
 local type, tonumber = type, tonumber
 local gsub, escapedpattern = string.gsub, string.escapedpattern
-local nameonly, dirname, makedirs = file.nameonly, file.dirname, dir.makedirs
-local savedata = io.savedata
+local nameonly, pathpart, makedirs, filesuffix = file.nameonly, file.pathpart, dir.makedirs, file.suffix
+local savedata, loaddata = io.savedata, io.loaddata
 local newreader = io.newreader
 
 local report = logs.reporter("tar")
@@ -25,6 +25,8 @@ local types = {
     ["6"]  = "fifo",
     ["7"]  = "continuation", -- reserved
     ["x"]  = "extended",     -- header
+    ["L"]  = "longname",     -- GNU long filename extension
+    ["K"]  = "longlink",     -- GNU long link extension[cite: 1]
 }
 
 local function asstring(str)
@@ -32,8 +34,7 @@ local function asstring(str)
 end
 
 local function asnumber(str)
-    str = gsub(str,"\0$","")
-    return tonumber(str,8)
+    return tonumber(asstring(str), 8) or 0
 end
 
 local function opentar(whatever,filename)
@@ -50,43 +51,70 @@ local function opentar(whatever,filename)
 end
 
 local function readheader(t)
-    -- checksum
-    local p = t:getposition()
-    local h = t:readbytetable(512)
-    t:setposition(p)
-    for i=149,156 do -- nasty, one less
-        h[i] = 0
-    end
-    local c = 256
-    for i=1,512 do
-        c = c + h[i]
-    end
-    --
-    local header = {
-        name     = asstring(t:readstring(100)),    --   0
-        mode     = asnumber(t:readstring(  8)), -- 100 -- when we write: 0775 octal
-        uid      = asnumber(t:readstring(  8)), -- 108
-        gid      = asnumber(t:readstring(  8)), -- 116
-        size     = asnumber(t:readstring( 12)), -- 124
-        mtime    = asnumber(t:readstring( 12)), -- 136
-        checksum = asnumber(t:readstring(  6)), -- 148 -- actually 6 with space and \0
-        dummy    =          t:skip        (2) ,
-        typeflag =          t:readstring(  1) , -- 156
-        linkname = asstring(t:readstring(100)), -- 157
-     -- magic    = asstring(t:readstring(  6)), -- 257 -- ustar\0
-     -- version  =                         2    -- 263
-     -- uname    =                        32    -- 265
-     -- gname    =                        32    -- 297
-     -- devmajor =                         8    -- 329
-     -- devminor =                         8    -- 337
-     -- prefix   =                       155    -- 345
-        padding  =          t:skip      (255) , -- 500
-    }
-    local typeflag = header.typeflag
-    if typeflag then
-        header.filetype = types[typeflag]
-        if c == header.checksum then
-            return header
+    while true do
+        -- checksum
+        local p = t:getposition()
+        local h = t:readbytetable(512)
+        -- safeguard against EOF or truncated blocks
+        if not h or #h < 512 then
+            return nil
+        end
+        t:setposition(p)
+        for i=149,156 do -- nasty, one less
+            h[i] = 0
+        end
+        local c = 256
+        for i=1,512 do
+            c = c + (h[i] or 0)
+        end
+        --
+        local header = {
+            name     = asstring(t:readstring(100)), --   0
+            mode     = asnumber(t:readstring(  8)), -- 100 -- when we write: 0775 octal
+            uid      = asnumber(t:readstring(  8)), -- 108
+            gid      = asnumber(t:readstring(  8)), -- 116
+            size     = asnumber(t:readstring( 12)), -- 124
+            mtime    = asnumber(t:readstring( 12)), -- 136
+            checksum = asnumber(t:readstring(  6)), -- 148 -- actually 6 with space and \0
+            dummy    =          t:skip        (2) ,
+            typeflag =          t:readstring(  1) , -- 156
+            linkname = asstring(t:readstring(100)), -- 157
+         -- magic    = asstring(t:readstring(  6)), -- 257 -- ustar\0
+         -- version  =                         2    -- 263
+         -- uname    =                        32    -- 265
+         -- gname    =                        32    -- 297
+         -- devmajor =                         8    -- 329
+         -- devminor =                         8    -- 337
+         -- prefix   =                       155    -- 345
+            padding  =          t:skip      (255) , -- 500
+        }
+        local typeflag = header.typeflag
+        if typeflag then
+            header.filetype = types[typeflag]
+            if c == header.checksum then
+                -- handle GNU long filename and long link extensions
+                if header.filetype == "longname" then
+                    header.longname = asstring(t:readstring(header.size))
+                    local position = t:getposition()
+                    local target   = position + (512 - position % 512) % 512
+                    t:setposition(target)
+                elseif header.filetype == "longlink" then
+                    header.longlink = asstring(t:readstring(header.size))
+                    local position = t:getposition()
+                    local target   = position + (512 - position % 512) % 512
+                    t:setposition(target)
+                else
+                    if header.longname then
+                        header.name = t.longname
+                        header.longname = nil
+                    end
+                    if header.longlink then
+                        header.linkname = t.longlink
+                        header.longlink = nil
+                    end
+                    return header
+                end
+            end
         end
     end
 end
@@ -103,11 +131,11 @@ local readers = {
         return true
     end,
 
-    file = function(t,h)
+    file = function(t,h,n)
         local metadata = t.metadata
-        local filename = h.name
+        local filename = n or h.name
         local filesize = h.size
-        local pathname = dirname(filename)
+        local pathname = pathpart(filename)
         if metadata.verbose then
             report("% 8i : %s",filesize,filename)
         end
@@ -135,6 +163,10 @@ local readers = {
         return true
     end,
 
+    extended = function(t,h)
+        return true
+    end,
+
 }
 
 local skippers = {
@@ -156,17 +188,21 @@ local skippers = {
         return true
     end,
 
+    extended = function(t,h)
+        return true
+    end,
+
 }
 
 local writers = {
     -- nothing here (yet)
 }
 
-local function saveheader(t,h)
+local function saveheader(t,h,n)
     local filetype = h.filetype
     local reader   = readers[filetype]
     if reader then
-        return filetype, reader(t,h)
+        return filetype, reader(t,h,n)
     else
         report("no reader for %s",filetype)
     end
@@ -200,7 +236,7 @@ local function unpacktar(whatever,filename,verbose)
             local h = readheader(t)
             if not h then
                 break
-            else
+            elseif h.name ~= filename then
                 local filetype, saved = saveheader(t,h)
                 if not saved then
                     break
@@ -219,6 +255,37 @@ local function unpacktar(whatever,filename,verbose)
             report("runtime needed  : %s",statistics.elapsedseconds(metadata) or 0)
             report("")
         end
+        t.close()
+        return metadata
+    end
+end
+
+local function traversetar(whatever,filename,valid)
+    local t = opentar(whatever,filename)
+    if t then
+        local metadata = t.metadata
+        statistics.starttiming(metadata)
+        while true do
+            local h = readheader(t)
+            if not h then
+                break
+            else
+                local n = valid(h.name)
+                if n then
+                    local filetype, saved = saveheader(t,h,n)
+                    if not saved then
+                        break
+                    end
+                else
+                    local filetype, offset = skipheader(t,h)
+                    if not offset then
+                        break
+                    end
+                end
+            end
+        end
+        statistics.stoptiming(metadata)
+        metadata.runtime = statistics.elapsed(metadata)
         t.close()
         return metadata
     end
@@ -312,25 +379,27 @@ end
 
 local tar = {
     files = {
-        unpack = function(...) return unpacktar("file",  ...) end,
-        pack   = function(...) return packtar  ("file",  ...) end,
-        list   = function(...) return listtar  ("file",  ...) end,
-        hash   = function(...) return hashtar  ("file",  ...) end,
-        fetch  = function(...) return fetchtar ("file",  ...) end,
+        traverse = function(...) return traversetar("file",  ...) end,
+        unpack   = function(...) return unpacktar  ("file",  ...) end,
+        pack     = function(...) return packtar    ("file",  ...) end,
+        list     = function(...) return listtar    ("file",  ...) end,
+        hash     = function(...) return hashtar    ("file",  ...) end,
+        fetch    = function(...) return fetchtar   ("file",  ...) end,
     },
     strings = {
-        unpack = function(...) return unpacktar("string",...) end,
-        pack   = function(...) return packtar  ("string",...) end,
-        list   = function(...) return listtar  ("string",...) end,
-        hash   = function(...) return hashtar  ("string",...) end,
-        fetch  = function(...) return fetchtar ("string",...) end,
+        traverse = function(...) return traversetar("string",...) end,
+        unpack   = function(...) return unpacktar  ("string",...) end,
+        pack     = function(...) return packtar    ("string",...) end,
+        list     = function(...) return listtar    ("string",...) end,
+        hash     = function(...) return hashtar    ("string",...) end,
+        fetch    = function(...) return fetchtar   ("string",...) end,
     },
     streams = {
-        unpack = function(...) return unpacktar("stream",...) end,
-        pack   = function(...) return packtar  ("stream",...) end,
-        list   = function(...) return listtar  ("stream",...) end,
-        hash   = function(...) return hashtar  ("stream",...) end,
-        fetch  = function(...) return fetchtar ("stream",...) end,
+        unpack   = function(...) return unpacktar  ("stream",...) end,
+        pack     = function(...) return packtar    ("stream",...) end,
+        list     = function(...) return listtar    ("stream",...) end,
+        hash     = function(...) return hashtar    ("stream",...) end,
+        fetch    = function(...) return fetchtar   ("stream",...) end,
     },
 }
 

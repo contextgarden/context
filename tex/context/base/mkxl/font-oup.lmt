@@ -1403,8 +1403,8 @@ end
 local concat, sort = table.concat, table.sort
 local next, type, tostring = next, type, tostring
 
-local criterium     <const> = 1
-local threshold     <const> = 0
+local criterium <const> = 1
+local threshold <const> = 0
 
 local trace_packing = false  trackers.register("otf.packing", function(v) trace_packing = v end)
 local trace_loading = false  trackers.register("otf.loading", function(v) trace_loading = v end)

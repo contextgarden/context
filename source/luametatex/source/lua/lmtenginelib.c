@@ -342,6 +342,7 @@ static void enginelib_show_credits(void)
         "  triangles  : Moller, Guigue and Devillers (adapted)\n"
         "  effects    : Ken Perlin and Stefan Gustavson (adapted)\n"
         "  filib      : Werner Hofschuster, Walter Kraemer (adapted)\n"
+        "  xzembedded : Igor Pavlov, Lasse Collin (partial)\n"
         "\n"
         "The code base contains more names and references. Some libraries are partially adapted or\n"
         "have been replaced. The MetaPost library has additional functionality, some of which is\n"
@@ -1125,6 +1126,7 @@ static const luaL_Reg lmt_libs_extra_function_list[] = {
     { "bitset",    luaopen_bitset    },
     { "sequencer", luaopen_sequencer },
     { "xzip",      luaopen_xzip      },
+    { "xz",        luaopen_xz        },
     { "xmath",     luaopen_xmath     },
     { "xcomplex",  luaopen_xcomplex  },
     { "xdecimal",  luaopen_xdecimal  },

@@ -258,15 +258,13 @@ static void tex_aux_freeze_page_specs(int s)
         update_tex_additional_page_skip(null);
     }
     if (tracing_pages_par > 0) {
-        tex_begin_diagnostic();
         tex_print_format(
-            "%l[page: frozen state, goal %p, maxdepth %p, contribution %s, insertheights %p]",
+            "%<%l[page: frozen state, goal %p, maxdepth %p, contribution %s, insertheights %p]%>",
             page_goal,
             lmt_page_builder_state.max_depth,
             lmt_interface.page_contribute_values[s].name,
             lmt_page_builder_state.insert_heights
         );
-        tex_end_diagnostic();
     }
 }
 
@@ -280,12 +278,10 @@ static void update_page_goal(const char *where, halfword index, scaled total, sc
         }
     }
     if (tracing_inserts_par > 0) {
-        tex_begin_diagnostic();
         tex_print_format(
-            "%l[page: insert %s, index %i, total %p, insertheights %p, vsize %p, delta %p, goal %p]",
+            "%<%l[page: insert %s, index %i, total %p, insertheights %p, vsize %p, delta %p, goal %p]%>",
             where, index, total, lmt_page_builder_state.insert_heights, page_vsize, delta, page_goal
         );
-        tex_end_diagnostic();
     }
 }
 
@@ -375,24 +371,20 @@ static int tex_aux_valid_insert_content(halfword content)
 
 static void tex_aux_display_page_break_cost(int context, halfword badness, halfword penalty, halfword cost, int moveon, int fireup)
 {
-    tex_begin_diagnostic();
-    tex_print_format("%l[page: break at %s, total %P, goal %p, badness %B, penalty %i, cost %B%s, moveon %s, fireup %s]",
+    tex_print_format("%<%l[page: break at %s, total %P, goal %p, badness %B, penalty %i, cost %B%s, moveon %s, fireup %s]%>",
         lmt_interface.page_context_values[context].name, 
         page_total, page_stretch, page_fistretch, page_filstretch, page_fillstretch, page_filllstretch, page_shrink,
         page_goal, badness, penalty, cost, cost < lmt_page_builder_state.least_cost ? "#" : "",
         moveon ? "yes" : "no", fireup ? "yes" : "no"
     );
-    tex_end_diagnostic();
 }
 
 static void tex_aux_display_insertion_split_cost(halfword index, scaled height, scaled best, halfword penalty)
 {
     /*tex Display the insertion split cost. */
-    tex_begin_diagnostic();
-    tex_print_format("%l[page: split insert %i: height %p, best htdp %p, penalty %i]",
+    tex_print_format("%<%l[page: split insert %i: height %p, best htdp %p, penalty %i]%>",
         index, height, best, penalty
     );
-    tex_end_diagnostic();
 }
 
 static halfword tex_aux_page_badness(scaled goal)
@@ -542,9 +534,7 @@ static void tex_aux_append_insert(halfword current)
                 }
                 if (tracing_inserts_par > 0) {
                  // %P : total, stretch, fistretch, filstretch, fillstretch, filllstretch, shrink
-                    tex_begin_diagnostic();
-                    tex_print_format("%l[inserts: index %i, first %i, top %i, distance %p]", index, first, top, glue_amount(distance));
-                    tex_end_diagnostic();
+                    tex_print_format("%<%l[inserts: index %i, first %i, top %i, distance %p]%>", index, first, top, glue_amount(distance));
                 }
             }
             tex_flush_node(distance);
@@ -622,9 +612,7 @@ static void tex_aux_append_insert(halfword current)
             if (tex_aux_catch_insert_overflow()) {
                 if (height < 0) {
                     if (tracing_inserts_par > 0) {
-                        tex_begin_diagnostic();
-                        tex_print_format("%l[page: insert overflow, index %i, prepend dummy, case %i]", index, 1);
-                        tex_end_diagnostic();
+                        tex_print_format("%<%l[page: insert overflow, index %i, prepend dummy, case %i]%>", index, 1);
                     }
                     tex_insert_prepend_dummy(current);
                     height = 0;
@@ -641,9 +629,7 @@ static void tex_aux_append_insert(halfword current)
             if (tex_aux_catch_insert_overflow()) {
                 if (best_height_plus_depth > height) {
                     if (tracing_inserts_par > 0) {
-                        tex_begin_diagnostic();
-                        tex_print_format("%l[page: insert overflow, index %i, prepend dummy, case %i]", index, 2);
-                        tex_end_diagnostic();
+                        tex_print_format("%<%l[page: insert overflow, index %i, prepend dummy, case %i]%>", index, 2);
                     }
                     tex_insert_prepend_dummy(current);
                     height = 0;
@@ -684,16 +670,12 @@ static inline int tex_aux_get_penalty_option(halfword current)
                     if (penalty_amount(current) >= infinite_penalty) {
                         if (tex_has_penalty_option(current, penalty_option_widowed)) {
                             if (tracing_pages_par > 1) {
-                                tex_begin_diagnostic();
-                                tex_print_format("%l[page: widowed]");
-                                tex_end_diagnostic();
+                                tex_print_format("%<%l[page: widowed]%>");
                             }
                             return penalty_option_widowed;
                         } else if (tex_has_penalty_option(current, penalty_option_clubbed)) {
                             if (tracing_pages_par > 1) {
-                                tex_begin_diagnostic();
-                                tex_print_format("%l[page: clubbed]");
-                                tex_end_diagnostic();
+                                tex_print_format("%<%l[page: clubbed]%>");
                             }
                             return penalty_option_clubbed;
                         }
@@ -794,9 +776,7 @@ static int tex_aux_topskip_restart(halfword current, int where, scaled height, s
             tex_couple_nodes(gluenode, current);
             tex_couple_nodes(contribute_head, gluenode);
             if (tracing > 1) {
-                tex_begin_diagnostic();
-                tex_print_format("%l[page: initialize, topskip at %s]", where == contribute_box ? "box" : "rule");
-                tex_end_diagnostic();
+                tex_print_format("%<%l[page: initialize, topskip at %s]%>", where == contribute_box ? "box" : "rule");
             }
         }
         return 1;
@@ -929,14 +909,12 @@ static void tex_aux_reconsider_goal(halfword current, halfword *badness, halfwor
                     halfword extrabadness = tex_aux_page_badness(page_goal + page_extra_goal_par);
                     halfword extracosts = tex_aux_page_costs(extrabadness, *penalty);
                     if (tracing > 0) {
-                        tex_begin_diagnostic();
                         tex_print_format(
-                            "%l[page: extra check, total %P, goal %p, extragoal %p, badness %B, costs %i, extrabadness %B, extracosts %i]",
+                            "%<%l[page: extra check, total %P, goal %p, extragoal %p, badness %B, costs %i, extrabadness %B, extracosts %i]%>",
                             page_total, page_stretch, page_fistretch, page_filstretch, page_fillstretch, page_filllstretch, page_shrink,
                             page_goal, page_extra_goal_par,
                             *badness, *costs, extrabadness, extracosts
                         );
-                        tex_end_diagnostic();
                     }
                     /* we need to append etc. so an extra loop cycle */
                     *badness = extrabadness;
@@ -944,9 +922,7 @@ static void tex_aux_reconsider_goal(halfword current, halfword *badness, halfwor
                     /* */
                     lmt_page_builder_state.last_extra_used = 1;
                     if (tracing > 1) {
-                        tex_begin_diagnostic();
-                        tex_print_format("%l[page: widowed]");
-                        tex_end_diagnostic();
+                        tex_print_format("%<%l[page: widowed]%>");
                     }
                 }
                 break;
@@ -956,9 +932,7 @@ static void tex_aux_reconsider_goal(halfword current, halfword *badness, halfwor
                     *penalty = eject_penalty;
                     /* */
                     if (tracing > 1) {
-                        tex_begin_diagnostic();
-                        tex_print_format("%l[page: clubbed]");
-                        tex_end_diagnostic();
+                        tex_print_format("%<%l[page: clubbed]%>");
                     }
                 }
                 break;
@@ -1181,9 +1155,7 @@ static void tex_process_mvl(halfword context, halfword boundary)
                 ship out the page and |goto done|.
             */
             if (tracing > 1) {
-                tex_begin_diagnostic();
-                tex_print_format("%l[page: compute: %N, %d, penalty %i]", current, current, penalty);
-                tex_end_diagnostic();
+                tex_print_format("%<%l[page: compute: %N, %d, penalty %i]%>", current, current, penalty);
             }
             if (penalty < infinite_penalty) {
                 /*tex
@@ -1194,14 +1166,12 @@ static void tex_process_mvl(halfword context, halfword boundary)
                 halfword costs = tex_aux_page_costs(badness, penalty);
                 lmt_page_builder_state.last_extra_used = 0;
                 if (tracing > 1) {
-                    tex_begin_diagnostic();
-                    tex_print_format("%l[page: calculate, %N, %d, total %P, goal %p, badness %B, costs %i]",
+                    tex_print_format("%<%l[page: calculate, %N, %d, total %P, goal %p, badness %B, costs %i]%>",
                         current, current,
                         page_total, page_stretch, page_fistretch, page_filstretch, page_fillstretch, page_filllstretch, page_shrink,
                         page_goal,
                         badness, costs
                     );
-                    tex_end_diagnostic();
                 }
                 tex_aux_reconsider_goal(current, &badness, &costs, &penalty, tracing);
                 {
@@ -1232,9 +1202,7 @@ static void tex_process_mvl(halfword context, halfword boundary)
                     }
                     if (fireup) {
                         if (tracing > 1) {
-                            tex_begin_diagnostic();
-                            tex_print_format("%l[page: fireup: %N, %d]", current, current);
-                            tex_end_diagnostic();
+                            tex_print_format("%<%l[page: fireup: %N, %d]%>", current, current);
                         }
                         if (callback_id > 0) {
                             tex_aux_fireup_show_build_node(callback_id, current);
@@ -1264,9 +1232,7 @@ static void tex_process_mvl(halfword context, halfword boundary)
                 measurements with respect to the glue or kern specified by node~|p|.
             */
             if (tracing > 1) {
-                tex_begin_diagnostic();
-                tex_print_format("%l[page: update, %N, %d]", current, current);
-                tex_end_diagnostic();
+                tex_print_format("%<%l[page: update, %N, %d]%>", current, current);
             }
             switch(node_type(current)) {
                 case kern_node:
@@ -1298,9 +1264,7 @@ static void tex_process_mvl(halfword context, halfword boundary)
                 not exceeded.
             */
             if (tracing > 1) {
-                tex_begin_diagnostic();
-                tex_print_format("%l[page: contribute, %N, %d]", current, current);
-                tex_end_diagnostic();
+                tex_print_format("%<%l[page: contribute, %N, %d]%>", current, current);
             }
             if (page_depth > lmt_page_builder_state.max_depth) {
                 page_total += page_depth - lmt_page_builder_state.max_depth;
@@ -1308,9 +1272,7 @@ static void tex_process_mvl(halfword context, halfword boundary)
             }
           APPEND:
             if (tracing > 1) {
-                tex_begin_diagnostic();
-                tex_print_format("%l[page: append, %N, %d]", current, current);
-                tex_end_diagnostic();
+                tex_print_format("%<%l[page: append, %N, %d]%>", current, current);
             }
             /*tex Link node |p| into the current page and |goto done|. We assume a positive depth. */
             tex_couple_nodes(lmt_page_builder_state.tail, current);
@@ -1320,9 +1282,7 @@ static void tex_process_mvl(halfword context, halfword boundary)
             continue; // or: break;
           DISCARD:
             if (tracing > 1) {
-                tex_begin_diagnostic();
-                tex_print_format("%l[page: discard, %N, %d]", current, current);
-                tex_end_diagnostic();
+                tex_print_format("%<%l[page: discard, %N, %d]%>", current, current);
             }
             /*tex Recycle node |p|. */
             tex_try_couple_nodes(contribute_head, node_next(current));
@@ -1526,9 +1486,7 @@ static void tex_aux_show_loners(void)
             if (tex_has_penalty_option(lmt_page_builder_state.best_break, penalty_option_club   )) { state[1] = 'C'; }
             if (tex_has_penalty_option(lmt_page_builder_state.best_break, penalty_option_broken )) { state[2] = 'B'; }
             if (tex_has_penalty_option(lmt_page_builder_state.best_break, penalty_option_shaping)) { state[3] = 'S'; }
-            tex_begin_diagnostic();
-            tex_print_format("%l[page: loner: %s penalty %i]", state, penalty);
-            tex_end_diagnostic();
+            tex_print_format("%<%l[page: loner: %s penalty %i]%>", state, penalty);
         }
     }
 }

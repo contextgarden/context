@@ -1639,9 +1639,7 @@ void tex_hyphenate_list(halfword head, halfword tail)
                                     r = tex_aux_compound_word_break(r, get_glyph_language(g), explicit_hyphen);
                                     if (trace > 1) {
                                         *utf8ori = 0;
-                                        tex_begin_diagnostic();
-                                        tex_print_format("%l[language: compound word break after %s]", utf8original);
-                                        tex_end_diagnostic();
+                                        tex_print_format("%<%l[language: compound word break after %s]%>", utf8original);
                                     }
                                     if (hyphenation_permitted(glyph_hyphenate(g), compound_hyphenation_mode)) {
                                         explicit_hyphen = 0;

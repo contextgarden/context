@@ -174,9 +174,7 @@ static int tex_aux_pass_text_x(int tracing_ifs, int tracing_commands)
                     if (level == 0) {
                         int unless = cur_chr == or_unless_code;
                         if (tracing_commands > 1) {
-                            tex_begin_diagnostic();
-                            tex_print_format(unless ? "%l{orunless}" : "%l{orelse}");
-                            tex_end_diagnostic();
+                            tex_print_format(unless ? "%<%l{orunless}%>" : "%<%l{orelse}%>");
                         } else if (tracing_ifs) {
                             tex_show_cmd_chr(cur_cmd, cur_chr);
                         }
@@ -244,9 +242,7 @@ static void tex_aux_if_warning(void)
         --index;
     }
     if (warning) {
-        tex_begin_diagnostic();
-        tex_print_format("%l[conditional: end of %C%L of a different file]", if_test_cmd, lmt_condition_state.state.cur_if, lmt_condition_state.state.if_line);
-        tex_end_diagnostic();
+        tex_print_format("%<%l[conditional: end of %C%L of a different file]%>", if_test_cmd, lmt_condition_state.state.cur_if, lmt_condition_state.state.if_line);
         if (tracing_nesting_par > 1) {
             tex_show_context();
         }
@@ -281,9 +277,7 @@ static void tex_aux_if_warning(void)
         --index;
     }
     if (warning) {
-        tex_begin_diagnostic();
-        tex_print_format("%l[conditional: end of %C%L of a different file]", if_test_cmd, lmt_condition_state.state.cur_if, lmt_condition_state.state.if_line);
-        tex_end_diagnostic();
+        tex_print_format("%<%l[conditional: end of %C%L of a different file]%>", if_test_cmd, lmt_condition_state.state.cur_if, lmt_condition_state.state.if_line);
         if (tracing_nesting_par > 1) {
             tex_show_context();
         }
@@ -551,10 +545,7 @@ static void tex_aux_show_if_state(halfword code, halfword case_value)
     if (code >= first_if_case_code && code <= last_if_case_code) {
         name = if_state_names[code];
     }
-    tex_begin_diagnostic();
-    tex_print_levels();
-    tex_print_format("{%s %i}", name ? name : "userdefined", case_value);
-    tex_end_diagnostic();
+    tex_print_format("%<%l{%s %i}%>", name ? name : "userdefined", case_value);
 }
 
 /*tex Why do we skip over relax? */
@@ -1640,9 +1631,7 @@ void tex_conditional_if(halfword code, int unless)
         /*tex This could be a helper as we do this a few more times. */
         halfword online = tracing_online_par;
         tracing_online_par = 1;
-        tex_begin_diagnostic();
-        tex_print_format("%lignoring \\unless in %C test", if_test_cmd, code);
-        tex_end_diagnostic();
+        tex_print_format("%<%lignoring \\unless in %C test%>", if_test_cmd, code);
         tracing_online_par = online;
     }
   CASEWITHUNLESS:
@@ -1687,9 +1676,7 @@ void tex_conditional_if(halfword code, int unless)
     }
     if (tracing_commands > 1) {
         /*tex Display the value of |b|. */
-        tex_begin_diagnostic();
-        tex_print_format(result ? "%l{true}" : "%l{false}");
-        tex_end_diagnostic();
+        tex_print_format(result ? "%<%l{true}%>" : "%<%l{false}%>");
     }
     if (result) {
         tex_aux_change_if_limit(else_code, save_cond_ptr);

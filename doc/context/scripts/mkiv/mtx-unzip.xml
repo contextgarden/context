@@ -11,6 +11,9 @@
     <flag name="list"><short>list files in archive</short></flag>
     <flag name="extract"><short>extract files [--silent --steps]</short></flag>
    </subcategory>
+   <subcategory>
+    <flag name="decompress"><short>uncompress a .xz or .gz file</short></flag>
+   </subcategory>
   </category>
  </flags>
 </application>

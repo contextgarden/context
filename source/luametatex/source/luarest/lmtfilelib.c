@@ -406,10 +406,6 @@ static inline int mk_dirs(const char *s)
     return success ? 1 : 0;
 }
 
-# include <lua.h>
-# include <lauxlib.h>
-# include <lualib.h>
-
 /*
     This function changes the current directory.
 
@@ -555,27 +551,32 @@ static int filelib_mkdirs(lua_State *L)
         lua_pushboolean(L, 0);
         return 1;
     }
-    /* concatenate arguments with '/' just like the original \LUA\ variant */
-    luaL_Buffer b;
-    luaL_buffinit(L, &b);
-    int done = 0;
-    for (int i = 1; i <= n; i++) {
-        size_t len;
-        const char *str = lua_tolstring(L, i, &len);
-        if (str && len > 0) {
-            if (done) {
-                luaL_addchar(&b, '/');
+    const char *name = NULL;
+    if (n > 1) {
+        /* concatenate arguments with '/' just like the original \LUA\ variant */
+        luaL_Buffer b;
+        luaL_buffinit(L, &b);
+        int done = 0;
+        for (int i = 1; i <= n; i++) {
+            size_t len;
+            const char *str = lua_tolstring(L, i, &len);
+            if (str && len > 0) {
+                if (done) {
+                    luaL_addchar(&b, '/');
+                }
+                luaL_addlstring(&b, str, len);
+                done = 1;
             }
-            luaL_addlstring(&b, str, len);
-            done = 1;
         }
+         /* pushes the combined path string onto the stack */
+        luaL_pushresult(&b);
+        name = lua_tostring(L, -1);
+    } else {
+        name = lua_tostring(L, 1);
     }
-     /* pushes the combined path string onto the stack */
-    luaL_pushresult(&b);
-    const char *name = lua_tostring(L, -1);
     int okay = 0;
     if (name && lmt_valid_target(L, security_writable, name, security_create_directory)) {
-        okay = mk_dirs(name);
+        okay = aux_isdir(name) ? 1 : mk_dirs(name);
     }
     /* push the success boolean on top of the path string, returning path, success */
     lua_pushboolean(L, okay);

@@ -599,7 +599,9 @@ return {
                 "workflows/workflows-synctex.tex",
                 "workflows/workflows-parallel.tex",
                 "workflows/workflows-hashed.tex",
-                "workflows/workflows-userdata.tex",
+                "workflows/workflows-hashed.tex",
+                "workflows/workflows-embedding.tex",
+                "workflows/workflows-archives.tex",
             },
             results = {
                 "workflows/workflows-mkiv.pdf",

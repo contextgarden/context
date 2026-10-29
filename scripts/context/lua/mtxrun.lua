@@ -6513,7 +6513,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 50843, stripped down to: 26951
+-- original size: 51645, stripped down to: 27560
 
 if not modules then modules={} end modules ['util-str']={
  version=1.001,
@@ -7613,6 +7613,27 @@ if CONTEXTLMTXMODE and CONTEXTLMTXMODE>0 then
  function string.texhashed(s)
   return (gsub(s,".",t))
  end
+end
+if characters and characters.lower then
+ string.tolower=characters.lower
+ string.toupper=characters.upper
+else
+ local ulower 
+ local uupper 
+ local function check()
+  if not characters then
+   dofile(resolvers.findfile("char-def.lua"))
+   dofile(resolvers.findfile("char-utf.lua"))
+  end
+  ulower=characters.lower
+  uupper=characters.upper
+  string.tolower=ulower
+  string.toupper=uupper
+ end
+ ulower=function(str) check() return ulower(str) end
+ uupper=function(str) check() return uupper(str) end
+ function string.tolower(str) return ulower(str) end
+ function string.toupper(str) return uupper(str) end
 end
 
 
@@ -22640,7 +22661,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 71512, stripped down to: 45545
+-- original size: 71513, stripped down to: 45546
 
 if not modules then modules={} end modules ['data-res']={
  version=1.001,
@@ -23458,7 +23479,7 @@ function resolvers.registerfilehash(name,content,someerror)
   files[name]=content
  else
   files[name]={}
-  if somerror==true then 
+  if someerror==true then 
    instance.loaderror=someerror
   end
  end
@@ -24691,7 +24712,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-con"] = package.loaded["data-con"] or true
 
--- original size: 5733, stripped down to: 3900
+-- original size: 5730, stripped down to: 3900
 
 if not modules then modules={} end modules ['data-con']={
  version=1.100,
@@ -26850,8 +26871,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua util-tmr.lua trac-tmr.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua util-sig.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua util-jsn.lua
 -- skipped libraries : -
--- original bytes    : 1076400
--- stripped bytes    : 429597
+-- original bytes    : 1077200
+-- stripped bytes    : 429787
 
 -- end library merge
 

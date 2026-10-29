@@ -92,6 +92,8 @@ directives.register("filters.utf.reorder",   function(v) configure("characters.f
 directives.register("filters.utf.collapse",  function(v) configure("characters.filters.utf.collapse", v) end)
 directives.register("filters.utf.decompose", function(v) configure("characters.filters.utf.decompose",v) end)
 
+-- tricky: users seem to use these suffixes
+
 utffilters.setskippable {
     "mkiv", "mkvi",
     "mkix", "mkxi",

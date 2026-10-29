@@ -11,8 +11,77 @@ if not modules then modules = { } end modules ['l-string'] = {
 
 local string = string
 
-local sub, gsub, gmatch, char, byte, rep, lower, find = string.sub, string.gsub, string.gmatch, string.char, string.byte, string.rep, string.lower, string.find
+local sub, gsub, gmatch, char, byte, rep, find = string.sub, string.gsub, string.gmatch, string.char, string.byte, string.rep, string.find
 local P, S, C, Ct, Cc, Cs = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.Cs
+
+do
+
+    -- Let's hope we that we resolve this early.
+
+    local onlyascii = string.onlyascii
+    local alower    = string.lower
+    local aupper    = string.upper
+    local ulower -- = false
+    local uupper -- = false
+    local ushape -- = false
+
+    if characters and characters.lower then
+
+        ulower = characters.lower
+        uupper = characters.upper
+        ushape = characters.shaped
+
+    else
+
+        local check = tex and token and node and
+            function()
+                if characters and characters.lower then
+                    ulower = characters.lower
+                    uupper = characters.upper
+                    ushape = characters.shaped
+                end
+            end
+        or -- for sure 'mtxrun' or 'context' or ...
+            function()
+                if resolvers then
+                    if not characters or not characters.lower then
+                        dofile(resolvers.findfile("char-def.lua"))
+                        dofile(resolvers.findfile("char-utf.lua"))
+                    end
+                    ulower = characters.lower
+                    uupper = characters.upper
+                    ushape = characters.shaped
+                end
+            end
+
+        ulower = function(str) check() return ulower(str) end
+        uupper = function(str) check() return uupper(str) end
+        ushape = function(str) check() return ushape(str) end
+    end
+
+    function string.tolower(str)
+        if onlyascii(str) then
+            return alower(str)
+        else
+            return ulower(str)
+        end
+    end
+    function string.toupper(str)
+        if onlyascii(str) then
+            return aupper(str)
+        else
+            return uupper(str)
+        end
+    end
+    function string.toshape(str)
+        if onlyascii(str) then
+            return str
+        else
+            return ushape(str)
+        end
+    end
+
+end
 
 local lpegmatch = lpeg.match
 local patterns  = lpeg.patterns
@@ -120,6 +189,8 @@ end
 
 do
 
+    local tolower      = string.tolower
+
     local anything     = patterns.anything
     local moreescapes  = Cc("%") * S(".-+%?()[]*$^{}")
     local allescapes   = Cc("%") * S(".-+%?()[]*")   -- also {} and ^$ ?
@@ -146,7 +217,7 @@ do
             str = lpegmatch(pattern_b,str)
         end
         if lowercase then
-            return lower(str)
+            return tolower(str)
         else
             return str
         end

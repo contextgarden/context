@@ -24,6 +24,9 @@ local helpinfo = [[
     <flag name="list"><short>list files in archive</short></flag>
     <flag name="extract"><short>extract files [--silent --steps]</short></flag>
    </subcategory>
+   <subcategory>
+    <flag name="decompress"><short>uncompress a .xz or .gz file</short></flag>
+   </subcategory>
   </category>
  </flags>
 </application>
@@ -40,23 +43,25 @@ local report = application.report
 scripts          = scripts          or { }
 scripts.unzipper = scripts.unzipper or { }
 
-local function validfile()
+local function validfile(suffix)
     local filename = environment.files[1]
     if filename and filename ~= "" then
-        filename = file.addsuffix(filename,'zip')
+        if suffix then
+            filename = file.addsuffix(filename,suffix)
+        end
         if lfs.isfile(filename) then
             return filename
         else
-            report("invalid zip file: %s",filename)
+            report("invalid file: %s",filename)
         end
     else
-        report("no zip file")
+        report("no file")
     end
     return false
 end
 
 function scripts.unzipper.list()
-    local filename = validfile()
+    local filename = validfile("zip")
     if filename then
         local zipfile = utilities.zipfiles.open(filename)
         if zipfile then
@@ -102,7 +107,7 @@ function scripts.unzipper.list()
 end
 
 function scripts.unzipper.extract()
-    local filename = validfile()
+    local filename = validfile("zip")
     if validfile then
         -- todo --junk
         local silent = environment.arguments["silent"]
@@ -115,10 +120,43 @@ function scripts.unzipper.extract()
     end
 end
 
+function scripts.unzipper.decompress()
+    local filename = validfile()
+    if validfile then
+        local time   = timer.new()
+        local suffix = file.suffix(filename)
+        local data   = false
+        timer.start(time)
+        if gzip and suffix == "gz" or gzip.validfile(filename) then
+            data = io.loaddata(filename)
+            if data and data ~= "" then
+                data = gzip.decompress(data)
+            end
+        elseif xz and suffix == "xz" or xz.validfile(filename) then
+            data = io.loaddata(filename)
+            if data and data ~= "" then
+                -- we can add a max as second argument
+                data = xz.decompress(data)
+            end
+        end
+        filename = file.removesuffix(filename)
+        if data then
+            io.savedata(filename,data)
+        end
+        timer.stop(time)
+        if data then
+            report("file saved as %a, size %i bytes, time spent %0.3f",
+                filename,#data,timer.elapsed(time)
+            )
+        end
+    end
+end
 if environment.arguments["list"] then
     scripts.unzipper.list()
 elseif environment.arguments["extract"] then
     scripts.unzipper.extract()
+elseif environment.arguments["decompress"] then
+    scripts.unzipper.decompress()
 elseif environment.arguments["exporthelp"] then
     application.export(environment.arguments["exporthelp"],environment.files[1])
 else

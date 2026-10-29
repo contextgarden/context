@@ -129,7 +129,7 @@ function containers.write(container,name,data,fast)
             local shared = data.shared
             data.unique  = nil
             data.shared  = nil
-            savedataincache(container.writable, name, data, fast)
+            savedataincache(container.writable,name,data,fast)
             if trace_cache or trace_containers then
                 report_containers("action %a, category %a, name %a","save",container.subcategory,name)
             end

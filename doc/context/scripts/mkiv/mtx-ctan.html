@@ -39,10 +39,16 @@
 <table>
     <tr><th style="width: 10em">flag</th><th style="width: 8em">value</th><th>description</th></tr>
         <tr><th/><td/><td/></tr>
-        <tr><th>--packages</th><td></td><td>list available packages [--field=key|name|caption]</td></tr>
-        <tr><th>--topics</th><td></td><td>list available topics [--field=key|name|details]</td></tr>
-        <tr><th>--details</th><td></td><td>show details about package</td></tr>
         <tr><th>--pattern</th><td>string</td><td>use this pattern, otherwise first argument</td></tr>
+        <tr><th>--download</th><td>string</td><td>install (fonts) from texlive</td></tr>
+        <tr><th>--force</th><td>string</td><td>force installation even when present</td></tr>
+        <tr><th>--all</th><td>string</td><td>also install when multiple packages</td></tr>
+        <tr><th/><td/><td/></tr>
+        <tr><th>--packages</th><td></td><td>list available ctan packages [--field=key|name|caption]</td></tr>
+        <tr><th>--topics</th><td></td><td>list available ctan topics [--field=key|name|details]</td></tr>
+        <tr><th>--details</th><td></td><td>show details about a ctan package</td></tr>
+        <tr><th/><td/><td/></tr>
+        <tr><th>--texlive</th><td></td><td>install a texlive package [--download] [--force] [--all]</td></tr>
     </table>
 <br/>
             </div>

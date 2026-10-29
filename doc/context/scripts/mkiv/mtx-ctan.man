@@ -11,17 +11,29 @@
 .B Dealing with CTAN
 .SH OPTIONS
 .TP
-.B --packages
-list available packages [--field=key|name|caption]
-.TP
-.B --topics
-list available topics [--field=key|name|details]
-.TP
-.B --details
-show details about package
-.TP
 .B --pattern=string
 use this pattern, otherwise first argument
+.TP
+.B --download=string
+install (fonts) from texlive
+.TP
+.B --force=string
+force installation even when present
+.TP
+.B --all=string
+also install when multiple packages
+.TP
+.B --packages
+list available ctan packages [--field=key|name|caption]
+.TP
+.B --topics
+list available ctan topics [--field=key|name|details]
+.TP
+.B --details
+show details about a ctan package
+.TP
+.B --texlive
+install a texlive package [--download] [--force] [--all]
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

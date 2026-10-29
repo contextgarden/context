@@ -1660,6 +1660,9 @@ void tex_print_levels(void)
     %X   int            unicode
 
     %#   int            group count : n*{}
+    %.   int            nesting
+    %<                  begin diagnostics
+    %>                  end diagnostics
 
     %2   int            direction
 
@@ -1911,6 +1914,16 @@ inline const char *tex_print_format_args(const char *format, va_list args)
                         {
                             int n = va_arg(args, int);
                             tex_print_nesting(n);
+                            break;
+                        }
+                    case '<':
+                        {
+                            tex_begin_diagnostic();
+                            break;
+                        }
+                    case '>':
+                        {
+                            tex_end_diagnostic();
                             break;
                         }
                     default:

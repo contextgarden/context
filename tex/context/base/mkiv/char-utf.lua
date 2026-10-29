@@ -239,6 +239,9 @@ function utffilters.collapse(str,filename)
     elseif filename and skippable[filesuffix(filename)] then -- we could hash the collapsables or do a quicker test
         return str
     else
+ -- elseif onlyascii(str) then
+ --     return str -- very little gain
+ -- else
         return lpegmatch(p_collapse,str) or str
     end
 end
@@ -258,6 +261,9 @@ function utffilters.combine(str) -- not in files
     if not str or str == "" or #str == 1 then
         return str
     else
+ -- elseif onlyascii(str) then
+ --     return str -- very little gain
+ -- else
         return lpegmatch(p_combine,str) or str
     end
 end
@@ -273,14 +279,14 @@ function utffilters.decompose(str,filename) -- 3 to 4 times faster than the abov
     if not p_decompose then
         prepare()
     end
-    if str and str ~= "" and #str > 1 then
-        return lpegmatch(p_decompose,str)
-    end
     if not str or str == "" or #str < 2 then
         return str
     elseif filename and skippable[filesuffix(filename)] then
         return str
     else
+ -- elseif onlyascii(str) then
+ --     return str -- very little gain
+ -- else
         return lpegmatch(p_decompose,str) or str
     end
     return str

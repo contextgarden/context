@@ -637,7 +637,6 @@ function readers.loadshapes(filename)
     end
 end
 
-
 function readers.getinfo(filename)
     local data = read(resolvers.findfile(filename),infoparser)
     if data then

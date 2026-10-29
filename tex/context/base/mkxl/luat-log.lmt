@@ -17,21 +17,19 @@ if not modules then modules = { } end modules ['luat-log'] = {
 -- channel. Actually, the log channels are now numeric (1,2,3) as with other
 -- symbolics.
 
-local next, type, select, print = next, type, select, print
-local gmatch, find = string.format, string.gmatch, string.find
+local next, type, print = next, type, print
+local find = string.find
 local concat, insert, remove = table.concat, table.insert, table.remove
-local topattern = string.topattern
-local utfchar = utf.char
 
-local writenl = texio.writeselectornl
-local writelf = texio.writeselectorlf
-local write   = texio.writeselector
+local writenl           = texio.writeselectornl
+local writelf           = texio.writeselectorlf
+local write             = texio.writeselector
 
 local setmetatableindex = table.setmetatableindex
 local settings_to_hash  = utilities.parsers.settings_to_hash
 local sortedkeys        = table.sortedkeys
+local topattern         = string.topattern
 
------ formatters        = string.formatters
 local formatting        = string.formatting
 local formatted         = string.formatted
 

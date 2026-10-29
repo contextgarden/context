@@ -7,7 +7,8 @@ if not modules then modules = { } end modules ['spac-chr'] = {
     license   = "see context related readme files"
 }
 
-local byte, lower = string.byte, string.lower
+local byte  = string.byte
+local lower = string.lower -- descriptions are always ascii
 
 -- beware: attribute copying is bugged ... there will be a proper luatex helper
 -- for this

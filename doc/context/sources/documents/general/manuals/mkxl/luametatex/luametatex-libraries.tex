@@ -1,5 +1,48 @@
 % language=us runpath=texruns:manuals/luametatex
 
+
+% io.getseparators
+% io.getcpucount
+% io.launch
+% io.enableansi
+
+% xz.decompress
+% xz.targetsize
+
+% client
+% server
+% sequencer
+
+% string.bytetable
+% string.chartable
+% string.topdfsixteen(str,bom,brackets)
+% string.topdfeight(str,prentheses)
+% string.topdfstring(str,lowasciitoo)
+% string.replacecharacter
+% string.onlyascii
+% string.filterwierd
+
+% file.lessweird
+% file.moreweird
+% file.setloadshebang
+
+% processlib.open
+% processlib.close
+% processlib.read
+% processlib.poll
+% watchlib.tostring
+
+% watchlib.register
+% watchlib.unregister
+% watchlib.check
+% watchlib.tostring
+
+% securitylib.setchecker
+% securitylib.checked
+% securitylib.resetdebug
+% securitylib.gettargets
+% securitylib.getactions
+
 \environment luametatex-style
 
 \startdocument[title=Libraries]
@@ -116,6 +159,7 @@ function lfs.iswriteabledir  ( <t:string> name ) return <t:boolean> end
 function lfs.iswriteablefile ( <t:string> name ) return <t:boolean> end
 function lfs.isreadabledir   ( <t:string> name ) return <t:boolean> end
 function lfs.isreadablefile  ( <t:string> name ) return <t:boolean> end
+function lfs.isready         ( <t:string> name ) return <t:boolean> end
 \stoptyping
 
 The current (working) directory is fetch with:

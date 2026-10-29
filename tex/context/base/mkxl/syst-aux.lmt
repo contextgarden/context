@@ -266,6 +266,9 @@ do
     -- Quite probably we don't yet have characters loaded so we delay some aliases
     -- and redefine the mappers.
 
+    -- We also have string.tolower and string.toupper, more performant but that
+    -- doesn't matter here.
+
     local _lower_, _upper_, _shape_, _strip_
 
     _lower_ = function(s)

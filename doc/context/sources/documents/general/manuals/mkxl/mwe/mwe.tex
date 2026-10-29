@@ -4,15 +4,25 @@
 \usemodule[scite]
 
 \setuplayout
-  [middle]
+  [tight]
 
-\setupbodyfont[pagella,12pt]
+% \showframe
+
+% \setuplayout
+%   [middle]
+
+\setuphead
+  [section]
+  [style=\bfa]
+
+\setupbodyfont
+  [pagella,12pt]
 
 \setupwhitespace
   [big]
 
 \setupalign
-  [verytolerant,stretch]
+  [mathbookpasses]
 
 \setupdocument
   [title=No Title,
@@ -33,6 +43,8 @@
 \noheaderandfooterlines
 
 \startdocument
+
+\startsubject[title=A test file]
 
 This is how a minimal (non) working example looks like. The more minimal it is,
 the more likely you will get an answer. Remove everything from your examples
@@ -61,11 +73,42 @@ Like this:
 \stoptext
 \stoptyping
 
-where the question is \quotation {example question}.
+and look at it a few times to see what can be left out. If you have a complex
+workflow, and more files are needed, make a zip and put it somewhere to download;
+don't spam the list with files (reports and explanations are fine).
 
-If you have a complex workflow, and more files are needed, make a zip and put it
-somewhere to download.
+\stopsubject
 
-Wolfgang & Hans
+\startsubject[title=An explanation]
+
+Because \TEX\ is also about look and feel it can be that your expectations
+don't match what \CONTEXT\ generates. In that case explain what you needed
+and what you expect. Maybe make a drawing or fake output. There is no need
+to come up witt some interface, if needed we will see how and
+where a possible feature (option) fits in best.
+
+When you have specific wishes or are in a hurry, also be prepared to test as soon
+as a patch or update is provided. Don't expect us to stay tuned to your problem
+for too long.
+
+\stopsubject
+
+\startsubject[title=No slop]
+
+We see no problem in users asking some large language model driven
+tool. But don't spam us with its outcome. We start from a problem not a
+proposed solution. Of course fixing a simple typo or wrong variable is
+no problem but the internals of \CONTEXT\ let alone the engine
+mix badly with the kind of reasoning or lack of understanding per 2026.
+
+Also, make clear that if you have a suggestion that it comes from such an agent.
+If you don't really understand what is going on, just say so and don't rely on an
+language model to make you wiser with hundred percent accuracy.
+
+\stopsubject
+
+\stopsubject
+
+Hans (also for Wolfgang, Mikael, \unknown)
 
 \stopdocument

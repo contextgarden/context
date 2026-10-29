@@ -22,6 +22,8 @@ local report_lua       = logs.reporter("system","lua")
 local report_tex       = logs.reporter("system","status")
 local report_tempfiles = logs.reporter("resolvers","tempfiles")
 
+-- luatex ...
+
 luatex                 = luatex or { }
 local luatex           = luatex
 local synctex          = luatex.synctex

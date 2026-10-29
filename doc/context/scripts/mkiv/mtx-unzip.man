@@ -16,6 +16,9 @@ list files in archive
 .TP
 .B --extract
 extract files [--silent --steps]
+.TP
+.B --decompress
+uncompress a .xz or .gz file
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

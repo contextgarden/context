@@ -532,6 +532,7 @@ include(cmake/potrace.cmake)
 include(cmake/qrcodegen.cmake)
 include(cmake/nanojpeg.cmake)
 include(cmake/triangles.cmake)
+include(cmake/xzembedded.cmake)
 
 # include(cmake/qhull.cmake)
 

@@ -703,9 +703,7 @@ static void tex_aux_run_ignore_something(void)
 static void tex_aux_run_math_non_math(void)
 {
     if (tracing_commands_par >= 4) {
-        tex_begin_diagnostic();
-        tex_print_format("%l[math: pushing back %C]", cur_cmd, cur_chr);
-        tex_end_diagnostic();
+        tex_print_format("%<%l[math: pushing back %C]%>", cur_cmd, cur_chr);
     }
     tex_back_input(cur_tok);
     tex_begin_paragraph(1, math_char_par_trigger);
@@ -1294,9 +1292,7 @@ static void tex_aux_run_new_paragraph(void)
             break;
     }
     if (tracing_commands_par >= 4) {
-        tex_begin_diagnostic();
-        tex_print_format("%l[text: pushing back %C]", cur_cmd, cur_chr);
-        tex_end_diagnostic();
+        tex_print_format("%<%l[text: pushing back %C]%>", cur_cmd, cur_chr);
     }
     tex_back_input(cur_tok);
     tex_begin_paragraph(1, context);
@@ -1318,11 +1314,10 @@ static void tex_aux_run_new_paragraph(void)
 void tex_page_boundary_message(const char *s, halfword b)
 {
     if (tracing_pages_par > 0) {
-        tex_begin_diagnostic();
-        tex_print_format("%l[page: boundary, %s, trigger %i, detail %i]",
+        tex_print_format(
+            "%<%l[page: boundary, %s, trigger %i, detail %i]%>",
             s, b ? boundary_data(b) : 0, b ? boundary_reserved(b) : 0
         );
-        tex_end_diagnostic();
     }
 }
 
@@ -1871,9 +1866,7 @@ int tex_main_control(void)
 
 void tex_local_control_message(const char *s)
 {
-    tex_begin_diagnostic();
-    tex_print_format("%l[local control: level %i, %s]", lmt_main_control_state.local_level, s);
-    tex_end_diagnostic();
+    tex_print_format("%<%l[local control: level %i, %s]%>", lmt_main_control_state.local_level, s);
 }
 
 /*tex
@@ -5111,18 +5104,14 @@ static void tex_aux_set_def(int flags, int force)
             if (is_global(flags)) {
                 remove_global_flag(flags);
                 if (tracing_commands_par) {
-                    begin_diagnostic();
-                    tex_print_format("%l[global canceled]");
-                    end_diagnostic();
+                    tex_print_format("%<%l[global canceled]%>");
                 }
             }
         } else {
             if (! is_global(flags)) {
                 add_global_flag(flags);
                 if (tracing_commands_par) {
-                    begin_diagnostic();
-                    tex_print_format("%l[global enforced]");
-                    end_diagnostic();
+                    tex_print_format("%<%l[global enforced]%>");
                 }
             }
         }

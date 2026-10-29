@@ -1999,9 +1999,10 @@ void tex_missing_character(halfword n, halfword f, halfword c, halfword where)
         if (tracing_lost_chars_par > 1) {
             tracing_online_par = 1;
         }
-        tex_begin_diagnostic();
-        tex_print_format("%l[font: missing character, character %c (%U), font '%s', location %i]", c, c, tex_is_valid_font(f) ? font_name(f) : "<invalid>", where);
-        tex_end_diagnostic();
+        tex_print_format(
+            "%<%l[font: missing character, character %c (%U), font '%s', location %i]%>",
+            c, c, tex_is_valid_font(f) ? font_name(f) : "<invalid>", where
+        );
         tracing_online_par = old_setting;
     }
 }

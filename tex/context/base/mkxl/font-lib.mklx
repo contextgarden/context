@@ -87,7 +87,7 @@
 
 % name database
 
-\registerctxluafile{font-syn}{}
+\registerctxluafile{font-syn}{autosuffix}
 \registerctxluafile{font-trt}{}
 
 % shapes
