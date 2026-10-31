@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['data-fil'] = {
 }
 
 local ioopen = io.open
-local isdir = lfs.isdir
+local isdir  = lfs.isdir
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
@@ -142,3 +142,33 @@ function loaders.file(specification,filetype)
     end
     return notfound()
 end
+
+-- Not now, and probably never.
+--
+-- io.filenamevariant(function(filename)
+--     -- The first call will load char-def in mtxrun, so maybe we should
+--     -- save some tables for fast loading or make a char-def.lud file
+--     -- when we create the file database ... todo.
+--     local c = tonfc(filename)
+--     if c ~= filename then
+--      -- print("C+",c)
+--         return c
+--     else
+--      -- print("C-",c)
+--     end
+--     local d = tonfd(filename)
+--     if d ~= filename then
+--      -- print("D+",d)
+--         return d
+--     else
+--      -- print("D-",d)
+--     end
+-- end)
+--
+-- io.savedata("Knäckebröd-Regular-NFC.log","nfc")
+-- io.savedata("Knäckebröd-Regular-NFD.log","nfd")
+--
+-- print("NFC",io.loaddata("Knäckebröd-Regular-NFC.log"))
+-- print("NFD",io.loaddata("Knäckebröd-Regular-NFD.log"))
+-- print("NFC",io.loaddata("Knäckebröd-Regular-NFC.log"))
+-- print("NFD",io.loaddata("Knäckebröd-Regular-NFD.log"))

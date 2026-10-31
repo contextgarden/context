@@ -585,7 +585,7 @@ static void tex_aux_group_warning(void)
             stack in order to determine the type of the current input file.
 
         */
-        if (tracing_nesting_par > 0) {
+        if lmt_unlikely(tracing_nesting_par > 0) {
             while ((lmt_input_state.input_stack[lmt_input_state.base_ptr].state == token_list_state) || (lmt_input_state.input_stack[lmt_input_state.base_ptr].index > index)) {
                 --lmt_input_state.base_ptr;
             }
@@ -599,7 +599,7 @@ static void tex_aux_group_warning(void)
     }
     if (warning) {
         tex_print_format("%<%l[warning: end of %G of a different file]%>", 1);
-        if (tracing_nesting_par > 1) {
+        if lmt_unlikely(tracing_nesting_par > 1) {
             tex_show_context();
         }
         if (lmt_error_state.history == spotless) {
@@ -651,7 +651,7 @@ void tex_new_save_level(quarterword group)
         }
         cur_boundary = lmt_save_state.save_stack_data.ptr;
         cur_group = group;
-        if (tracing_groups_par > 0) {
+        if lmt_unlikely(tracing_groups_par > 0) {
             tex_aux_group_trace(0);
         }
         ++cur_level;
@@ -1428,11 +1428,11 @@ void tex_eq_define(halfword p, singleword cmd, halfword chr)
 {
     bool trace = tracing_assigns_par > 0;
     if (tex_aux_equal_eq(p, cmd, 0, chr)) {
-        if (trace) {
+        if lmt_unlikely(trace) {
             tex_aux_diagnostic_trace(p, "reassigning");
         }
     } else {
-        if (trace) {
+        if lmt_unlikely(trace) {
             tex_aux_diagnostic_trace(p, "changing");
         }
         if (eq_level(p) == cur_level) {
@@ -1444,7 +1444,7 @@ void tex_eq_define(halfword p, singleword cmd, halfword chr)
         set_eq_type(p, cmd);
         set_eq_flag(p, 0);
         set_eq_value(p, chr);
-        if (trace) {
+        if lmt_unlikely(trace) {
             tex_aux_diagnostic_trace(p, "into");
         }
     }
@@ -1462,11 +1462,11 @@ void tex_eq_word_define(halfword p, int w) /* not used */
 {
     bool trace = tracing_assigns_par > 0;
     if (eq_value(p) == w) {
-        if (trace) {
+        if lmt_unlikely(trace) {
             tex_aux_diagnostic_trace(p, "reassigning");
         }
     } else {
-        if (trace) {
+        if lmt_unlikely(trace) {
             tex_aux_diagnostic_trace(p, "changing");
         }
         if (eq_level(p) != cur_level) {
@@ -1474,7 +1474,7 @@ void tex_eq_word_define(halfword p, int w) /* not used */
             set_eq_level(p, cur_level);
         }
         eq_value(p) = w;
-        if (trace) {
+        if lmt_unlikely(trace) {
             tex_aux_diagnostic_trace(p, "into");
         }
     }
@@ -1491,7 +1491,7 @@ void tex_eq_word_define(halfword p, int w) /* not used */
 void tex_geq_define(halfword p, singleword cmd, halfword chr) /* not used */
 {
     bool trace = tracing_assigns_par > 0;
-    if (trace) {
+    if lmt_unlikely(trace) {
         tex_aux_diagnostic_trace(p, "globally changing");
     }
     tex_aux_eq_destroy(&lmt_hash_state.eqtb[p]);
@@ -1499,7 +1499,7 @@ void tex_geq_define(halfword p, singleword cmd, halfword chr) /* not used */
     set_eq_type(p, cmd);
     set_eq_flag(p, 0);
     set_eq_value(p, chr);
-    if (trace) {
+    if lmt_unlikely(trace) {
         tex_aux_diagnostic_trace(p, "into");
     }
 }
@@ -1507,12 +1507,12 @@ void tex_geq_define(halfword p, singleword cmd, halfword chr) /* not used */
 void tex_geq_word_define(halfword p, int w) /* not used */
 {
     bool trace = tracing_assigns_par > 0;
-    if (trace) {
+    if lmt_unlikely(trace) {
         tex_aux_diagnostic_trace(p, "globally changing");
     }
     eq_value(p) = w;
     set_eq_level(p, level_one);
-    if (trace) {
+    if lmt_unlikely(trace) {
         tex_aux_diagnostic_trace(p, "into");
     }
 }
@@ -1543,7 +1543,7 @@ void tex_define(int g, halfword p, singleword t, halfword e) /* int g -> singlew
     singleword f = make_eq_flag_bits(g);
     if (is_global(g)) {
         /* what if already global */
-        if (trace) {
+        if lmt_unlikely(trace) {
             tex_aux_diagnostic_trace(p, "globally changing");
         }
      // if (tex_aux_equal_eq(p, t, f, e) && (eq_level(p) == level_one)) {
@@ -1553,12 +1553,12 @@ void tex_define(int g, halfword p, singleword t, halfword e) /* int g -> singlew
         tex_aux_set_eq_data(p, t, e, f, level_one);
     } else if (! is_constrained(g) && tex_aux_equal_eq(p, t, f, e)) {
         /* hm, we tweak the ref ! */
-        if (trace) {
+        if lmt_unlikely(trace) {
             tex_aux_diagnostic_trace(p, "reassigning");
             return;
         }
     } else {
-        if (trace) {
+        if lmt_unlikely(trace) {
             tex_aux_diagnostic_trace(p, "changing");
         }
         if (eq_level(p) == cur_level) {
@@ -1570,7 +1570,7 @@ void tex_define(int g, halfword p, singleword t, halfword e) /* int g -> singlew
         }
         tex_aux_set_eq_data(p, t, e, f, cur_level);
     }
-    if (trace) {
+    if lmt_unlikely(trace) {
         tex_aux_diagnostic_trace(p, "into");
     }
 }
@@ -1598,7 +1598,7 @@ void tex_define_mutated(int g, halfword p, singleword t, halfword e) /* int g ->
         singleword f = make_eq_flag_bits(is_permanent(csflags) ? csflags : g);
         if (is_global(g)) {
             /* what if already global */
-            if (trace) {
+            if lmt_unlikely(trace) {
                 tex_aux_diagnostic_trace(p, "globally changing");
             }
          // if (tex_aux_equal_eq(p, t, f, e) && (eq_level(p) == level_one)) {
@@ -1618,12 +1618,12 @@ void tex_define_mutated(int g, halfword p, singleword t, halfword e) /* int g ->
 # endif 
         } else if (! is_constrained(g) && tex_aux_equal_eq(p, t, f, e)) {
             /* hm, we tweak the ref ! */
-            if (trace) {
+            if lmt_unlikely(trace) {
                 tex_aux_diagnostic_trace(p, "reassigning");
                 return;
             }
         } else {
-            if (trace) {
+            if lmt_unlikely(trace) {
                 tex_aux_diagnostic_trace(p, "changing");
             }
             if (eq_level(p) == cur_level) {
@@ -1645,7 +1645,7 @@ void tex_define_mutated(int g, halfword p, singleword t, halfword e) /* int g ->
             tex_aux_set_eq_data(p, t, e, f, cur_level);
 # endif 
         }
-        if (trace) {
+        if lmt_unlikely(trace) {
             tex_aux_diagnostic_trace(p, "into");
         }
     }
@@ -1658,7 +1658,7 @@ void tex_define_mutated(int g, halfword p, singleword t, halfword e) /* int g ->
 
 void tex_define_again(int g, halfword p, singleword t, halfword e) /* int g -> singleword g */
 {
-    if (tracing_assigns_par > 0) {
+    if lmt_unlikely(tracing_assigns_par > 0) {
         singleword f = make_eq_flag_bits(g);
         if (is_global(g)) {
             /* what if already global */
@@ -1706,7 +1706,7 @@ void tex_define_inherit(int g, halfword p, singleword f, singleword t, halfword 
     bool trace = tracing_assigns_par > 0;
     if (is_global(g)) {
         /* what if already global */
-        if (trace) {
+        if lmt_unlikely(trace) {
             tex_aux_diagnostic_trace(p, "globally changing");
         }
      // if (equal_eq(p, t, f, e) && (eq_level(p) == level_one)) {
@@ -1715,12 +1715,12 @@ void tex_define_inherit(int g, halfword p, singleword f, singleword t, halfword 
         tex_aux_eq_destroy(&lmt_hash_state.eqtb[p]);
         tex_aux_set_eq_data(p, t, e, f, level_one);
     } else if (! is_constrained(g) && tex_aux_equal_eq(p, t, f, e)) {
-        if (trace) {
+        if lmt_unlikely(trace) {
             tex_aux_diagnostic_trace(p, "reassigning");
             return;
         }
     } else {
-        if (trace) {
+        if lmt_unlikely(trace) {
             tex_aux_diagnostic_trace(p, is_retained(g) ? "retained changing" : "changing");
         }
         if (eq_level(p) == cur_level) {
@@ -1732,7 +1732,7 @@ void tex_define_inherit(int g, halfword p, singleword f, singleword t, halfword 
         }
         tex_aux_set_eq_data(p, t, e, f, cur_level);
     }
-    if (trace) {
+    if lmt_unlikely(trace) {
         tex_aux_diagnostic_trace(p, "into");
     }
 }
@@ -1746,13 +1746,13 @@ static void tex_aux_just_define(int g, halfword p, halfword e)
 {
     bool trace = tracing_assigns_par > 0;
     if (is_global(g)) {
-        if (trace) {
+        if lmt_unlikely(trace) {
             tex_aux_diagnostic_trace(p, "globally changing");
         }
         tex_aux_eq_destroy(&lmt_hash_state.eqtb[p]);
         set_eq_level(p, level_one);
     } else {
-        if (trace) {
+        if lmt_unlikely(trace) {
             tex_aux_diagnostic_trace(p, "changing");
         }
         if (eq_level(p) == cur_level) {
@@ -1763,7 +1763,7 @@ static void tex_aux_just_define(int g, halfword p, halfword e)
         set_eq_level(p, cur_level);
     }
     set_eq_value(p, e);
-    if (trace) {
+    if lmt_unlikely(trace) {
         tex_aux_diagnostic_trace(p, "into");
     }
 }
@@ -1877,13 +1877,13 @@ void tex_forced_define(int g, halfword p, singleword f, singleword t, halfword e
 {
     bool trace = tracing_assigns_par > 0;
     if (is_global(g)) {
-        if (trace) {
+        if lmt_unlikely(trace) {
             tex_aux_diagnostic_trace(p, "globally changing");
         }
         tex_aux_eq_destroy(&lmt_hash_state.eqtb[p]);
         set_eq_level(p, level_one);
     } else {
-        if (trace) {
+        if lmt_unlikely(trace) {
             tex_aux_diagnostic_trace(p, "changing");
         }
         if (eq_level(p) == cur_level) {
@@ -1896,7 +1896,7 @@ void tex_forced_define(int g, halfword p, singleword f, singleword t, halfword e
     set_eq_type(p, t);
     set_eq_flag(p, f);
     set_eq_value(p, e);
-    if (trace) {
+    if lmt_unlikely(trace) {
         tex_aux_diagnostic_trace(p, "into");
     }
 }
@@ -1909,23 +1909,23 @@ void tex_word_define(int g, halfword p, halfword w)
 {
     bool trace = tracing_assigns_par > 0;
     if (is_global(g)) {
-        if (trace) {
+        if lmt_unlikely(trace) {
             tex_aux_diagnostic_trace(p, "globally changing");
         }
         eq_value(p) = w;
         set_eq_level(p, level_one);
     } else if (! is_constrained(g) && eq_value(p) == w) {
-        if (trace) {
+        if lmt_unlikely(trace) {
             tex_aux_diagnostic_trace(p, "reassigning");
         }
     } else if (is_retained(g)) {
-        if (trace) {
+        if lmt_unlikely(trace) {
             tex_aux_diagnostic_trace(p, "retained changing");
         }
         set_eq_level(p, cur_level);
         eq_value(p) = w;
     } else {
-        if (trace) {
+        if lmt_unlikely(trace) {
             tex_aux_diagnostic_trace(p, "changing");
         }
         if (eq_level(p) != cur_level) {
@@ -1934,7 +1934,7 @@ void tex_word_define(int g, halfword p, halfword w)
         }
         eq_value(p) = w;
     }
-    if (trace) {
+    if lmt_unlikely(trace) {
         tex_aux_diagnostic_trace(p, "into");
     }
     if (is_immutable(g)) {
@@ -1950,23 +1950,23 @@ void tex_forced_word_define(int g, halfword p, singleword f, halfword w)
     if (tex_mutation_permitted(p)) {
         bool trace = tracing_assigns_par > 0;
         if (is_global(g)) {
-            if (trace) {
+            if lmt_unlikely(trace) {
                 tex_aux_diagnostic_trace(p, "globally changing");
             }
             eq_value(p) = w;
             set_eq_level(p, level_one);
         } else if (eq_value(p) == w) {
-            if (trace) {
+            if lmt_unlikely(trace) {
                 tex_aux_diagnostic_trace(p, "reassigning");
                 return;
             }
         } else if (is_retained(g)) {
-            if (trace) {
+            if lmt_unlikely(trace) {
                 tex_aux_diagnostic_trace(p, "retained changing");
             }
             eq_value(p) = w;
         } else {
-            if (trace) {
+            if lmt_unlikely(trace) {
                 tex_aux_diagnostic_trace(p, "changing");
             }
             if (eq_level(p) != cur_level) {
@@ -1975,7 +1975,7 @@ void tex_forced_word_define(int g, halfword p, singleword f, halfword w)
             }
             eq_value(p) = w;
         }
-        if (trace) {
+        if lmt_unlikely(trace) {
             tex_aux_diagnostic_trace(p, "into");
         }
         eq_flag(p) = f;
@@ -2040,7 +2040,7 @@ void tex_unsave(void)
         */
         tex_begin_inserted_list(tex_get_available_token(token_val(end_local_cmd, 0)));
         tex_begin_token_list(end_of_group_par, end_of_group_text);
-        if (tracing_nesting_par > 2) {
+        if lmt_unlikely(tracing_nesting_par > 2) {
             tex_local_control_message("entering token scanner via endgroup");
         }
         tex_local_control(1);
@@ -2079,23 +2079,23 @@ void tex_unsave(void)
                         if (p < internal_integer_base || p >= internal_specification_base) {
                             if (eq_level(p) == level_one) {
                                 tex_aux_eq_destroy(&(save_word(lmt_save_state.save_stack_data.ptr)));
-                                if (trace) {
+                                if lmt_unlikely(trace) {
                                     tex_aux_diagnostic_trace(p, "retaining");
                                 }
                             } else {
                                 tex_aux_eq_destroy(&lmt_hash_state.eqtb[p]);
                                 lmt_hash_state.eqtb[p] = save_word(lmt_save_state.save_stack_data.ptr);
-                                if (trace) {
+                                if lmt_unlikely(trace) {
                                     tex_aux_diagnostic_trace(p, "restoring");
                                 }
                             }
                         } else if (eq_level(p) == level_one) {
-                            if (trace) {
+                            if lmt_unlikely(trace) {
                                 tex_aux_diagnostic_trace(p, "retaining");
                             }
                         } else {
                             lmt_hash_state.eqtb[p] = save_word(lmt_save_state.save_stack_data.ptr);
-                            if (trace) {
+                            if lmt_unlikely(trace) {
                                 tex_aux_diagnostic_trace(p, "restoring");
                             }
                         }
@@ -2136,7 +2136,7 @@ void tex_unsave(void)
                     {
                         halfword p = save_value(lmt_save_state.save_stack_data.ptr);
                         if (eq_level(p) == level_one) {
-                            if (trace) {
+                            if lmt_unlikely(trace) {
                                 tex_aux_diagnostic_trace(p, "retaining");
                             }
                         } else {
@@ -2144,7 +2144,7 @@ void tex_unsave(void)
                                 tex_aux_eq_destroy(&lmt_hash_state.eqtb[p]);
                             }
                             lmt_hash_state.eqtb[p] = lmt_hash_state.eqtb[undefined_control_sequence];
-                            if (trace) {
+                            if lmt_unlikely(trace) {
                                 tex_aux_diagnostic_trace(p, "restoring");
                             }
                         }
@@ -2157,7 +2157,7 @@ void tex_unsave(void)
             }
         }
       DONE:
-        if (tracing_groups_par > 0) {
+        if lmt_unlikely(tracing_groups_par > 0) {
             tex_aux_group_trace(1);
         }
         if (lmt_input_state.in_stack[lmt_input_state.in_stack_data.ptr].group == cur_boundary) {
@@ -2253,7 +2253,7 @@ void tex_show_cmd_chr(halfword cmd, halfword chr)
     if (cmd == if_test_cmd && tracing_ifs_par > 0) {
      // halfword p;
         int n, l;
-        if (tracing_commands_par >= 4) {
+        if lmt_unlikely(tracing_commands_par >= 4) {
             tex_print_str_len(": ", 2);
         } else {
             tex_print_char(' ');
@@ -2278,7 +2278,7 @@ void tex_show_cmd_chr(halfword cmd, halfword chr)
      //     p = node_next(p);
      // }
         if (l) {
-            if (tracing_commands_par >= 4) {
+            if lmt_unlikely(tracing_commands_par >= 4) {
                 tex_print_format("(level %i, line %i, nesting %i)", n, l, lmt_condition_state.level);
             } else {
              // tex_print_format("(level %i) entered on line %i", n, l);
@@ -2362,7 +2362,7 @@ void tex_aux_show_eqtb(halfword n)
             case register_glue_reference_cmd:
                 tex_print_format("%eskip%i", register_glue_number(n));
               SKIP:
-                if (tracing_nodes_par > 2) {
+                if lmt_unlikely(tracing_nodes_par > 2) {
                     tex_print_format("=<%i>%Q", eq_value(n), eq_value(n), pt_unit);
                 } else {
                     tex_print_format("=%Q", eq_value(n), pt_unit);
@@ -2374,7 +2374,7 @@ void tex_aux_show_eqtb(halfword n)
             case register_muglue_reference_cmd:
                 tex_print_format("%emuskip%i", register_muglue_number(n));
               MUSKIP:
-                if (tracing_nodes_par > 2) {
+                if lmt_unlikely(tracing_nodes_par > 2) {
                     tex_print_format("=<%i>%Q", eq_value(n), eq_value(n), mu_unit);
                 } else {
                     tex_print_format("=%Q", eq_value(n), mu_unit);

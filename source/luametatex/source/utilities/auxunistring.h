@@ -13,6 +13,7 @@ extern unsigned       aux_str2uni_len     (const unsigned char *text, size_t siz
 extern char          *aux_uni2string      (char *utf8_text, unsigned ch);
 extern unsigned       aux_splitutf2uni    (unsigned int *ubuf, const char *utf8buf);
 extern size_t         aux_utf8len         (const char *text, size_t size);
+extern int            aux_onlyascii       (const char *str, size_t len);
 
 # define is_utf8_follow(a)    (a >= 0x80 && a < 0xC0)
 

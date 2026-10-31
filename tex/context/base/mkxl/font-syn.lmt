@@ -313,6 +313,7 @@ end
 -- It would make sense to implement the filters in the related modules, but to keep
 -- the overview, we define them here.
 
+-- filters.afm = fonts.handlers.afm and fonts.handlers.afm.readers.getinfo
 filters.afm = fonts.handlers.afm.readers.getinfo
 filters.otf = fonts.handlers.otf.readers.getinfo
 filters.ttf = filters.otf
@@ -436,19 +437,20 @@ end
 -- print(string.tolower(f)) knäckebrödregular
 -- print(string.tolower(x)) knackebrodregular
 
-local function cleanupname(name)
-    local clean = lower(filterweird(name))
-    if not onlyascii(name) then
-        report_names("non ascii name %s : %s",name,clean)
-    end
-    return clean
-end
+-- local function cleanupname(name)
+--     local clean = lower(filterweird(name))
+--     if not onlyascii(name) then
+--         report_names("non ascii name %s : %s",name,clean)
+--     end
+--     return clean
+-- end
 
 -- local function cleanupname(name)
 --     return shape(filterweird(name))
 -- end
 
-local cleanname = cleanupname
+local cleanupname = string.toclean
+local cleanname   = cleanupname
 
 local function cleanfilename(fullname,defaultsuffix)
     if fullname then

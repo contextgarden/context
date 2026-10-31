@@ -160,7 +160,7 @@ static void tex_aux_print_mark(const char *s, halfword t)
 
 void tex_show_marks()
 {
-    if (tracing_marks_par > 0 && lmt_mark_state.min_used >= 0) {
+    if lmt_unlikely(tracing_marks_par > 0 && lmt_mark_state.min_used >= 0) {
         tex_begin_diagnostic();
         for (halfword m = lmt_mark_state.min_used; m <= lmt_mark_state.max_used; m++) {
             if (tex_has_mark(m)) {
@@ -185,7 +185,7 @@ int tex_update_top_marks()
             halfword bot = tex_get_mark(m, bot_marks_code);
             if (bot) {
                 tex_set_mark(m, top_marks_code, bot);
-                if (tracing_marks_par > 1) {
+                if lmt_unlikely(tracing_marks_par > 1) {
                     tex_begin_diagnostic();
                     tex_print_format("%l[mark: index %i, top becomes bot]", m);
                     tex_aux_print_mark(NULL, bot);
@@ -205,7 +205,7 @@ void tex_update_first_and_bot_mark(halfword n)
     halfword ptr = mark_ptr(n);
     if (node_subtype(n) == reset_mark_value_code) {
         /*tex Work in progress. */
-        if (tracing_marks_par > 1) {
+        if lmt_unlikely(tracing_marks_par > 1) {
             tex_begin_diagnostic();
             tex_print_format("%l[mark: index %i, reset]", index);
             tex_end_diagnostic();
@@ -216,7 +216,7 @@ void tex_update_first_and_bot_mark(halfword n)
         halfword first = tex_get_mark(index, first_marks_code);
         if (! first) {
             tex_set_mark(index, first_marks_code, ptr);
-            if (tracing_marks_par > 1) {
+            if lmt_unlikely(tracing_marks_par > 1) {
                 tex_begin_diagnostic();
                 tex_print_format("%l[mark: index %i, first becomes mark]", index);
                 tex_aux_print_mark(NULL, ptr);
@@ -224,7 +224,7 @@ void tex_update_first_and_bot_mark(halfword n)
             }
         }
         tex_set_mark(index, bot_marks_code, ptr);
-        if (tracing_marks_par > 1) {
+        if lmt_unlikely(tracing_marks_par > 1) {
             tex_begin_diagnostic();
             tex_print_format("%l[mark: index %i, bot becomes mark]", index);
             tex_aux_print_mark(NULL, ptr);
@@ -242,7 +242,7 @@ int tex_update_first_marks(void)
             halfword first = tex_get_mark(m, first_marks_code);
             if (top && ! first) {
                 tex_set_mark(m, first_marks_code, top);
-                if (tracing_marks_par > 1) {
+                if lmt_unlikely(tracing_marks_par > 1) {
                     tex_begin_diagnostic();
                     tex_print_format("%l[mark: index %i, first becomes top]", m);
                     tex_aux_print_mark(NULL, top);
@@ -281,7 +281,7 @@ void tex_update_split_mark(halfword n)
         tex_reset_mark(index);
     } else if (tex_get_mark(index, split_first_marks_code)) {
         tex_set_mark(index, split_bot_marks_code, ptr);
-        if (tracing_marks_par > 1) {
+        if lmt_unlikely(tracing_marks_par > 1) {
             tex_begin_diagnostic();
             tex_print_format("%l[mark: index %i, split bot becomes mark]", index);
             tex_aux_print_mark(NULL, tex_get_mark(index, split_bot_marks_code));
@@ -290,7 +290,7 @@ void tex_update_split_mark(halfword n)
     } else {
         tex_set_mark(index, split_first_marks_code, ptr);
         tex_set_mark(index, split_bot_marks_code, ptr);
-        if (tracing_marks_par > 1) {
+        if lmt_unlikely(tracing_marks_par > 1) {
             tex_begin_diagnostic();
             tex_print_format("%l[mark: index %i, split first becomes mark]", index);
             tex_aux_print_mark(NULL, tex_get_mark(index, split_first_marks_code));

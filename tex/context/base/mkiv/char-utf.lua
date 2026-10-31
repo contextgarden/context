@@ -81,7 +81,8 @@ local decomposed = allocate {
 characters.decomposed = decomposed
 
 local graphemes = characters.graphemes
-local collapsed = characters.collapsed
+local collapsed = characters.collapsed -- nfc
+local splitup   = characters.splitup   -- nfd
 local combined  = characters.combined
 local mathlists = characters.mathlists
 
@@ -89,6 +90,7 @@ if graphemes then
 
     mark(graphemes)
     mark(collapsed)
+    mark(splitup)
     mark(combined)
     mark(mathlists)
 
@@ -96,11 +98,13 @@ else
 
     graphemes = allocate()
     collapsed = allocate()
+    splitup   = allocate()
     combined  = allocate()
     mathlists = allocate()
 
     characters.graphemes = graphemes
     characters.collapsed = collapsed
+    characters.splitup   = splitup
     characters.combined  = combined
     characters.mathlists = mathlists
 
@@ -109,11 +113,14 @@ else
         if vs and #vs == 3 then
             local kind = vs[1]
             if  kind == "char" or kind == "with" then
-                local one = vs[2]
-                local two = vs[3]
+                local one    = vs[2]
+                local two    = vs[3]
                 local first  = utfchar(one)
                 local second = utfchar(two) .. last
-                collapsed[first..second] = target
+             -- local both   = first .. second
+                local both   = utfchar(first,second)
+                collapsed[both] = target
+                splitup[target] = both
                 backtrack(data[one],second,target)
             end
         end
@@ -125,13 +132,11 @@ else
             for i=start,#list do
                 local l = list[i]
                 local f = t[l]
-                if f then
-                    t = f
-                else
+                if not f then
                     f = { }
                     t[l] = f
-                    t = f
                 end
+                t = f
             end
             t[category] = unicode
         end
@@ -151,8 +156,11 @@ else
                     local first       = utfchar(one)
                     local second      = utfchar(two)
                     local combination = utfchar(unicode)
+                 -- local both        = first .. second
+                    local both        = utfchar(first,second)
                     --
-                    collapsed[first..second] = combination
+                    collapsed[both] = combination
+                    splitup[combination] = both
                     backtrack(data[one],second,combination)
                     -- sort of obsolete:
                     local cgf = graphemes[first]
@@ -198,6 +206,7 @@ else
     if storage then
         storage.register("characters/graphemes", graphemes, "characters.graphemes")
         storage.register("characters/collapsed", collapsed, "characters.collapsed")
+        storage.register("characters/splitup",   splitup,   "characters.splitup")
         storage.register("characters/combined",  combined,  "characters.combined")
         storage.register("characters/mathlists", mathlists, "characters.mathlists")
     end
@@ -226,7 +235,6 @@ local p_collapse = nil -- so we can reset if needed
 
 local function prepare()
     local tree = utfchartabletopattern(collapsed)
- -- p_collapse = Cs((tree/collapsed + p_utf8character)^0 * P(-1))
     p_collapse = Cs((tree/collapsed + p_utf8character)^0)
 end
 
@@ -245,6 +253,43 @@ function utffilters.collapse(str,filename)
         return lpegmatch(p_collapse,str) or str
     end
 end
+
+local p_splitup = nil -- so we can reset if needed
+
+local function prepare()
+    local tree = utfchartabletopattern(splitup)
+    p_splitup  = Cs((tree/splitup + p_utf8character)^0)
+end
+
+function utffilters.splitup(str,filename)
+    if not p_splitup then
+        prepare()
+    end
+    if not str or str == "" or #str == 1 then
+        return str
+    elseif filename and skippable[filesuffix(filename)] then -- we could hash the collapsables or do a quicker test
+        return str
+    else
+ -- elseif onlyascii(str) then
+ --     return str -- very little gain
+ -- else
+        return lpegmatch(p_splitup,str) or str
+    end
+end
+
+-- function utffilters.nfc(str)
+--     if not p_collapse then
+--         prepare()
+--     end
+--     return str and lpegmatch(p_collapse,str) or str
+-- end
+
+-- function utffilters.nfd(str)
+--     if not p_splitup then
+--         prepare()
+--     end
+--     return str and lpegmatch(p_splitup,str) or str
+-- end
 
 local p_combine = nil -- only for tex
 

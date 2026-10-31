@@ -202,3 +202,65 @@ size_t aux_utf8len(const char *text, size_t size)
     }
     return num;
 }
+
+/*tex
+    We can process 8 bytes at a time on 64-bit architectures. The memcpy is needed because
+    we dont operate with (aligned) copies on the stack so we need to obey strict alignment
+    conditions. We use the fact that > 127 means one bit is set. And the accumulator check
+    does that for 8 bytes at once.
+
+    Checking inside the loop gives bad branch prediction and we seldom have a hit and
+    compilers will optimize this kind of loops anyway.
+
+*/
+
+# ifdef _MSC_VER
+    # define fast_memcpy(dest, src, count) memcpy(dest, src, count)
+# else
+    # define fast_memcpy(dest, src, count) __builtin_memcpy(dest, src, count)
+# endif
+
+/*tex
+
+    As we can apply this to whole files chunking makes more sense, so we add an extra outer
+    loop. As usual this one went through a few steps, like figuring out how to optimize for
+    small strings.
+
+*/
+
+inline int aux_onlyascii(const char *str, size_t len)
+{
+
+    if (! str) {
+        return 0;
+    }
+
+    const unsigned char *s = (const unsigned char *) str;
+
+    size_t   i   = 0;
+    uint64_t acc = 0;
+
+    /* fast (8 byte) word loop (automatically skipped if len < 8) */
+
+    for (; i + 8 <= len; i += 8) {
+        uint64_t chunk;
+        fast_memcpy(&chunk, s + i, 8);
+        acc |= chunk;
+    }
+
+    /* set initial status based on the accumulator */
+
+    if ((acc & 0x8080808080808080ULL) != 0) {
+        return 0;
+    }
+
+    /* only check the remainder (< 8 bytes) if the main chunks were clean */
+
+    for (; i < len; i++) {
+        if (s[i] > 127) {
+            return 0;
+        }
+    }
+
+    return 1;
+}

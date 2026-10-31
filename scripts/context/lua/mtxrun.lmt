@@ -1371,7 +1371,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-string"] = package.loaded["l-string"] or true
 
--- original size: 6923, stripped down to: 4561
+-- original size: 8242, stripped down to: 5502
 
 if not modules then modules={} end modules ['l-string']={
  version=1.001,
@@ -1385,15 +1385,20 @@ local sub,gsub,gmatch,char,byte,rep,find=string.sub,string.gsub,string.gmatch,st
 local P,S,C,Ct,Cc,Cs=lpeg.P,lpeg.S,lpeg.C,lpeg.Ct,lpeg.Cc,lpeg.Cs
 do
  local onlyascii=string.onlyascii
+ local filterweird=string.filterweird
  local alower=string.lower
  local aupper=string.upper
- local ulower 
- local uupper 
- local ushape 
+ local ulower   
+ local uupper   
+ local ushape   
+ local unfc  
+ local unfd  
  if characters and characters.lower then
   ulower=characters.lower
   uupper=characters.upper
   ushape=characters.shaped
+  unfc=characters.filters.utf.collapse
+  unfd=characters.filters.utf.splitup
  else
   local check=tex and token and node and
    function()
@@ -1401,23 +1406,33 @@ do
      ulower=characters.lower
      uupper=characters.upper
      ushape=characters.shaped
+     unfc=characters.filters.utf.collapse
+     unfd=characters.filters.utf.splitup
     end
    end
   or 
    function()
     if resolvers then
      if not characters or not characters.lower then
-      dofile(resolvers.findfile("char-def.lua"))
-      dofile(resolvers.findfile("char-utf.lua"))
+      local d=resolvers.findfile("char-def.lmt") or ""
+      local u=resolvers.findfile("char-utf.lmt") or ""
+      if d=="" then d=resolvers.findfile("char-def.lua") end
+      if u=="" then u=resolvers.findfile("char-utf.lua") end
+      dofile(d)
+      dofile(u)
      end
      ulower=characters.lower
      uupper=characters.upper
      ushape=characters.shaped
+     unfc=characters.filters.utf.collapse
+     unfd=characters.filters.utf.splitup
     end
    end
   ulower=function(str) check() return ulower(str) end
   uupper=function(str) check() return uupper(str) end
   ushape=function(str) check() return ushape(str) end
+  unfc=function(str) check() return unfc  (str) end
+  unfd=function(str) check() return unfd  (str) end
  end
  function string.tolower(str)
   if onlyascii(str) then
@@ -1438,6 +1453,28 @@ do
    return str
   else
    return ushape(str)
+  end
+ end
+ function string.tonfc(str)
+  if onlyascii(str) then
+   return str
+  else
+   return unfc(str)
+  end
+ end
+ function string.tonfd(str)
+  if onlyascii(str) then
+   return str
+  else
+   return unfd(str)
+  end
+ end
+ function string.toclean(str)
+  str=filterweird(str)
+  if onlyascii(str) then
+   return alower(str)
+  else
+   return ulower(unfc(str))
   end
  end
 end
@@ -17136,7 +17173,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tmp"] = package.loaded["data-tmp"] or true
 
--- original size: 16827, stripped down to: 11900
+-- original size: 16861, stripped down to: 11907
 
 if not modules then modules={} end modules ['data-tmp']={
  version=1.100,
@@ -17147,7 +17184,7 @@ if not modules then modules={} end modules ['data-tmp']={
 }
 local next,type=next,type
 local pcall,loadfile,collectgarbage=pcall,loadfile,collectgarbage
-local format,lower,gsub=string.format,string.lower,string.gsub
+local format,gsub=string.format,string.gsub
 local concat=table.concat
 local mkdirs,expanddirname,isdir,isfile=dir.mkdirs,dir.expandname,lfs.isdir,lfs.isfile
 local collapsepath,joinfile,addsuffix,dirname=file.collapsepath,file.join,file.addsuffix,file.dirname
@@ -17156,6 +17193,7 @@ local formatters=string.formatters
 local osexit,osdate,osuuid=os.exit,os.date,os.uuid
 local removefile=os.remove
 local md5hex=md5.hex
+local lower=string.lower 
 local fileisreadable=file.isreadable
 local fileiswritable=file.iswritable
 local filecanbewritten=file.canbewritten
@@ -17683,7 +17721,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 71513, stripped down to: 45546
+-- original size: 71844, stripped down to: 45810
 
 if not modules then modules={} end modules ['data-res']={
  version=1.001,
@@ -17747,6 +17785,7 @@ local criticalvars={
  "TEXMFCNF",
  "TEXMF",
  "TEXOS",
+ "TEXMFHOME",
 }
 do
  local texroot=environment.texroot
@@ -18094,7 +18133,16 @@ local function load_file_databases()
   for k=1,#hashes do
    local hash=hashes[k]
    resolvers.hashers.byscheme(hash.type,hash.name)
-   if instance.loaderror then break end
+   if instance.loaderror then
+    if hash.cache==false then
+     if trace_locating then
+      report_resolving("ignore load error for type %a and name %a",hash.type,hash.name)
+     end
+     instance.loaderror=false
+    else
+     break
+    end
+   end
   end
  end
 end
@@ -18765,14 +18813,14 @@ local function makepathlist(list,filetype)
  if pathlist and #pathlist>0 then
   for k=1,#pathlist do
    local path=pathlist[k]
-   local prescanned=find(path,'^!!')
-   local resursive=find(path,'//$')
+   local prescanned=find(path,'^!!') and true or false
+   local resursive=find(path,'//$') and true or false
    local pathname=lpegmatch(inhibitstripper,path)
    local expression=makepathexpression(pathname)
    local barename=gsub(pathname,"/+$","")
-   barename=resolveprefix(barename)
+      barename=resolveprefix(barename)
    local scheme=urlhasscheme(barename)
-   local schemename=gsub(barename,"%.%*$",'')
+   local schemename=gsub(barename,"%.%*$",'') 
    entry[k]={
     path=path,
     pathname=pathname,
@@ -19605,7 +19653,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-fil"] = package.loaded["data-fil"] or true
 
--- original size: 4365, stripped down to: 3588
+-- original size: 5318, stripped down to: 3588
 
 if not modules then modules={} end modules ['data-fil']={
  version=1.001,
@@ -22080,8 +22128,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lmt l-lua.lmt l-package.lua l-lpeg.lua l-function.lua l-string.lmt l-table.lmt l-io.lmt l-number.lmt l-os.lmt l-file.lmt l-md5.lmt l-sha.lmt l-url.lua l-dir.lmt l-boolean.lua l-unicode.lmt l-math.lmt util-for.lmt util-str.lmt util-tab.lmt util-fil.lmt util-sac.lmt util-sto.lua util-prs.lmt util-fmt.lua trac-set.lmt trac-log.lua util-tmr.lua trac-tmr.lua trac-inf.lmt trac-pro.lua util-lua.lmt util-deb.lmt util-srv.lmt util-tpl.lua util-sbx.lmt util-mrg.lua util-env.lmt luat-env.lua util-zip.lmt util-tar.lmt util-sig.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lmt data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lmt data-con.lua data-use.lmt data-zip.lua data-tre.lua luat-sbx.lmt data-sch.lmt data-lua.lua data-tmf.lua data-lst.lua libs-ini.lmt luat-sta.lua luat-fmt.lua util-jsn.lmt
 -- skipped libraries : -
--- original bytes    : 924013
--- stripped bytes    : 380334
+-- original bytes    : 926650
+-- stripped bytes    : 381759
 
 -- end library merge
 

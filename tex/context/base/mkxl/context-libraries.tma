@@ -75,6 +75,7 @@ return {
   ["fira-math.lfg"]=true,
   ["font-imp-braille.lmt"]=true,
   ["font-imp-checks.lmt"]=true,
+  ["font-imp-collapse.lmt"]=true,
   ["font-imp-combining.lua"]=true,
   ["font-imp-compound.lmt"]=true,
   ["font-imp-digits.lmt"]=true,

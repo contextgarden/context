@@ -28,7 +28,7 @@ setmetatableindex(data,function(t,k)
 end)
 
 local feature = {
-    name    = "collapse",
+    name    = "oldcollapse",
     type    = "ligature",
     prepend = true,
     dataset = {

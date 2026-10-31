@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2026-10-29 17:23
+-- merge date  : 2026-10-31 00:48
 
 do -- begin closure to overcome local limits and interference
 
@@ -11862,8 +11862,8 @@ function readers.name(f,fontdata,specification)
    for i=1,#namelist do
     local name=namelist[i]
     local nametag=name.name
-    local index=name.index
-    if not done[nametag or i] then
+    local index=name.index or i 
+    if not done[nametag or index] then
      local encoding=name.encoding
      local language=name.language
      if (not e or encoding==e) and (not l or language==l) then
@@ -11878,7 +11878,7 @@ function readers.name(f,fontdata,specification)
        }
       end
       extras[index]=content
-      done[nametag or i]=true
+      done[nametag or index]=true
      end
     end
    end
@@ -12903,6 +12903,12 @@ local function readtable(tag,f,fontdata,specification,...)
   reader(f,fontdata,specification,...)
  end
 end
+local toclean=string.toclean 
+if not toclean then
+ toclean=function(str)
+  return lower(gsub(str,"[^a-zA-Z0-9]",""))
+ end
+end
 local function readdata(f,offset,specification)
  local fontdata,tables=loadtables(f,specification,offset)
  if specification.glyphs then
@@ -12912,11 +12918,11 @@ local function readdata(f,offset,specification)
  readtable("name",f,fontdata,specification)
  local askedname=specification.askedname
  if askedname then
-  local fullname=getname(fontdata,"fullname") or ""
-  local cleanname=gsub(askedname,"[^a-zA-Z0-9]","")
-  local foundname=gsub(fullname,"[^a-zA-Z0-9]","")
-  if lower(cleanname)~=lower(foundname) then
-   return 
+  local fullname=getname(fontdata,"fullname")
+  if fullname then
+   if toclean(askedname)~=toclean(fullname) then
+    return 
+   end
   end
  end
  readtable("stat",f,fontdata,specification)

@@ -2186,20 +2186,111 @@ static inline int io_aux_check_popen(lua_State *L, const char **filename, const 
     return 1;
 }
 
-static int io_open(lua_State *L)
-{
-    const char *filename, *mode;
-    if (! io_aux_check_open(L, &filename, &mode)) {
-        return luaL_fileresult(L, 0, filename);
+/*tex
+
+    This is just a proof of concept. There are more places where this should happen but we only
+    show it here.
+
+    \starttyping
+    io.savedata("Knäckebröd-NFC.log","nfc")
+    io.savedata("Knäckebröd-NFD.log","nfd")
+
+    print("NFC",io.loaddata("Knäckebröd-NFC.log"))
+    print("NFD",io.loaddata("Knäckebröd-NFD.log"))
+    print("NFC",io.loaddata("Knäckebröd-NFC.log"))
+    print("NFD",io.loaddata("Knäckebröd-NFD.log"))
+    \stoptyping
+
+    On Windows and Linux these are different, on OSX (de)composition is kind of handled but the
+    file system stores decomposed. We assume that users are consistent so we will not introduce
+    the overhead. If we ever do, we will likely only check validity (sandbox) for the given
+    name.
+
+*/
+
+# define default_name_check 1
+
+# if default_name_check
+
+    static int io_open(lua_State *L)
+    {
+        const char *filename, *mode;
+        if (! io_aux_check_open(L, &filename, &mode)) {
+            return luaL_fileresult(L, 0, filename);
+        }
+        LStream *p = newfile(L);
+    # ifdef _WIN32
+        p->f = aux_utf8_fopen(filename, mode);
+    # else
+        p->f = fopen(filename, mode);
+    # endif
+        return (p->f) ? 1 : luaL_fileresult(L, 0, filename);
     }
-    LStream *p = newfile(L);
-# ifdef _WIN32
-    p->f = aux_utf8_fopen(filename, mode);
+
 # else
-    p->f = fopen(filename, mode);
+
+    static int io_open(lua_State *L)
+    {
+        const char *filename, *mode;
+        if (! io_aux_check_open(L, &filename, &mode)) {
+            return luaL_fileresult(L, 0, filename);
+        }
+        LStream *p = newfile(L);
+    # ifdef _WIN32
+        p->f = aux_utf8_fopen(filename, mode);
+    # else
+        p->f = fopen(filename, mode);
+    # endif
+        if (! p->f && ! aux_onlyascii(filename, strlen(filename))) {
+            lua_pushvalue(L, lua_upvalueindex(1));
+            if (lua_isfunction(L, -1)) {
+                lua_pushstring(L, filename);
+                if (lua_pcall(L, 1, 1, 0) == LUA_OK) {
+                    if (lua_isstring(L, -1)) {
+                        const char *alternative = lua_tostring(L, -1);
+                     // if (! io_aux_check_open(L, &alternative, &mode)) {
+                     //     return luaL_fileresult(L, 0, alternative);
+                     // }
+    # ifdef _WIN32
+                        p->f = aux_utf8_fopen(alternative, mode);
+    # else
+                        p->f = fopen(alternative, mode);
+    # endif
+                        if (p->f) {
+                            lua_pop(L, 1); // pop alternative
+                            return 1;
+                        }
+                    }
+                } else {
+                    tex_formatted_warning("io.open", "alternative: %s\n", lua_tostring(L, -1));
+                }
+                lua_pop(L, 1); // pop result/error from pcall
+            } else {
+                lua_pop(L, 1); // pop pushed upvalue
+            }
+        }
+        return (p->f) ? 1 : luaL_fileresult(L, 0, filename);
+    }
+
+    static int io_filenamevariant(lua_State *L)
+    {
+        luaL_checktype(L, 1, LUA_TFUNCTION);
+        lua_getglobal(L, "io");
+        lua_getfield(L, -1, "open"); // stack: -2 = io, -1 = io.open
+        lua_getupvalue(L, -1, 1); // pushes the upvalue onto the stack
+        if (! lua_isnil(L, -1)) {
+            return luaL_error(L, "io.filenamevariant can already been set");
+        }
+        lua_pop(L, 1); // pop the nil upvalue
+        // move the new function into position, then set it as io_open's upvalue
+        lua_pushvalue(L, 1); // duplicate user's function to top of stack
+        // lua_setupvalue pops the value from the top of the stack and assigns it to upvalue #1 of io.open (at index -2)
+        lua_setupvalue(L, -2, 1);
+        lua_pop(L, 2); // pop io.open and io table
+        return 0;
+    }
+
 # endif
-    return (p->f) ? 1 : luaL_fileresult(L, 0, filename);
-}
 
 static int io_pclose(lua_State *L)
 {
@@ -2251,9 +2342,25 @@ static int io_popen(lua_State *L)
 int luaextend_io(lua_State *L)
 {
     lua_getglobal(L, "io");
+
+# if default_name_check
+
     lua_pushcfunction(L, io_open);   lua_setfield(L, -2, "open");
+
+# else
+
+    lua_pushnil(L);
+    lua_pushcclosure(L, io_open, 1);
+    lua_setfield(L, -2, "open");
+    lua_pushcfunction(L, io_filenamevariant);
+    lua_setfield(L, -2, "filenamevariant");
+
+# endif
+
     lua_pushcfunction(L, io_popen);  lua_setfield(L, -2, "popen");
+
     lua_pushcfunction(L, io_gobble); lua_setfield(L, -2, "gobble");
+
     lua_pop(L, 1);
 # ifdef _WIN32
     if (_setmaxstdio(2048) < 0) {

@@ -2526,7 +2526,8 @@ static int mplib_getscaledbits(lua_State *L)
     return 1;
 }
 
-static int mplib_aux_set_direction(lua_State *L, MP mp, mp_knot p) {
+static int mplib_aux_set_direction(lua_State *L, MP mp, mp_knot p)
+{
     double direction_x = (double) lua_tonumber(L, -1);
     double direction_y = 0;
     lua_pop(L, 1);
@@ -2540,19 +2541,22 @@ static int mplib_aux_set_direction(lua_State *L, MP mp, mp_knot p) {
     }
 }
 
-static int mplib_aux_set_left_curl(lua_State *L, MP mp, mp_knot p) {
+static int mplib_aux_set_left_curl(lua_State *L, MP mp, mp_knot p)
+{
     double curl = (double) lua_tonumber(L, -1);
     lua_pop(L, 1);
     return mp_set_knot_left_curl(mp, p, curl) ? 1 : 0;
 }
 
-static int mplib_aux_set_left_tension(lua_State *L, MP mp, mp_knot p) {
+static int mplib_aux_set_left_tension(lua_State *L, MP mp, mp_knot p)
+{
     double tension = (double) lua_tonumber(L, -1);
     lua_pop(L, 1);
     return mp_set_knot_left_tension(mp, p, tension) ? 1 : 0;
 }
 
-static int mplib_aux_set_left_control(lua_State *L, MP mp, mp_knot p) {
+static int mplib_aux_set_left_control(lua_State *L, MP mp, mp_knot p)
+{
     double x = (double) lua_tonumber(L, -1);
     lua_pop(L, 1);
     lua_push_key(left_y);
@@ -2565,19 +2569,22 @@ static int mplib_aux_set_left_control(lua_State *L, MP mp, mp_knot p) {
     }
 }
 
-static int mplib_aux_set_right_curl(lua_State *L, MP mp, mp_knot p) {
+static int mplib_aux_set_right_curl(lua_State *L, MP mp, mp_knot p)
+{
     double curl = (double) lua_tonumber(L, -1);
     lua_pop(L, 1);
     return mp_set_knot_right_curl(mp, p, curl) ? 1 : 0;
 }
 
-static int mplib_aux_set_right_tension(lua_State *L, MP mp, mp_knot p) {
+static int mplib_aux_set_right_tension(lua_State *L, MP mp, mp_knot p)
+{
     double tension = (double) lua_tonumber(L, -1);
     lua_pop(L, 1);
     return mp_set_knot_right_tension(mp, p, tension) ? 1 : 0;
 }
 
-static int mplib_aux_set_right_control(lua_State *L, MP mp, mp_knot p) {
+static int mplib_aux_set_right_control(lua_State *L, MP mp, mp_knot p)
+{
     double x = (double) lua_tonumber(L, -1);
     lua_pop(L, 1);
     lua_push_key(right_y);

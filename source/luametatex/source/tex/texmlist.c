@@ -837,7 +837,7 @@ halfword tex_new_math_glyph(halfword fnt, halfword chr)
 
 static void tex_aux_trace_kerns(halfword kern, const char *what, const char *detail)
 {
-    if (tracing_math_par >= 2) {
+    if lmt_unlikely(tracing_math_par >= 2) {
         tex_print_format("%<%l[math: %s, %s, amount %p]%>", what, detail, kern);
     }
 }
@@ -1773,7 +1773,7 @@ halfword tex_make_extensible(halfword fnt, halfword chr, scaled target, scaled m
             scaled delta = target - max_natural;
             /*tex Don't stretch more than |s_max|. */
             if (delta > max_shrink) {
-                if (tracing_math_par >= 1) {
+                if lmt_unlikely(tracing_math_par >= 1) {
                     tex_print_format(
                         "%<%l[math: extensible clipped, target %p, natural %p, shrink %p, clip %p]%>",
                         target, max_natural, max_shrink, delta - max_shrink
@@ -2493,7 +2493,7 @@ void tex_run_mlist_to_hlist(halfword mlist, halfword penalties, halfword style, 
         math_begin_class_par = unset_noad_class;
         math_end_class_par = unset_noad_class;
         /* not on the stack ... yet */
-        if (tracing_math_par >= 1) {
+        if lmt_unlikely(tracing_math_par >= 1) {
             tex_begin_diagnostic();
             tex_print_levels();
             switch (style) {
@@ -2599,7 +2599,7 @@ void tex_run_mlist_to_hlist(halfword mlist, halfword penalties, halfword style, 
                     } else {
                         node_next(temp_head) = box;
                     }
-                    if (tracing_math_par >= 2) {
+                    if lmt_unlikely(tracing_math_par >= 2) {
                         tex_print_format(
                             "%<%l[math: boxing inline, threshold %p, width %p, height %p, depth %p]%>",
                             glue_amount(math_threshold_par), // todo: stretch and shrink
@@ -2616,7 +2616,7 @@ void tex_run_mlist_to_hlist(halfword mlist, halfword penalties, halfword style, 
                 while (current) {
                     /*tex Maybe |math_discretionary_code| but I need to check the impact on \CONTEXT\ first. */
                     if (node_type(current) == glyph_node && tex_has_glyph_option(current, glyph_option_math_discretionary)) {
-                        if (tracing_math_par >= 2) {
+                        if lmt_unlikely(tracing_math_par >= 2) {
                             tex_print_format("%<%l[math: promoting glyph with character %U to discretionary]%>", glyph_character(current));
                         }
                         current = tex_glyph_to_discretionary(current, mathematics_discretionary_code, tex_has_glyph_option(current, glyph_option_math_italics_too));
@@ -3739,7 +3739,7 @@ static int tex_aux_compute_accent_skew(halfword target, int flags, scaled *skew,
                 } else {
                     *skew = 0;
                 }
-                if (tracing_math_par >= 2) {
+                if lmt_unlikely(tracing_math_par >= 2) {
                     tex_print_format("%<%l[math: accent skew, font %i, chr %x, skew %p, absolute %i]%>", fnt, chr, *skew, absolute);
                 }
                 break;
@@ -3786,7 +3786,7 @@ static int tex_aux_compute_accent_skew(halfword target, int flags, scaled *skew,
                             break;
                     }
                 }
-                if (tracing_math_par >= 2) {
+                if lmt_unlikely(tracing_math_par >= 2) {
                     tex_print_format("%<%l[math: accent skew, absolute %i]%>", absolute);
                 }
                 break;
@@ -4006,7 +4006,7 @@ static void tex_aux_do_make_math_accent(halfword target, halfword source, halfwo
                     }
                     tex_flush_node(accent);
                     accent = tex_aux_char_box(accentfnt, flatchr, mergedattr, NULL, glyph_math_accent_subtype, usedwidth, style, keep ? 0 : has_noad_option_shrink(target), keep ? 0 : has_noad_option_stretch(target), &isscaled);
-                    if (tracing_math_par >= 2) {
+                    if lmt_unlikely(tracing_math_par >= 2) {
                         tex_print_format("%<%l[math: flattening accent, old %x, new %x]%>", accentchr, flatchr);
                     }
                     accentchr = flatchr;
@@ -6716,7 +6716,7 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
     if (math_slack_mode_par > 0) { /* brrr what with multiple scripts .... */
         noad_left_slack(target) = leftslack;
         noad_right_slack(target) = rightslack;
-        if (tracing_math_par >= 2) {
+        if lmt_unlikely(tracing_math_par >= 2) {
             tex_print_format("%<%l[math: script slack, left %p, right %p]%>", leftslack, rightslack);
         }
     }
@@ -6988,7 +6988,7 @@ static halfword tex_aux_math_spacing_glue(halfword ltype, halfword rtype, halfwo
                         break;
                     case dimension_val_level:
                         x = tex_aux_math_dimension(x, inter_math_skip_glue, c);
-                        if (tracing_math_par >= 2) {
+                        if lmt_unlikely(tracing_math_par >= 2) {
                             tex_print_format(
                                 "%<%l[math: inter atom kern, left %n, right %n, resolved %i, amount %p]%>",
                                 ltype, rtype, s, glue_amount(x)
@@ -6998,7 +6998,7 @@ static halfword tex_aux_math_spacing_glue(halfword ltype, halfword rtype, halfwo
                     case glue_val_level:
                         if (! tex_glue_is_zero(x)) {
                             x = tex_aux_math_glue(x, inter_math_skip_glue, c);
-                            if (tracing_math_par >= 2) {
+                            if lmt_unlikely(tracing_math_par >= 2) {
                                 tex_print_format(
                                     "%<%l[math: inter atom glue, left %n, right %n, resolved %i, amount %P]%>",
                                     ltype, rtype, s, glue_amount(x), glue_stretch(x), 0, 0, 0, 0, glue_shrink(x)
@@ -7010,7 +7010,7 @@ static halfword tex_aux_math_spacing_glue(halfword ltype, halfword rtype, halfwo
                     case muglue_val_level:
                         if (! tex_math_glue_is_zero(x)) {
                             x = tex_aux_math_muglue(x, inter_math_skip_glue, mmu, c, style);
-                            if (tracing_math_par >= 2) {
+                            if lmt_unlikely(tracing_math_par >= 2) {
                                 tex_print_format(
                                     "%<%l[math: inter atom (mu) glue, left %n, right %n, resolved %i, amount %P]%>",
                                     ltype, rtype, s, glue_amount(x), glue_stretch(x), 0, 0, 0, 0, glue_shrink(x)
@@ -7020,7 +7020,7 @@ static halfword tex_aux_math_spacing_glue(halfword ltype, halfword rtype, halfwo
                         }
                         goto NONE;
                     default:
-                        if (tracing_math_par >= 2) {
+                        if lmt_unlikely(tracing_math_par >= 2) {
                             tex_print_format(
                                 "%<%l[math: inter atom (mu) glue, left %n, right %n, resolved %i, unset]%>",
                                 ltype, rtype, s
@@ -7066,7 +7066,7 @@ static halfword tex_aux_math_spacing_glue(halfword ltype, halfword rtype, halfwo
                     goto FOUND;
                 }
                 /*tex Now we're lost. */
-                if (tracing_math_par >= 2) {
+                if lmt_unlikely(tracing_math_par >= 2) {
                     tex_print_format(
                         "%<%l[math: inter atom fallback, left %n, right %n, left parent %n, right parent %n, not resolved]%>",
                         ltype, rtype, lparent, rparent
@@ -7074,7 +7074,7 @@ static halfword tex_aux_math_spacing_glue(halfword ltype, halfword rtype, halfwo
                 }
                 goto NONE;
              FOUND:
-                if (tracing_math_par >= 2) {
+                if lmt_unlikely(tracing_math_par >= 2) {
                     tex_print_format(
                         "%<%l[math: inter atom fallback, left %n, right %n, left parent %n, right parent %n, resolved %i]%>",
                         ltype, rtype, lparent, rparent, s
@@ -7446,7 +7446,7 @@ static int tex_aux_make_fenced(halfword current, halfword current_style, halfwor
                 noad_nucleus(n) = noad_supscr(current);
                 math_kernel_list(top) = n;
                 noad_supscr(current) = null;
-                if (tracing_math_par >= 2) {
+                if lmt_unlikely(tracing_math_par >= 2) {
                     tex_print_format("%<%l[math: promoting supscript to top delimiter]%>");
                 }
             }
@@ -7457,7 +7457,7 @@ static int tex_aux_make_fenced(halfword current, halfword current_style, halfwor
                 noad_nucleus(n) = noad_subscr(current);
                 math_kernel_list(bottom) = n;
                 noad_subscr(current) = null;
-                if (tracing_math_par >= 2) {
+                if lmt_unlikely(tracing_math_par >= 2) {
                     tex_print_format("%<%l[math: promoting subscript to bottom delimiter]%>");
                 }
             }
@@ -7683,7 +7683,7 @@ static halfword tex_aux_check_source(halfword current, halfword list, int repack
                 break;
             default:
                 if (repack) {
-                    if (tracing_math_par >= 2) {
+                    if lmt_unlikely(tracing_math_par >= 2) {
                         tex_print_format("%<%l[math: packing due to source field %i]%>", noad_source(current));
                     }
                     list = tex_hpack(list, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none, null, null);
@@ -7782,7 +7782,7 @@ static void tex_mlist_to_hlist_preroll_radicals(mliststate *state)
     scaled depth = 0;
     tex_aux_set_current_math_size(current_style);
     tex_aux_set_current_math_scale(state->scale, 0);
-    if (tracing_math_par >= 2) {
+    if lmt_unlikely(tracing_math_par >= 2) {
         tex_aux_show_math_list("[math: radical sizing pass, level %i]", state->mlist);
     }
     while (current) {
@@ -7867,7 +7867,7 @@ static void tex_mlist_to_hlist_preroll_dimensions(mliststate *state)
     tex_aux_set_current_math_scale(state->scale, 0);
  // current_mu = tex_get_math_quad_size_scaled(lmt_math_state.size);
     current_mu = tex_get_math_quad_size_unscaled(lmt_math_state.size);
-    if (tracing_math_par >= 2) {
+    if lmt_unlikely(tracing_math_par >= 2) {
         tex_aux_show_math_list("[math: preroll dimensions pass, level %i]", state->mlist);
     }
     while (current) {
@@ -8266,7 +8266,7 @@ static void tex_mlist_to_hlist_preroll_continuation(mliststate *state)
     halfword current = state->mlist;
     halfword first = null;
     halfword last = null;
-    if (tracing_math_par >= 2) {
+    if lmt_unlikely(tracing_math_par >= 2) {
         tex_aux_show_math_list("[math: continuation pass, level %i]", state->mlist);
     }
     while (current) {
@@ -8321,7 +8321,7 @@ static void tex_mlist_to_hlist_size_fences(mliststate *state)
     scaled depth = 0;
     tex_aux_set_current_math_size(current_style);
     tex_aux_set_current_math_scale(state->scale, 0);
-    if (tracing_math_par >= 2) {
+    if lmt_unlikely(tracing_math_par >= 2) {
         tex_aux_show_math_list("[math: fence sizing pass, level %i]", state->mlist);
     }
     /* first pass */
@@ -8395,7 +8395,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
     if (math_penalties_mode_par) {
         state->penalties = 1; /* move to caller ? */
     }
-    if (tracing_math_par >= 2) {
+    if lmt_unlikely(tracing_math_par >= 2) {
         tex_aux_show_math_list("[math: finalize pass, level %i]", state->mlist);
     }
   RESTART:
@@ -8686,7 +8686,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                     current_subtype = value & 0xFF;
                 }
             }
-            if (tracing_math_par >= 2) {
+            if lmt_unlikely(tracing_math_par >= 2) {
                 if (old_recent != recent_subtype || old_current != current_subtype) {
                     tex_print_format(
                         "%<%l[math: atom ruling, recent %n, current %n, new recent %n, new current %n]%>",
@@ -8716,7 +8716,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                 tex_attach_attribute_list_copy(kern, current);
                 tex_couple_nodes(p, kern);
                 p = kern;
-                if (tracing_math_par >= 2) {
+                if lmt_unlikely(tracing_math_par >= 2) {
                     tex_print_format("%<%l[math: state driven left shape kern %p]%>", plus);
                 }
             }
@@ -8740,7 +8740,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                 } else {
                     glue_amount(glue) += recent_right_slack;
                 }
-                if (tracing_math_par >= 2) {
+                if lmt_unlikely(tracing_math_par >= 2) {
                     tex_print_format("%<%l[math: migrating right slack %p]%>", recent_right_slack);
                 }
                 recent_right_slack = 0;
@@ -8753,7 +8753,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                     tex_attach_attribute_list_copy(kern, current);
                     tex_couple_nodes(p, kern);
                     p = kern;
-                    if (tracing_math_par >= 2) {
+                    if lmt_unlikely(tracing_math_par >= 2) {
                         tex_print_format("%<%l[math: state driven right shape kern %p]%>", plus);
                     }
                 }
@@ -8804,7 +8804,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                     tex_attach_attribute_list_copy(penalty, current);
                     tex_couple_nodes(p, penalty);
                     p = penalty;
-                    if (tracing_math_par >= 2) {
+                    if lmt_unlikely(tracing_math_par >= 2) {
                         tex_print_format("%<%l[math: pre penalty, left %n, right %n, amount %i]%>", recent_subtype, current_subtype, penalty_amount(penalty));
                     }
                 }
@@ -8813,7 +8813,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                 if (node_type(p) == kern_node && node_subtype(p) == italic_kern_subtype) {
                     halfword prv = node_prev(p);
                     if (prv) {
-                        if (tracing_math_par >= 2) {
+                        if lmt_unlikely(tracing_math_par >= 2) {
                             tex_print_format("%<%l[math: removing italic correction %p between %i and %i]%>", kern_amount(p), recent_subtype, current_subtype);
                         }
                         tex_flush_node(p);
@@ -8906,7 +8906,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                     tex_attach_attribute_list_copy(penalty, current);
                     tex_couple_nodes(p, penalty);
                     p = penalty;
-                    if (tracing_math_par >= 2) {
+                    if lmt_unlikely(tracing_math_par >= 2) {
                         tex_print_format("%<%l[math: post penalty, left %n, right %n, amount %i]%>", recent_subtype, current_subtype, penalty_amount(penalty));
                     }
                 }
@@ -8937,7 +8937,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
             tex_attach_attribute_list_copy(kern, head);
             tex_couple_nodes(kern, head);
             node_next(temp_head) = kern;
-            if (tracing_math_par >= 2) {
+            if lmt_unlikely(tracing_math_par >= 2) {
                 tex_print_format("%<%l[math: nilling recent left slack %p]%>", recent_left_slack);
             }
         }
@@ -8948,7 +8948,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
             tex_attach_attribute_list_copy(kern, p);
             tex_couple_nodes(p, kern);
             p = kern;
-            if (tracing_math_par >= 2) {
+            if lmt_unlikely(tracing_math_par >= 2) {
                 tex_print_format("%<%l[math: nilling recent right slack %p]%>", recent_right_slack);
             }
         }
@@ -8962,7 +8962,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
       WIPE:
         tex_aux_wipe_noad(recent);
     }
-    if (tracing_math_par >= 3) {
+    if lmt_unlikely(tracing_math_par >= 3) {
         tex_aux_show_math_list("[math: result, level %i]", node_next(temp_head));
     }
 }
@@ -8986,7 +8986,7 @@ static void tex_mlist_to_hlist_prepare(mliststate *state)
     if (state->mlist) {
         halfword current = state->mlist;
         halfword first = null;
-        if (tracing_math_par >= 2) {
+        if lmt_unlikely(tracing_math_par >= 2) {
             tex_aux_show_math_list("[math: prescript reordering pass, level %i]", state->mlist);
         }
         while (current) {

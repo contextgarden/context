@@ -603,7 +603,7 @@ static int texlib_sprint(lua_State *L)
 static int texlib_mprint(lua_State *L)
 {
     int ini = 1;
-    if (tracing_nesting_par > 2) {
+    if lmt_unlikely(tracing_nesting_par > 2) {
         tex_local_control_message("entering local control via (run) macro");
     }
     texlib_aux_store_token(token_val(end_local_cmd, 0), partial_line_mode, default_catcode_table_preset);
@@ -625,7 +625,7 @@ static int texlib_mprint(lua_State *L)
     if (lua_gettop(L) >= ini) {
         texlib_aux_cprint(L, partial_line_mode, default_catcode_table_preset, ini);
     }
-    if (tracing_nesting_par > 2) {
+    if lmt_unlikely(tracing_nesting_par > 2) {
         tex_local_control_message("entering local control via mprint");
     }
     tex_local_control(1);
@@ -638,7 +638,7 @@ static int texlib_mprint(lua_State *L)
 static int texlib_pushlocal(lua_State *L)
 {
     (void) L;
-    if (tracing_nesting_par > 2) {
+    if lmt_unlikely(tracing_nesting_par > 2) {
         tex_local_control_message("pushing local control");
     }
     texlib_aux_store_token(token_val(end_local_cmd, 0), partial_line_mode, default_catcode_table_preset);
@@ -651,7 +651,7 @@ static int texlib_pushlocal(lua_State *L)
 static int texlib_poplocal(lua_State *L)
 {
     (void) L;
-    if (tracing_nesting_par > 2) {
+    if lmt_unlikely(tracing_nesting_par > 2) {
         tex_local_control_message("entering local control via pop");
     }
     tex_local_control(1);
@@ -5074,7 +5074,7 @@ static int texlib_runlocal(lua_State *L)
                 if (lmt_token_state.luacstrings > 0) {
                     tex_lua_string_start();
                 }
-                if (tracing_nesting_par > 2) {
+                if lmt_unlikely(tracing_nesting_par > 2) {
                     tex_local_control_message("entering token scanner via function");
                 }
                 tex_local_control(obeymode);
@@ -5157,7 +5157,7 @@ static int texlib_runlocal(lua_State *L)
         if (lmt_token_state.luacstrings > 0) {
             tex_lua_string_start();
         }
-        if (tracing_nesting_par > 2) {
+        if lmt_unlikely(tracing_nesting_par > 2) {
             if (ismacro) {
                 tex_local_control_message("entering token scanner via macro");
             } else {
@@ -5188,7 +5188,7 @@ static int texlib_runlocal(lua_State *L)
 static int texlib_quitlocal(lua_State *L)
 {
     (void) L;
-    if (tracing_nesting_par > 2) {
+    if lmt_unlikely(tracing_nesting_par > 2) {
         tex_local_control_message("quitting token scanner");
     }
     tex_end_local_control();
@@ -5319,7 +5319,7 @@ static int texlib_runstring(lua_State *L)
                 if (lmt_token_state.luacstrings > 0) {
                     tex_lua_string_start();
                 }
-                if (tracing_nesting_par > 2) {
+                if lmt_unlikely(tracing_nesting_par > 2) {
                     tex_local_control_message("entering token scanner via register");
                 }
                 tex_local_control(obeymode);

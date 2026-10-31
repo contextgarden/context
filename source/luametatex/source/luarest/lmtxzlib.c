@@ -152,7 +152,7 @@ static int64_t xzlib_aux_targetsize(const char *data, size_t len)
     return total_uncompressed_size;
 }
 
-static int xzlib_targetsize(lua_State *L)
+static int xzlib_decompresssize(lua_State *L)
 {
     size_t      len = 0;
     const char *str = lua_tolstring(L, 1, &len);
@@ -263,9 +263,9 @@ static int xzlib_decompress(lua_State *L)
 }
 
 static struct luaL_Reg xzlib_function_list[] = {
-    { "decompress", xzlib_decompress },
-    { "targetsize", xzlib_targetsize },
-    { NULL,         NULL             },
+    { "decompress",     xzlib_decompress     },
+    { "decompresssize", xzlib_decompresssize },
+    { NULL,             NULL                 },
 };
 
 int luaopen_xz(lua_State *L)

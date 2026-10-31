@@ -837,7 +837,7 @@ void tex_start_mvl(void)
         } else if (prevdepth == max_dimen) { 
             prevdepth = lmt_mvl_state.mvl[index].prev_depth;
         }
-        if (tracing_mvl_par) { 
+        if lmt_unlikely(tracing_mvl_par) {
             tex_print_format("%<%l[mvl: index %i, options %x, prevdepth %p, %s]%>", index, options, prevdepth, start ? "start" : "restart");
         }
         if (start) { 
@@ -857,7 +857,7 @@ void tex_stop_mvl(void)
     if (index) {
         list_state_record *mvl = &lmt_mvl_state.mvl[index];
         int something = mvl->tail != mvl->head;
-        if (tracing_mvl_par) { 
+        if lmt_unlikely(tracing_mvl_par) {
             tex_print_format("%<%l[mvl: index %i, options %x, stop with%s contributions]%>", index, mvl->options, something ? "" : "out");
         }
         if (something && (mvl->options & mvl_discard_bottom)) {
@@ -905,7 +905,7 @@ halfword tex_flush_mvl(halfword index)
         halfword head = node_next(lmt_mvl_state.mvl[index].head);
         tex_flush_node(lmt_mvl_state.mvl[index].head);
         tex_aux_reset_mvl(index);
-        if (tracing_mvl_par) { 
+        if lmt_unlikely(tracing_mvl_par) {
             tex_print_format("%<%l[mvl: index %i, %s]%>", index, "flush");
         }
         node_prev(head) = null;
@@ -974,7 +974,7 @@ int tex_appended_mvl(halfword context, halfword boundary)
                 }
             }
             if (contribute_head != contribute_tail && first) {
-                if (tracing_mvl_par) { 
+                if lmt_unlikely(tracing_mvl_par) {
                     tex_print_format("%<%l[mvl: index %i, %s]%>", lmt_mvl_state.slot, assign ? "assign" : "append");
                 }
                 if (assign) { 

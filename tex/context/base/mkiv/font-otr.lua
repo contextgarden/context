@@ -887,13 +887,31 @@ function readers.name(f,fontdata,specification)
             end
         end
         --
+-- local t = { }
+-- for platform, namelist in next, namelists do
+--     for i=1,#namelist do
+--         local name    = namelist[i]
+--         local nametag = name.name
+--         if nametag == "fullname" then
+--             local encoding = name.encoding
+--             local language = name.language
+--             setposition(f,name.offset)
+--             local content = decoded(platform,encoding,readstring(f,name.length))
+--             t[content] = true
+--         end
+--     end
+-- end
+-- if table.count(t) > 1 then
+--     inspect(t)
+-- end
+
         local function filter(platform,e,l)
             local namelist = namelists[platform]
             for i=1,#namelist do
                 local name    = namelist[i]
                 local nametag = name.name
-                local index = name.index
-                if not done[nametag or i] then
+                local index   = name.index or i -- hm
+                if not done[nametag or index] then
                     local encoding = name.encoding
                     local language = name.language
                     if (not e or encoding == e) and (not l or language == l) then
@@ -908,7 +926,7 @@ function readers.name(f,fontdata,specification)
                             }
                         end
                         extras[index] = content
-                        done[nametag or i] = true
+                        done[nametag or index] = true
                     end
                 end
             end
@@ -1943,6 +1961,7 @@ local function getinfo(maindata,sub,platformnames,rawfamilynames,metricstoo,inst
                 if instances then
                     instancenames = { }
                     for i=1,#instances do
+                        -- also normalize here tonfc
                         instancenames[i] = lower(stripstring(instances[i].subfamily))
                     end
                 else
@@ -2103,6 +2122,14 @@ local function readtable(tag,f,fontdata,specification,...)
     end
 end
 
+local toclean = string.toclean -- also normalizes
+
+if not toclean then
+    toclean = function(str)
+        return lower(gsub(str,"[^a-zA-Z0-9]",""))
+    end
+end
+
 local function readdata(f,offset,specification)
 
     local fontdata, tables = loadtables(f,specification,offset)
@@ -2117,11 +2144,11 @@ local function readdata(f,offset,specification)
 
     local askedname = specification.askedname
     if askedname then
-        local fullname  = getname(fontdata,"fullname") or ""
-        local cleanname = gsub(askedname,"[^a-zA-Z0-9]","")
-        local foundname = gsub(fullname,"[^a-zA-Z0-9]","")
-        if lower(cleanname) ~= lower(foundname) then
-            return -- keep searching
+        local fullname = getname(fontdata,"fullname")
+        if fullname then
+            if toclean(askedname) ~= toclean(fullname) then
+                return -- keep searching
+            end
         end
     end
 

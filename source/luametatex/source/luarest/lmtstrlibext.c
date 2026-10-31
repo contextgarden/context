@@ -218,112 +218,18 @@ static int strlib_aux_utf_failed(lua_State *L, int new_ind)
     return 1;
 }
 
-/*tex
-    We can process 8 bytes at a time on 64-bit architectures. The memcpy is needed because
-    we dont operate with (aligned) copies on the stack so we need to obey strict alignment
-    conditions. We use the fact that > 127 means one bit is set. And the accumulator check
-    does that for 8 bytes at once.
+static int strlib_onlyascii(lua_State *L)
+{
+    size_t      len = 0;
+    const char *str = lua_tolstring(L, 1, &len);
 
-    Checking inside the loop gives bad branch prediction and we seldom have a hit and
-    compilers will optimize this kind of loops anyway.
-
-*/
-
-# ifdef _MSC_VER
-    # define fast_memcpy(dest, src, count) memcpy(dest, src, count)
-# else
-    # define fast_memcpy(dest, src, count) __builtin_memcpy(dest, src, count)
-# endif
-
-# if 0
-
-    /*tex
-        Given modern processors this is pretty fast.
-    */
-
-    static int strlib_onlyascii(lua_State *L)
-    {
-        size_t      len = 0;
-        const char *str = lua_tolstring(L, 1, &len);
-
-        const unsigned char *s = (const unsigned char *) str;
-
-        size_t   i     = 0;
-        uint64_t accum = 0;
-        int      ascii = 1;
-
-        for (; i + 8 <= len; i += 8) {
-            uint64_t chunk;
-            /* this is needed to prevent strict alignment conditions */
-            fast_memcpy(&chunk, s + i, 8);
-            accum |= chunk;
-        }
-        if (accum & 0x8080808080808080ULL) {
-            /* if any high bit is set a non-ascii character exists */
-            ascii = 0;
-        } else {
-            /* handle remaining bytes (0 to 7 bytes) */
-            for (; i < len; i++) {
-                if (s[i] > 127) {
-                    ascii = 0;
-                    break;
-                }
-            }
-        }
-        lua_pushboolean(L, ascii);
+    if (str == NULL) {
+        return luaL_error(L, "string expected for ascii check");
+    } else {
+        lua_pushboolean(L, aux_onlyascii(str, len));
         return 1;
     }
-
-# else
-
-    /*tex
-        As we can apply this to whole files chunking makes more sense, so we add an
-        extra outer loop. As usual this one went through a few steps, like figuring
-        out how to optimize for small strings.
-    */
-
-    static int strlib_onlyascii(lua_State *L)
-    {
-        size_t      len = 0;
-        const char *str = lua_tolstring(L, 1, &len);
-
-        if (str == NULL) {
-            return luaL_error(L, "string expected for ascii check");
-        }
-
-        const unsigned char *s = (const unsigned char *) str;
-
-        size_t   i   = 0;
-        uint64_t acc = 0;
-
-        /* fast (8 byte) word loop (automatically skipped if len < 8) */
-
-        for (; i + 8 <= len; i += 8) {
-            uint64_t chunk;
-            fast_memcpy(&chunk, s + i, 8);
-            acc |= chunk;
-        }
-
-        /* set initial status based on the accumulator */
-
-        int ascii = ((acc & 0x8080808080808080ULL) == 0);
-
-        /* only check the remainder (< 8 bytes) if the main chunks were clean */
-
-        if (ascii) {
-            for (; i < len; i++) {
-                if (s[i] > 127) {
-                    ascii = 0;
-                    break;
-                }
-            }
-        }
-
-        lua_pushboolean(L, ascii);
-        return 1;
-    }
-
-# endif
+}
 
 /*
     Here is a nice test for gemini (best also feed it a coding style):

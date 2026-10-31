@@ -1224,16 +1224,16 @@ static int filelib_attributes(lua_State *L)
                         if (uid == 0) {
                             allowed = 1; /* root has access to everything */
                         } else if (info.st_uid == uid) {
-                            if ((access_mode & R_OK) && !(info.st_mode & S_IRUSR)) allowed = -1;
-                            if ((access_mode & W_OK) && !(info.st_mode & S_IWUSR)) allowed = -1;
+                            if ((access_mode & R_OK) && ! (info.st_mode & S_IRUSR)) allowed = -1;
+                            if ((access_mode & W_OK) && ! (info.st_mode & S_IWUSR)) allowed = -1;
                             if (allowed != -1) allowed = 1;
                         } else if (info.st_gid == gid) {
-                            if ((access_mode & R_OK) && !(info.st_mode & S_IRGRP)) allowed = -1;
-                            if ((access_mode & W_OK) && !(info.st_mode & S_IWGRP)) allowed = -1;
+                            if ((access_mode & R_OK) && ! (info.st_mode & S_IRGRP)) allowed = -1;
+                            if ((access_mode & W_OK) && ! (info.st_mode & S_IWGRP)) allowed = -1;
                             if (allowed != -1) allowed = 1;
                         } else {
-                            if ((access_mode & R_OK) && !(info.st_mode & S_IROTH)) allowed = -1;
-                            if ((access_mode & W_OK) && !(info.st_mode & S_IWOTH)) allowed = -1;
+                            if ((access_mode & R_OK) && ! (info.st_mode & S_IROTH)) allowed = -1;
+                            if ((access_mode & W_OK) && ! (info.st_mode & S_IWOTH)) allowed = -1;
                             if (allowed != -1) allowed = 1;
                         }
                         okay = (allowed == 1);
@@ -1630,14 +1630,14 @@ int luaopen_filelib(lua_State *L)
 {
     /* */
     lua_pushcfunction(L, filelib_loadfile);
-    lua_setglobal(L, "loadfile");                     /* security: loadable */
+    lua_setglobal(L, "loadfile");          /* security: loadable */
     /* */
     lua_pushcfunction(L, filelib_dofile);
-    lua_setglobal(L, "dofile");                       /* security: loadable */
+    lua_setglobal(L, "dofile");            /* security: loadable */
     /* */
     lua_getglobal(L, "package");
     if (lua_istable(L, -1)) {
-        lua_getfield(L, -1, "searchers");             /* security: loadable */
+        lua_getfield(L, -1, "searchers");  /* security: loadable */
         if (lua_istable(L, -1)) {
             lua_pushvalue(L, -2);
             lua_pushcclosure(L, filelib_package_searcher_file, 1);

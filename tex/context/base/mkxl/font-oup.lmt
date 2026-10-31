@@ -674,12 +674,15 @@ local function checklookups(fontdata,missing,nofmissing)
     local function recursed(c)
         for g, d in next, c do
             if g ~= "ligature" then
-                local u = descriptions[g].unicode
-                if u then
-                    n = n + 1
-                    t[n] = u
-                    recursed(d)
-                    n = n - 1
+                local d = descriptions[g]
+                if d then
+                    local u = d.unicode
+                    if u then
+                        n = n + 1
+                        t[n] = u
+                        recursed(d)
+                        n = n - 1
+                    end
                 end
             elseif missing[d] then
                 local l = { }

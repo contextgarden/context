@@ -702,7 +702,7 @@ static void tex_aux_run_ignore_something(void)
 
 static void tex_aux_run_math_non_math(void)
 {
-    if (tracing_commands_par >= 4) {
+    if lmt_unlikely(tracing_commands_par >= 4) {
         tex_print_format("%<%l[math: pushing back %C]%>", cur_cmd, cur_chr);
     }
     tex_back_input(cur_tok);
@@ -1291,7 +1291,7 @@ static void tex_aux_run_new_paragraph(void)
             context = normal_par_trigger;
             break;
     }
-    if (tracing_commands_par >= 4) {
+    if lmt_unlikely(tracing_commands_par >= 4) {
         tex_print_format("%<%l[text: pushing back %C]%>", cur_cmd, cur_chr);
     }
     tex_back_input(cur_tok);
@@ -1313,7 +1313,7 @@ static void tex_aux_run_new_paragraph(void)
 
 void tex_page_boundary_message(const char *s, halfword b)
 {
-    if (tracing_pages_par > 0) {
+    if lmt_unlikely(tracing_pages_par > 0) {
         tex_print_format(
             "%<%l[page: boundary, %s, trigger %i, detail %i]%>",
             s, b ? boundary_data(b) : 0, b ? boundary_reserved(b) : 0
@@ -1788,7 +1788,7 @@ static void tex_aux_run_catcode_table(void)
 
 static void tex_aux_run_end_local(void)
 {
-    if (tracing_nesting_par > 2) {
+    if lmt_unlikely(tracing_nesting_par > 2) {
         tex_local_control_message("leaving token scanner due to local end token");
     }
     tex_end_local_control();
@@ -1849,7 +1849,7 @@ int tex_main_control(void)
             Give diagnostic information, if requested. When a new token has just been fetched at
             |big_switch|, we have an ideal place to monitor \TEX's activity.
         */
-        if (tracing_commands_par > 0) {
+        if lmt_unlikely(tracing_commands_par > 0) {
             tex_show_cmd_chr(cur_cmd, cur_chr);
         }
         /*tex Run the command: */
@@ -1899,19 +1899,19 @@ void tex_local_control(int obeymode)
         } else {
             tex_get_x_token();
         }
-        if (tracing_commands_par > 0) {
+        if lmt_unlikely(tracing_commands_par > 0) {
             tex_show_cmd_chr(cur_cmd, cur_chr);
         }
         tex_aux_big_switch(cur_mode, cur_cmd);
         if (lmt_main_control_state.local_level <= at_level) {
             lmt_main_control_state.control_state = goto_next_state;
-            if (tracing_nesting_par > 2) {
+            if lmt_unlikely(tracing_nesting_par > 2) {
                 /*tex This is a kind of duplicate message, which can be confusing */
                 tex_local_control_message("leaving local control due to level change");
             }
             break;
         } else if (lmt_main_control_state.control_state == goto_return_state) {
-            if (tracing_nesting_par > 2) {
+            if lmt_unlikely(tracing_nesting_par > 2) {
                 tex_local_control_message("leaving local control due to triggering");
             }
             break;
@@ -1993,7 +1993,7 @@ static inline void tex_update_stack_entry(halfword count)
 void tex_begin_local_control(void)
 {
     halfword code = cur_chr;
-    if (tracing_nesting_par > 2) {
+    if lmt_unlikely(tracing_nesting_par > 2) {
         tex_local_control_message("entering token scanner via primitive");
     }
     switch (code) {
@@ -2240,7 +2240,7 @@ halfword tex_local_scan_box(void)
     tex_aux_scan_box(lua_scan_flag, 0, null_flag, -1, 0, 0);
     if (lmt_main_control_state.local_level == old_level) {
         /*tex |\directlua{print(token.scan_list())}\hbox{!}| (n n) */
-        if (tracing_nesting_par > 2) {
+        if lmt_unlikely(tracing_nesting_par > 2) {
             tex_local_control_message("entering at end of box scanning");
         }
         tex_local_control(1);
@@ -2248,7 +2248,7 @@ halfword tex_local_scan_box(void)
     } else {
         /*tex |\directlua{print(token.scan_list())}\box0| (n-1 n) */
         /*
-            if (tracing_nesting_par > 2) {
+            if lmt_unlikely(tracing_nesting_par > 2) {
                 local_control_message("setting level after box scanning");
             }
         */
@@ -2269,7 +2269,7 @@ halfword tex_local_scan_box(void)
 static void tex_aux_wrapup_local_scan_box(void)
 {
     /*
-    if (tracing_nesting_par > 2) {
+    if lmt_unlikely(tracing_nesting_par > 2) {
         local_control_message("leaving box scanner");
     }
     */
@@ -3055,7 +3055,7 @@ void tex_begin_paragraph(int doindent, int context)
         if (every_before_par_par) {
             tex_begin_inserted_list(tex_get_available_token(token_val(end_local_cmd, 0)));
             tex_begin_token_list(every_before_par_par, every_before_par_text);
-            if (tracing_nesting_par > 2) {
+            if lmt_unlikely(tracing_nesting_par > 2) {
                 tex_local_control_message("entering local control via \\everybeforepar");
             }
             tex_local_control(1);
@@ -3092,7 +3092,7 @@ void tex_begin_paragraph(int doindent, int context)
         tex_append_dir_state();
     }
     tex_aux_insert_parindent(indented);
-    if (tracing_paragraph_lists) {
+    if lmt_unlikely(tracing_paragraph_lists) {
         tex_begin_diagnostic();       
      // tex_print_format("%l[paragraph: start, context %i]", context);
         tex_print_format("%l[paragraph: start, context %s]", lmt_interface.par_trigger_values[context].name);
@@ -5103,14 +5103,14 @@ static void tex_aux_set_def(int flags, int force)
         if (global_defs_par < 0) {
             if (is_global(flags)) {
                 remove_global_flag(flags);
-                if (tracing_commands_par) {
+                if lmt_unlikely(tracing_commands_par) {
                     tex_print_format("%<%l[global canceled]%>");
                 }
             }
         } else {
             if (! is_global(flags)) {
                 add_global_flag(flags);
-                if (tracing_commands_par) {
+                if lmt_unlikely(tracing_commands_par) {
                     tex_print_format("%<%l[global enforced]%>");
                 }
             }
@@ -6164,7 +6164,7 @@ static void tex_run_prefixed_command(void)
         do {
             tex_get_x_token();
         } while (cur_cmd == spacer_cmd || cur_cmd == relax_cmd);
-        if (tracing_commands_par > 2) {
+        if lmt_unlikely(tracing_commands_par > 2) {
             tex_show_cmd_chr(cur_cmd, cur_chr);
         }
     }

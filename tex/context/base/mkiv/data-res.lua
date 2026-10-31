@@ -78,6 +78,7 @@ local criticalvars = {
     "TEXMFCNF",
     "TEXMF",
     "TEXOS",
+    "TEXMFHOME",
 }
 
 -- The web2c tex binaries as well as kpse have built in paths for the configuration
@@ -537,7 +538,6 @@ local function load_configuration_files()
                             break
                         end
                     end
-
                 else
                     if trace_locating then
                         report_resolving("skipping configuration file %a (no content)",filename)
@@ -579,7 +579,17 @@ local function load_file_databases()
         for k=1,#hashes do
             local hash = hashes[k]
             resolvers.hashers.byscheme(hash.type,hash.name)
-            if instance.loaderror then break end
+            if instance.loaderror then
+                if hash.cache == false then
+                    -- likely the home directory
+                    if trace_locating then
+                        report_resolving("ignore load error for type %a and name %a",hash.type,hash.name)
+                    end
+                    instance.loaderror = false
+                else
+                    break
+                end
+            end
         end
     end
 end
@@ -1356,16 +1366,14 @@ local function makepathlist(list,filetype)
     if pathlist and #pathlist > 0 then
         for k=1,#pathlist do
             local path       = pathlist[k]
-            local prescanned = find(path,'^!!')
-            local resursive  = find(path,'//$')
+            local prescanned = find(path,'^!!') and true or false
+            local resursive  = find(path,'//$') and true or false
             local pathname   = lpegmatch(inhibitstripper,path)
             local expression = makepathexpression(pathname)
             local barename   = gsub(pathname,"/+$","")
-            barename         = resolveprefix(barename)
+                  barename   = resolveprefix(barename)
             local scheme     = urlhasscheme(barename)
             local schemename = gsub(barename,"%.%*$",'') -- after scheme
-         -- local prescanned = path ~= pathname -- ^!!
-         -- local resursive  = find(pathname,'//$')
             entry[k] = {
                 path       = path,
                 pathname   = pathname,

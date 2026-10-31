@@ -144,7 +144,7 @@ void tex_expand_current_token(void)
         if (cur_cmd < first_call_cmd) {
             /*tex Expand a non-macro. */
             halfword code = cur_chr;
-            if (tracing_commands_par > 1) {
+            if lmt_unlikely(tracing_commands_par > 1) {
                 tex_show_cmd_chr(cur_cmd, cur_chr);
             }
             switch (cur_cmd) {
@@ -1319,7 +1319,7 @@ static inline void tex_aux_macro_gobble_upto(halfword gobbletoken, bool gobblemo
 static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
 {
     bool tracing = tracing_macros_par > 0;
-    if (tracing) {
+    if lmt_unlikely(tracing) {
         /*tex
             Setting |\tracingmacros| to 2 means that elsewhere marks etc are shown so in fact a bit
             more detail. However, as we turn that on anyway, using a value of 3 is not that weird
@@ -1897,7 +1897,7 @@ case integer_match_token:
                         }
                     }
                     ++nofscanned;
-                    if (tracing) {
+                    if lmt_unlikely(tracing) {
                         tex_begin_diagnostic();
                         tex_print_format("%l%c%c<-", match_visualizer, '0' + nofscanned + (nofscanned > 9 ? gap_match_count : 0));
                         tex_show_token_list(pstack[nofscanned - 1], 0, 0);
@@ -1979,7 +1979,7 @@ case integer_match_token:
                             }
                     }
                     nofscanned++;
-                    if (tracing) {
+                    if lmt_unlikely(tracing) {
                         tex_begin_diagnostic();
                         tex_print_format("%l%c%i--", match_visualizer, nofscanned);
                         tex_end_diagnostic();

@@ -4691,7 +4691,7 @@ static inline int tex_aux_check_sub_pass(line_break_properties *properties, half
                             overfull, underfull, verdict, classified, threshold, demerits, classes
                         );
                     }
-                    if (tracing) {
+                    if lmt_unlikely(tracing) {
                         tex_end_diagnostic();
                     }
                     if (success) {
@@ -5565,17 +5565,17 @@ static int tex_aux_quit_linebreak(const line_break_properties *properties, int p
                     lmt_linebreak_state.best_bet = r;
                     actual_looseness = line_difference;
                     lmt_linebreak_state.fewest_demerits = total_demerits;
-                    if (tracing) {
+                    if lmt_unlikely(tracing) {
                         tex_print_format("%l[looseness: pass %i, line %i, difference %i, demerits %i, %s optimal]", pass, line_number - 1, line_difference, total_demerits, "sub");
                     }
                 } else if (line_difference == actual_looseness && total_demerits < lmt_linebreak_state.fewest_demerits) {
                     lmt_linebreak_state.best_bet = r;
                     lmt_linebreak_state.fewest_demerits = total_demerits;
-                    if (tracing) {
+                    if lmt_unlikely(tracing) {
                         tex_print_format("%l[looseness: pass %i, line %i, difference %i, demerits %i, %s optimal]", pass, line_number - 1, line_difference, total_demerits, "more");
                     }
                 } else {
-                    if (tracing) {
+                    if lmt_unlikely(tracing) {
                         tex_print_format("%l[looseness: pass %i, line %i, difference %i, demerits %i, %s optimal]", pass, line_number - 1, line_difference, total_demerits, "not");
                     }
                 }
@@ -5585,7 +5585,7 @@ static int tex_aux_quit_linebreak(const line_break_properties *properties, int p
         lmt_linebreak_state.actual_looseness = actual_looseness;
         lmt_linebreak_state.best_line = active_line_number(lmt_linebreak_state.best_bet);
         verdict = actual_looseness == properties->looseness;
-        if (tracing) {
+        if lmt_unlikely(tracing) {
             /*tex
                 The finally reported demerits in the tracker lack the linepenalty squared etc. so
                 we cannot really compare these values.
@@ -6194,7 +6194,7 @@ static halfword checked_penalty(long long p)
 
 static void tex_aux_trace_penalty(const char *what, int line, int index, long long penalty, long long total)
 {
-    if (tracing_penalties_par > 0) {
+    if lmt_unlikely(tracing_penalties_par > 0) {
         tex_print_format("%<%l[linebreak: %s penalty, line %i, index %i, delta %i, total %i]%>", what, line, index, checked_penalty(penalty), checked_penalty(total));
     }
 }

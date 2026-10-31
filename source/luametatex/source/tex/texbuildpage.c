@@ -257,7 +257,7 @@ static void tex_aux_freeze_page_specs(int s)
         page_total += glue_amount(additional_page_skip_par);
         update_tex_additional_page_skip(null);
     }
-    if (tracing_pages_par > 0) {
+    if lmt_unlikely(tracing_pages_par > 0) {
         tex_print_format(
             "%<%l[page: frozen state, goal %p, maxdepth %p, contribution %s, insertheights %p]%>",
             page_goal,
@@ -277,7 +277,7 @@ static void update_page_goal(const char *where, halfword index, scaled total, sc
             lmt_page_builder_state.insert_heights = max_dimension;
         }
     }
-    if (tracing_inserts_par > 0) {
+    if lmt_unlikely(tracing_inserts_par > 0) {
         tex_print_format(
             "%<%l[page: insert %s, index %i, total %p, insertheights %p, vsize %p, delta %p, goal %p]%>",
             where, index, total, lmt_page_builder_state.insert_heights, page_vsize, delta, page_goal
@@ -325,7 +325,7 @@ static void tex_aux_start_new_page(void)
 
 static halfword tex_aux_delete_box_content(int n, const char *what, int where)
 {
-    if (tracing_pages_par > 0) {
+    if lmt_unlikely(tracing_pages_par > 0) {
         tex_begin_diagnostic();
         tex_print_format("%l[page: deleting %s box, case %i]", what, where);
         tex_show_box(n);
@@ -532,7 +532,7 @@ static void tex_aux_append_insert(halfword current)
                         "made finite."
                     );
                 }
-                if (tracing_inserts_par > 0) {
+                if lmt_unlikely(tracing_inserts_par > 0) {
                  // %P : total, stretch, fistretch, filstretch, fillstretch, filllstretch, shrink
                     tex_print_format("%<%l[inserts: index %i, first %i, top %i, distance %p]%>", index, first, top, glue_amount(distance));
                 }
@@ -611,7 +611,7 @@ static void tex_aux_append_insert(halfword current)
             */
             if (tex_aux_catch_insert_overflow()) {
                 if (height < 0) {
-                    if (tracing_inserts_par > 0) {
+                    if lmt_unlikely(tracing_inserts_par > 0) {
                         tex_print_format("%<%l[page: insert overflow, index %i, prepend dummy, case %i]%>", index, 1);
                     }
                     tex_insert_prepend_dummy(current);
@@ -628,7 +628,7 @@ static void tex_aux_append_insert(halfword current)
             */
             if (tex_aux_catch_insert_overflow()) {
                 if (best_height_plus_depth > height) {
-                    if (tracing_inserts_par > 0) {
+                    if lmt_unlikely(tracing_inserts_par > 0) {
                         tex_print_format("%<%l[page: insert overflow, index %i, prepend dummy, case %i]%>", index, 2);
                     }
                     tex_insert_prepend_dummy(current);
@@ -639,7 +639,7 @@ static void tex_aux_append_insert(halfword current)
             /* */ 
             box_height(location) += best_height_plus_depth;
             penalty = breaknode ? (node_type(breaknode) == penalty_node ? penalty_amount(breaknode) : 0) : eject_penalty;
-            if (tracing_pages_par > 0) {
+            if lmt_unlikely(tracing_pages_par > 0) {
                 tex_aux_display_insertion_split_cost(index, height, best_height_plus_depth, penalty);
             }
             if (multiplier != scaling_factor) {
@@ -669,12 +669,12 @@ static inline int tex_aux_get_penalty_option(halfword current)
                 case penalty_node:
                     if (penalty_amount(current) >= infinite_penalty) {
                         if (tex_has_penalty_option(current, penalty_option_widowed)) {
-                            if (tracing_pages_par > 1) {
+                            if lmt_unlikely(tracing_pages_par > 1) {
                                 tex_print_format("%<%l[page: widowed]%>");
                             }
                             return penalty_option_widowed;
                         } else if (tex_has_penalty_option(current, penalty_option_clubbed)) {
-                            if (tracing_pages_par > 1) {
+                            if lmt_unlikely(tracing_pages_par > 1) {
                                 tex_print_format("%<%l[page: clubbed]%>");
                             }
                             return penalty_option_clubbed;
@@ -775,7 +775,7 @@ static int tex_aux_topskip_restart(halfword current, int where, scaled height, s
             tex_attach_attribute_list_copy(gluenode, current);
             tex_couple_nodes(gluenode, current);
             tex_couple_nodes(contribute_head, gluenode);
-            if (tracing > 1) {
+            if lmt_unlikely(tracing > 1) {
                 tex_print_format("%<%l[page: initialize, topskip at %s]%>", where == contribute_box ? "box" : "rule");
             }
         }
@@ -802,7 +802,7 @@ static int tex_aux_migrating_restart(halfword current, int tracing)
         halfword head = box_post_migrated(current);
         if (head) {
             halfword tail = tex_tail_of_node_list(head);
-            if (tracing > 1 || tracing_adjusts_par > 1) {
+            if lmt_unlikely(tracing > 1 || tracing_adjusts_par > 1) {
                 tex_begin_diagnostic();
                 tex_print_format("%l[adjust: post, mvl]");
                 tex_print_node_list(head, "post", show_box_depth_par, show_box_breadth_par);
@@ -821,7 +821,7 @@ static int tex_aux_migrating_restart(halfword current, int tracing)
         halfword head = box_pre_migrated(current);
         if (head) {
             halfword tail = tex_tail_of_node_list(head);
-            if (tracing > 1 || tracing_adjusts_par > 1) {
+            if lmt_unlikely(tracing > 1 || tracing_adjusts_par > 1) {
                 tex_begin_diagnostic();
                 tex_print_format("%l[adjust: pre, mvl]");
                 tex_print_node_list(head, "pre", show_box_depth_par, show_box_breadth_par);
@@ -908,7 +908,7 @@ static void tex_aux_reconsider_goal(halfword current, halfword *badness, halfwor
                 if (page_total <= (page_goal + page_extra_goal_par)) {
                     halfword extrabadness = tex_aux_page_badness(page_goal + page_extra_goal_par);
                     halfword extracosts = tex_aux_page_costs(extrabadness, *penalty);
-                    if (tracing > 0) {
+                    if lmt_unlikely(tracing > 0) {
                         tex_print_format(
                             "%<%l[page: extra check, total %P, goal %p, extragoal %p, badness %B, costs %i, extrabadness %B, extracosts %i]%>",
                             page_total, page_stretch, page_fistretch, page_filstretch, page_fillstretch, page_filllstretch, page_shrink,
@@ -921,7 +921,7 @@ static void tex_aux_reconsider_goal(halfword current, halfword *badness, halfwor
                     *costs = extracosts;
                     /* */
                     lmt_page_builder_state.last_extra_used = 1;
-                    if (tracing > 1) {
+                    if lmt_unlikely(tracing > 1) {
                         tex_print_format("%<%l[page: widowed]%>");
                     }
                 }
@@ -931,7 +931,7 @@ static void tex_aux_reconsider_goal(halfword current, halfword *badness, halfwor
                     /* we force a flush and no extra loop cycle */
                     *penalty = eject_penalty;
                     /* */
-                    if (tracing > 1) {
+                    if lmt_unlikely(tracing > 1) {
                         tex_print_format("%<%l[page: clubbed]%>");
                     }
                 }
@@ -1154,7 +1154,7 @@ static void tex_process_mvl(halfword context, halfword boundary)
                 prepare for output, and either fire up the users output routine and |return| or
                 ship out the page and |goto done|.
             */
-            if (tracing > 1) {
+            if lmt_unlikely(tracing > 1) {
                 tex_print_format("%<%l[page: compute: %N, %d, penalty %i]%>", current, current, penalty);
             }
             if (penalty < infinite_penalty) {
@@ -1165,7 +1165,7 @@ static void tex_process_mvl(halfword context, halfword boundary)
                 halfword badness = tex_aux_page_badness(page_goal);
                 halfword costs = tex_aux_page_costs(badness, penalty);
                 lmt_page_builder_state.last_extra_used = 0;
-                if (tracing > 1) {
+                if lmt_unlikely(tracing > 1) {
                     tex_print_format("%<%l[page: calculate, %N, %d, total %P, goal %p, badness %B, costs %i]%>",
                         current, current,
                         page_total, page_stretch, page_fistretch, page_filstretch, page_fillstretch, page_filllstretch, page_shrink,
@@ -1181,7 +1181,7 @@ static void tex_process_mvl(halfword context, halfword boundary)
                         tex_aux_check_show_build_node(callback_id, current, badness, costs, penalty, &moveon, &fireup);
 
                     }
-                    if (tracing > 0) {
+                    if lmt_unlikely(tracing > 0) {
                         tex_aux_display_page_break_cost(context, badness, penalty, costs, moveon, fireup);
                     }
                     if (moveon) {
@@ -1201,7 +1201,7 @@ static void tex_process_mvl(halfword context, halfword boundary)
                         }
                     }
                     if (fireup) {
-                        if (tracing > 1) {
+                        if lmt_unlikely(tracing > 1) {
                             tex_print_format("%<%l[page: fireup: %N, %d]%>", current, current);
                         }
                         if (callback_id > 0) {
@@ -1231,7 +1231,7 @@ static void tex_process_mvl(halfword context, halfword boundary)
                 Go here to record glue in the |active_height| table. Update the current page
                 measurements with respect to the glue or kern specified by node~|p|.
             */
-            if (tracing > 1) {
+            if lmt_unlikely(tracing > 1) {
                 tex_print_format("%<%l[page: update, %N, %d]%>", current, current);
             }
             switch(node_type(current)) {
@@ -1263,7 +1263,7 @@ static void tex_process_mvl(halfword context, halfword boundary)
                 Go here to link a node into the current page. Make sure that |page_max_depth| is
                 not exceeded.
             */
-            if (tracing > 1) {
+            if lmt_unlikely(tracing > 1) {
                 tex_print_format("%<%l[page: contribute, %N, %d]%>", current, current);
             }
             if (page_depth > lmt_page_builder_state.max_depth) {
@@ -1271,7 +1271,7 @@ static void tex_process_mvl(halfword context, halfword boundary)
                 page_depth = lmt_page_builder_state.max_depth;
             }
           APPEND:
-            if (tracing > 1) {
+            if lmt_unlikely(tracing > 1) {
                 tex_print_format("%<%l[page: append, %N, %d]%>", current, current);
             }
             /*tex Link node |p| into the current page and |goto done|. We assume a positive depth. */
@@ -1281,7 +1281,7 @@ static void tex_process_mvl(halfword context, halfword boundary)
             node_next(current) = null;
             continue; // or: break;
           DISCARD:
-            if (tracing > 1) {
+            if lmt_unlikely(tracing > 1) {
                 tex_print_format("%<%l[page: discard, %N, %d]%>", current, current);
             }
             /*tex Recycle node |p|. */
@@ -1696,7 +1696,7 @@ static void tex_aux_update_output_penalty()
 {
     if (node_type(lmt_page_builder_state.best_break) == penalty_node) {
         update_tex_output_penalty(penalty_amount(lmt_page_builder_state.best_break));
-        if (tracing_loners_par) {
+        if lmt_unlikely(tracing_loners_par) {
             tex_aux_show_loners();
         }
         penalty_amount(lmt_page_builder_state.best_break) = infinite_penalty;
@@ -1776,7 +1776,7 @@ void tex_resume_after_output(void)
         box_register(output_box_par) = tex_aux_delete_box_content(box_register(output_box_par), "output", 1);
     }
     if (lmt_insert_state.storing == insert_storage_delay && tex_insert_stored()) {
-        if (tracing_inserts_par > 0) {
+        if lmt_unlikely(tracing_inserts_par > 0) {
             tex_print_format(lmt_insert_state.head ? "%l<delaying inserts>" : "%l<no inserts to delay>");
             if (lmt_insert_state.head && tracing_inserts_par > 1) {
                 tex_show_node_list(lmt_insert_state.head, max_integer, max_integer);
@@ -1813,7 +1813,7 @@ void tex_resume_after_output(void)
             }
             h = n;
         }
-        if (tracing_inserts_par > 0) {
+        if lmt_unlikely(tracing_inserts_par > 0) {
             tex_print_format(lmt_insert_state.head ? "%l<storing inserts>" : "%l<no inserts to store>");
             if (lmt_insert_state.head && tracing_inserts_par > 1) {
                 tex_show_node_list(lmt_insert_state.head, max_integer, max_integer);

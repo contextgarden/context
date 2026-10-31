@@ -2183,7 +2183,7 @@ static inline next_line_retval tex_aux_next_line(void)
             groups entered or conditionals started while reading from that file are still incomplete.
         */
         if (lmt_token_state.force_eof) {
-            if (tracing_nesting_par > 0) {
+            if lmt_unlikely(tracing_nesting_par > 0) {
                 if ((lmt_input_state.in_stack[lmt_input_state.in_stack_data.ptr].group != cur_boundary) || (lmt_input_state.in_stack[lmt_input_state.in_stack_data.ptr].if_ptr != lmt_condition_state.cond_ptr)) {
                     if (! io_token_input(lmt_input_state.cur_input.name)) {
                         /*tex Check for unfinished groups: */
@@ -2192,7 +2192,7 @@ static inline next_line_retval tex_aux_next_line(void)
                         tex_conditional_catch_up();
                         /*tex Show the context, when asked for: */
                         tex_print_nlp();
-                        if (tracing_nesting_par > 1) {
+                        if lmt_unlikely(tracing_nesting_par > 1) {
                             tex_show_context();
                         }
                         /*tex Recover if needed: */

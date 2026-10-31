@@ -402,9 +402,9 @@ static void serverlib_aux_send_error_response(
     int header_length = snprintf(header, sizeof(header),
         "HTTP/1.1 %d %s\r\n"
         "Content-Type: text/plain\r\n"
-        "Content-Length: %zu\r\n"
+        "Content-Length: %lu\r\n"
         "Connection: close\r\n\r\n",
-        status, serverlib_aux_status_to_string(status), body_length
+        status, serverlib_aux_status_to_string(status), (unsigned long) body_length
     );
     luaL_addlstring(&buffer, header, serverlib_aux_buffer_length(header_length, sizeof(header)));
 
@@ -615,7 +615,7 @@ static void serverlib_aux_process_request(
 
             char content_header[128];
             int content_length_header = snprintf(content_header, sizeof(content_header),
-                "\r\nContent-Length: %zu\r\nConnection: close\r\n", body_length
+                "\r\nContent-Length: %lu\r\nConnection: close\r\n", (unsigned long) body_length
             );
             luaL_addlstring(&buffer, content_header,
                 serverlib_aux_buffer_length(content_length_header, sizeof(content_header)));

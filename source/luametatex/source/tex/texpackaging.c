@@ -2266,7 +2266,7 @@ halfword tex_hpack(halfword p, scaled target, int method, singleword pack_direct
     }
     tex_print_ln();
     lmt_print_state.font_in_short_display = null_font;
-    if (tracing_full_boxes_par > 0) {
+    if lmt_unlikely(tracing_full_boxes_par > 0) {
         halfword detail = show_node_details_par;
         show_node_details_par = tracing_full_boxes_par;
         tex_print_format("%l[package: result] ");

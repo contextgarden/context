@@ -1,13 +1,7 @@
 % language=us runpath=texruns:manuals/luametatex
 
-
-% io.getseparators
-% io.getcpucount
-% io.launch
-% io.enableansi
-
-% xz.decompress
-% xz.targetsize
+% These are kind of new and might evolve so we delay documentation
+% a while.
 
 % client
 % server
@@ -18,8 +12,6 @@
 % string.topdfsixteen(str,bom,brackets)
 % string.topdfeight(str,prentheses)
 % string.topdfstring(str,lowasciitoo)
-% string.replacecharacter
-% string.onlyascii
 % string.filterwierd
 
 % file.lessweird
@@ -30,8 +22,8 @@
 % processlib.close
 % processlib.read
 % processlib.poll
-% watchlib.tostring
 
+% watchlib.tostring
 % watchlib.register
 % watchlib.unregister
 % watchlib.check
@@ -546,7 +538,7 @@ function sio.tocardinal4le ( <t:string> ) return <t:integer> end
 
 \stopsubsection
 
-\startsubsection[title=Extra file helpers]
+\startsubsection[title=Extra file (IO) helpers]
 
 This function gobble characters upto a newline. When characters are gobbled.
 \type {true} is returned when we end up at a newline or when something is gobbled
@@ -564,7 +556,7 @@ Function like type {io.open} \type {io.popen} are patched to support files on
 
 \stopsubsection
 
-\startsubsection[title=Extra operating system helpers]
+\startsubsection[title=Extra operating system (OS) helpers]
 
 The \type {os} library has a few extra functions and variables so for complete
 overview you need to look in the \LUA\ manual.
@@ -662,7 +654,39 @@ On \MSWINDOWS\ the original \type {os.rename}, \type {os.remove} and \type
 And talking of \MSWINDOWS\ versus the rest, we also have this:
 
 \starttyping[option=LUA]
-local fileseparator, pathseparator = os.getseparators()
+function getseparators ( )
+    return
+        <t:string>, -- fileseparator
+        <t:string>  -- pathseparator
+end
+\stoptyping
+
+A more machine specific helper is the following. In can be handy when you
+implement parallel processing.
+
+\starttyping[option=LUA]
+function os.getcpucount ( )
+    return <t:integer> -- cores / hyperthreads
+end
+\stoptyping
+
+In \CONTEXT\ we can use \ANSI\ escape sequences in the output (which gives me
+fond memories of these long gone GIGI terminals). In order to not get gibberish
+on the console we can enable it and get \type {true} back when it succeeds.
+
+\starttyping[option=LUA]
+function os.enableansi ( )
+    return <t:boolean> -- success
+end
+\stoptyping
+
+Depending on the platform this will issue an \type {open} or \type {xdg-open}
+command that spawns an job related to the filetype.
+
+\starttyping[option=LUA]
+function os.launch ( <t:string> object )
+    return <t:integer> -- status
+end
 \stoptyping
 
 \stopsubsection
@@ -1012,6 +1036,30 @@ function string.octtointeger ( <t:string> octstr ) return <t:integer> end
 function string.dectointeger ( <t:string> decstr ) return <t:integer> end
 function string.hextointeger ( <t:string> hexstr ) return <t:integer> end
 function string.chrtointeger ( <t:string> chrstr ) return <t:integer> end
+\stoptyping
+
+A fast helper that replaces one character (byte) by another is:
+
+\starttyping[option=LUA]
+function string.replacecharacter(
+    <t:string> source,
+    <t:string> old,
+    <t:string> new
+)
+    return <t:string> -- target
+end
+\stoptyping
+
+This is a rather optimized checker. When there are bytes with the high bit set it
+returns false. This can be a used to implement fast (\ASCII) and slow (\UTF) code
+paths.
+
+\starttyping[option=LUA]
+function string.onlyascii (
+    <t:string> source
+)
+    return <t:boolean> -- non-ascii
+end
 \stoptyping
 
 \stopsubsection
@@ -1391,6 +1439,32 @@ end
 function xzip.crc32 (
     <t:string>  buffer,
     <t:integer> checksum
+)
+    return <t:integer>
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=XZ]
+
+This compression method is used in \TEX live. It has a bit better compression
+that zip but it comes at a price: compression takes longer and so does
+decompression. A \type {.gz} decompresses 5 times faster than a \type {.xz} file
+when for instance we compress the \CONTEXT\ distribution tarball of 350 MB.
+During a test the gain in file size was actually only 10 MB and with todays
+internet speed that difference can be neglected while the decompression time
+can't.
+
+\starttyping[option=LUA]
+function xz.decompress (
+    <t:string> data
+)
+    return <t:string>
+end
+
+function xz.decompresssize (
+    <t:string> data
 )
     return <t:integer>
 end

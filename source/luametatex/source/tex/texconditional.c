@@ -241,7 +241,7 @@ static void tex_aux_if_warning(void)
         lmt_input_state.in_stack[index].if_ptr = node_next(lmt_condition_state.cond_ptr);
         --index;
     }
-    if (warning) {
+    if lmt_unlikely(warning) {
         tex_print_format("%<%l[conditional: end of %C%L of a different file]%>", if_test_cmd, lmt_condition_state.state.cur_if, lmt_condition_state.state.if_line);
         if (tracing_nesting_par > 1) {
             tex_show_context();
@@ -276,7 +276,7 @@ static void tex_aux_if_warning(void)
         lmt_input_state.in_stack[index].if_ptr = lmt_condition_state.cond_ptr - 1;
         --index;
     }
-    if (warning) {
+    if lmt_unlikely(warning) {
         tex_print_format("%<%l[conditional: end of %C%L of a different file]%>", if_test_cmd, lmt_condition_state.state.cur_if, lmt_condition_state.state.if_line);
         if (tracing_nesting_par > 1) {
             tex_show_context();
@@ -354,7 +354,7 @@ static void tex_aux_push_condition_stack(int code, int unless)
 {
     if (! lmt_condition_state.stack || lmt_condition_state.cond_ptr >= lmt_condition_state.stack_size - 1) {
         int stack_size = lmt_condition_state.stack_size + lmt_condition_state.stack_step;
-        if (lmt_condition_state.cond_ptr + 1 > lmt_condition_state.stack_max) {
+        if lmt_unlikely(lmt_condition_state.cond_ptr + 1 > lmt_condition_state.stack_max) {
             tex_overflow_error("conditionals", lmt_condition_state.stack_max);
             return;
         }
@@ -363,7 +363,7 @@ static void tex_aux_push_condition_stack(int code, int unless)
         }
         {
             condition_state *stack = lmt_memory_realloc(lmt_condition_state.stack, stack_size * sizeof(condition_state));
-            if (! stack) {
+            if lmt_unlikely(! stack) {
                 tex_overflow_error("conditionals", stack_size);
                 return;
             }
@@ -383,7 +383,7 @@ static void tex_aux_push_condition_stack(int code, int unless)
 
 static void tex_aux_pop_condition_stack(void)
 {
-    if (lmt_condition_state.cond_ptr <= 0) {
+    if lmt_unlikely(lmt_condition_state.cond_ptr <= 0) {
         tex_handle_error(normal_error_type,
             "Extra %C%h",
             if_test_cmd, cur_chr,
@@ -866,7 +866,7 @@ void tex_conditional_if(halfword code, int unless)
     int tracing_ifs = tracing_ifs_par > 0;
     int tracing_commands = tracing_commands_par;
     int tracing_both = tracing_ifs && (tracing_commands <= 1);
-    if (tracing_both) {
+    if lmt_unlikely(tracing_both) {
         tex_show_cmd_chr(cur_cmd, cur_chr);
     }
     tex_aux_push_condition_stack(code, unless);
@@ -1674,7 +1674,7 @@ void tex_conditional_if(halfword code, int unless)
     if (unless) {
         result = ! result;
     }
-    if (tracing_commands > 1) {
+    if lmt_unlikely(tracing_commands > 1) {
         /*tex Display the value of |b|. */
         tex_print_format(result ? "%<%l{true}%>" : "%<%l{false}%>");
     }
@@ -1740,7 +1740,7 @@ void tex_conditional_fi_or_else(void)
     if (tracing_ifs && tracing_commands_par <= 1) {
         tex_show_cmd_chr(if_test_cmd, cur_chr);
     }
-    if (! lmt_condition_state.cond_ptr) {
+    if lmt_unlikely(! lmt_condition_state.cond_ptr) {
         tex_handle_error(normal_error_type,
             "Extra %C%h",
             if_test_cmd, cur_chr,
@@ -2068,7 +2068,7 @@ void tex_initialize_conditionals(void)
     if (! lmt_condition_state.stack) {
         int stack_size = lmt_condition_state.stack_step;
         condition_state *stack = lmt_memory_malloc(stack_size * sizeof(condition_state));
-        if (stack) {
+        if lmt_likely(stack) {
             lmt_condition_state.stack = stack;
             lmt_condition_state.stack_size = stack_size;
         } else {
