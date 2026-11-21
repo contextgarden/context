@@ -135,7 +135,7 @@ revert to less efficient (traditional) font scaling
 never initializes synctex (for production runs)
 .TP
 .B --synctex
-run with synctex enabled (better use \setupsynctex[state=start])
+run with synctex enabled (better use \\setupsynctex[state=start])
 .TP
 .B --nodates
 omit runtime dates in pdf file (optional value: a number (1970 offset) or string "YYYY-MM-DD HH:MM")
