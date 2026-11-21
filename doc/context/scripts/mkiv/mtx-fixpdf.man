@@ -33,7 +33,7 @@ use given compactor
 use given standard
 .TP
 .B --pattern
-processs files according to pattern
+process files according to pattern
 .TP
 .B --silent
 suppress messages

@@ -18,7 +18,7 @@ search for pattern (optional)
 count matches only
 .TP
 .B --all
-count all occurences in a line
+count all occurrences in a line
 .TP
 .B --nocomment
 skip lines that start with %% or #

@@ -12,7 +12,7 @@
 .SH OPTIONS
 .TP
 .B --script
-run an mtx script (lua prefered method) (--noquotes), no script gives list
+run an mtx script (lua preferred method) (--noquotes), no script gives list
 .TP
 .B --evaluate
 run code passed on the commandline (between quotes) (=loop) (exit|quit aborts)
@@ -138,13 +138,13 @@ report all (when applicable)
 filter by file format (when applicable)
 .TP
 .B --selfclean=string
-remove libraries (maintainance)
+remove libraries (maintenance)
 .TP
 .B --selfmerge=string
-embed libraries (maintainance)
+embed libraries (maintenance)
 .TP
 .B --selfupdate=string
-move to bin path (maintainance)
+move to bin path (maintenance)
 .TP
 .B --help=string
 show help info

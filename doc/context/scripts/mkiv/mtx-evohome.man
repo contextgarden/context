@@ -18,7 +18,7 @@ collect data from device
 update data from device
 .TP
 .B --presets
-file with authenciation data
+file with authentication data
 .TP
 .B --auto
 fetch temperature data every hour
